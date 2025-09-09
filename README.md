@@ -2,13 +2,9 @@
 
 A stationary companion app for adventurers and explorers to plan their next journey.
 
----
-
 ## About the Project
 
 Adventuro Maps is designed to create a more immersive and interactive travel experience. This desktop application is the planning and preparation hub, providing a wealth of information to help you prepare for your next adventure.
-
----
 
 ## Features ✨
 
@@ -21,8 +17,6 @@ Adventuro Maps is designed to create a more immersive and interactive travel exp
 ### Safety & Guides
 - **Mandatory Safety Guides:** Access crucial safety information to ensure a secure and enjoyable journey.
 - **Guides for All Levels:** Read up on tips and tricks for both new and experienced adventurers and explorers.
-
----
 
 ## Getting Started
 
@@ -40,7 +34,7 @@ You'll need `npm` installed on your machine.
 
 ### Installation
 1. Clone the repository:
-   `git clone https://github.com/your-username/adventuromaps.git`
+   `git clone https://github.com/jawrynx/adventuromaps.git`
 2. Navigate to the project directory:
    `cd adventuromaps`
 3. Install dependencies:
@@ -52,15 +46,11 @@ To run the application in development mode: ```npm start```
 
 This command will open the Adventuro Maps desktop app, ready for you to explore.
 
----
-
 ## Built With
 
 - **Electron.js** - Desktop framework
 - **React** - UI library
 - **Vite** - Build tool
-
----
 
 ## Contributing
 
