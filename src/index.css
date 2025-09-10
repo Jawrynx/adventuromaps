@@ -7,3 +7,34 @@
   font-family: 'TASA Explorer';
   color: white;
 }
+
+#adventure, #explore {
+  padding: 20px;
+
+  h1 {
+    margin-bottom: 10px;
+  }
+
+  ul {
+    list-style-type: none;
+  }
+
+  .adventure-item, .explore-item {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+    
+    &:hover {
+      background-color: #444;
+    }
+  }
+
+  .adventure-image, .explore-image {
+    border-radius: 8px;
+    object-fit: cover;
+    margin-bottom: 10px;
+  }
+}
