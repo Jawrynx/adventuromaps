@@ -5,8 +5,8 @@ function MainMap() {
   return (
     <div style={{ width: '100%', height: '100%' }}>
         <Map
-            defaultZoom={13}
-            defaultCenter={ { lat: -33.860664, lng: 151.208138 } }>
+            defaultZoom={3}
+            defaultCenter={ { lat: 30, lng: 0 } }>
         </Map>
     </div>
   )

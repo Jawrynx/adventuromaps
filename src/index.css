@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Chelsea+Market&family=Sigmar&family=TASA+Explorer:wght@400..800&display=swap');
 
-*, html, body {
+*,
+html,
+body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -8,7 +10,8 @@
   color: white;
 }
 
-#adventure, #explore {
+#adventure,
+#explore {
   padding: 20px;
 
   h1 {
@@ -19,22 +22,69 @@
     list-style-type: none;
   }
 
-  .adventure-item, .explore-item {
+  .adventure-item,
+  .explore-item {
     background-color: #333;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
-    
+
     &:hover {
       background-color: #444;
     }
   }
 
-  .adventure-image, .explore-image {
+  .adventure-image,
+  .explore-image {
     border-radius: 8px;
     object-fit: cover;
     margin-bottom: 10px;
+  }
+
+  .explore-buttons {
+    position: relative;
+    margin-top: 5px;
+    width: 100%;
+    text-align: right;
+  }
+
+  .explore-more-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0s ease-in-out;
+  }
+
+  .explore-more-container.expanded {
+    max-height: 5000px;
+    transition: max-height 3s ease-in-out;
+  }
+
+  .explore-more {
+    margin-top: 10px;
+    background-color: #292929;
+    padding: 10px;
+    border-radius: 18px;
+    text-align: left;
+
+    h3 {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .route-locations,
+    .route-topics {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+
+    ul {
+      line-height: 30px;
+      list-style: circle;
+    }
   }
 }

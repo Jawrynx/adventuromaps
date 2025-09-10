@@ -1,0 +1,37 @@
+.explore-buttons button {
+    border: none;
+    border-radius: 10px;
+    font-size: 2rem;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.more-button {
+    background-color: #292929;
+
+    &:hover {
+        background-color: #3a3a3a;
+    }
+}
+
+.demo-button {
+    background-color: #54cf58;
+
+    svg {
+        position: relative;
+        top: 1.5px;
+    }
+
+    &:hover {
+        background-color: #45b045;
+    }
+}
+
+.options-button {
+    background: none;
+
+    &:hover {
+        background-color: #3a3a3a;
+        border-radius: 10px;
+    }
+}
