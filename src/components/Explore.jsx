@@ -2,18 +2,39 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faChevronDown, faEllipsisV, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
-function Explore() {
+const shrewsburyCoordinates = [
+    { "lat": 52.683122848662535, "lng": -2.7585323211824564 },
+    { "lat": 52.68738930614514, "lng": -2.7561290619051126 },
+    { "lat": 52.69039605463666, "lng": -2.7544298849165405 },
+    { "lat": 52.6906041495221, "lng": -2.754966326719519 },
+    { "lat": 52.69094230159571, "lng": -2.7552238187849487 },
+    { "lat": 52.691306462438455, "lng": -2.7550521574079956 },
+    { "lat": 52.69154056423347, "lng": -2.754644461637732 },
+    { "lat": 52.69165761466031, "lng": -2.7541509351789917 },
+    { "lat": 52.69160559228714, "lng": -2.7536788663923706 },
+    { "lat": 52.69129345674636, "lng": -2.7533570013105835 },
+    { "lat": 52.69099432475921, "lng": -2.7530780515730346 },
+    { "lat": 52.69085126091043, "lng": -2.7512541494429077 },
+    { "lat": 52.69050010220335, "lng": -2.749752112394568 },
+    { "lat": 52.69042206655158, "lng": -2.7492371282637085 }
+];
+
+function Explore({ onSelectRoute }) {
   const [showMore, setShowMore] = useState(false);
 
   const toggleShowMore = () => {
     setShowMore(!showMore);
   };
 
+  const handleItemClick = (routeData) => {
+    onSelectRoute(routeData);
+  };
+
   return (
     <div id='explore'>
       <h1>Exploration</h1>
       <ul>
-        <li className='explore-item'>
+        <li className='explore-item' onClick={() => handleItemClick(shrewsburyCoordinates)}>
           <img src="/assets/mountain.jpg" alt="#" width='100%' height='100px' className='explore-image' />
           <h2>Shrewsbury</h2>
           <p>Explore Shrewsbury's history and geography dating back to the Medieval Age. Discover & learn about its geography, medieval history and figures such as Charles Darwin. Prepare to embark on a historic journey!</p>
@@ -50,8 +71,8 @@ function Explore() {
             <button className='more-button' onClick={toggleShowMore}>
               <FontAwesomeIcon icon={showMore ? faChevronUp : faChevronDown} />
             </button>
-            <button className='demo-button'><FontAwesomeIcon icon={faPlay} /></button>
-            <button className='options-button'><FontAwesomeIcon icon={faEllipsisV} /></button>
+            <button className='demo-button' onClick={() => e.stopPropagation()}><FontAwesomeIcon icon={faPlay} /></button>
+            <button className='options-button' onClick={() => e.stopPropagation()}><FontAwesomeIcon icon={faEllipsisV} /></button>
           </div>
         </li>
         <li className='explore-item'>

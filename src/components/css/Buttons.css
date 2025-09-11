@@ -1,3 +1,40 @@
+.green {
+    background-color: #005c03;
+    color: white;
+    transition: 0.3s ease-in-out;
+
+    &:hover {
+        transition: 0.3s ease-in-out;
+        background-color: #004002;
+    }
+}
+
+.red {
+    background-color: #ff4c4c;
+    color: white;
+    transition: 0.3s ease-in-out;
+
+    &:hover {
+        transition: 0.3s ease-in-out;
+        background-color: #680000;
+    }
+}
+
+.blue {
+    background-color: #4a90e2;
+    transition: 0.3s ease-in-out;
+
+    &:hover {
+        transition: 0.3s ease-in-out;
+        background-color: #004888;
+    }
+}
+
+button {
+    border: none;
+    border-radius: 7px;
+}
+
 .explore-buttons button {
     border: none;
     border-radius: 10px;
@@ -8,14 +45,17 @@
 
 .more-button {
     background-color: #292929;
+    transition: 0.3s ease-in-out;
 
     &:hover {
+        transition: 0.3s ease-in-out;
         background-color: #3a3a3a;
     }
 }
 
 .demo-button {
     background-color: #54cf58;
+    transition: 0.3s ease-in-out;
 
     svg {
         position: relative;
@@ -23,15 +63,37 @@
     }
 
     &:hover {
+        transition: 0.3s ease-in-out;
         background-color: #45b045;
     }
 }
 
 .options-button {
     background: none;
+    transition: 0.3s ease-in-out;
 
     &:hover {
+        transition: 0.3s ease-in-out;
         background-color: #3a3a3a;
         border-radius: 10px;
     }
+}
+
+.warning-button {
+    background-color: #ff4c4c;
+    padding: 4px;
+    border: none;
+    border-radius: 7px;
+    transition: 0.3s ease-in-out;
+
+    &:hover {
+        transition: 0.3s ease-in-out;
+        background-color: #5a0000;
+    }
+}
+
+
+.adm-button {
+    font-weight: bold;
+    height: 20px;
 }

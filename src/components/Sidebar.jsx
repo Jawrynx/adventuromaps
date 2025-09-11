@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import './css/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools } from '@fortawesome/free-solid-svg-icons';
 
 function Sidebar({ activeItem, onSidebarClick }) {
     const location = useLocation();
@@ -46,6 +46,13 @@ function Sidebar({ activeItem, onSidebarClick }) {
                     <FontAwesomeIcon icon={faGear} />
                     <p>Settings</p>
                 </div>
+                <div 
+                    className={`sidebar-link ${location.pathname === '/admin' ? 'active' : ''}`}
+                    onClick={() => onSidebarClick('admin', '/admin')}
+                >
+                    <FontAwesomeIcon icon={faTools} />
+                    <p>Admin Tools</p>
+                </div>
             </div>
             <div className='sidebar-footer'>
                 <div 
@@ -58,7 +65,7 @@ function Sidebar({ activeItem, onSidebarClick }) {
                 <span>AdventuroMaps v0.1.0</span>
             </div>
         </div>
-    )
+    );
 }
 
 export default Sidebar;
