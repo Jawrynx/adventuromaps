@@ -1,10 +1,15 @@
+// AdmTools.jsx
+
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
-function AdmTools({ waypoints, onRemoveWaypoint }) {
+function AdmTools({ routes, onRemoveRoute }) {
     return (
         <div id='admin'>
+            <button id='minimize-button' onClick={() => {
+                document.getElementById('modal').classList.toggle('minimized');
+            }}>_</button>
             <h2>Admin Tools</h2>
             <div className="waypoints-list">
                 <h3>Waypoints</h3>
@@ -18,20 +23,27 @@ function AdmTools({ waypoints, onRemoveWaypoint }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {waypoints.map((wp) => (
-                            <tr key={wp.id}>
-                                <td><input type="text" name="waypoint-name" id="waypoint-name" placeholder={wp.name} onChange={(e) => wp.name = e.target.value}/></td>
-                                <td>{wp.lat.toFixed(6)}</td>
-                                <td>{wp.lng.toFixed(6)}</td>
-                                <td>
-                                    <button 
-                                        className='warning-button red' 
-                                        onClick={() => onRemoveWaypoint(wp.id)}
-                                    >
-                                        <FontAwesomeIcon icon={faTrash} />
-                                    </button>
-                                </td>
-                            </tr>
+                        {routes.map((route) => (
+                            <React.Fragment key={route.id}>
+                                <tr>
+                                    <td><input type="text" name="waypoint-name" id="waypoint-name-start" placeholder={route.waypoints[0].name} onChange={(e) => route.waypoints[0].name = e.target.value} /></td>
+                                    <td>{route.waypoints[0].lat.toFixed(6)}</td>
+                                    <td>{route.waypoints[0].lng.toFixed(6)}</td>
+                                    <td rowSpan="2">
+                                        <button 
+                                            className='warning-button red' 
+                                            onClick={() => onRemoveRoute(route.id)}
+                                        >
+                                            <FontAwesomeIcon icon={faTrash} />
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="waypoint-name" id="waypoint-name-end" placeholder={route.waypoints[1].name} onChange={(e) => route.waypoints[1].name = e.target.value} /></td>
+                                    <td>{route.waypoints[1].lat.toFixed(6)}</td>
+                                    <td>{route.waypoints[1].lng.toFixed(6)}</td>
+                                </tr>
+                            </React.Fragment>
                         ))}
                     </tbody>
                 </table>

@@ -1,81 +1,95 @@
-import React, { useEffect, useState } from 'react';
-import { Map, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
+import React, { useState, useEffect, useRef } from 'react';
+import { Map, useMap } from '@vis.gl/react-google-maps';
 import Modal from './Modal';
 import AdmTools from './AdmTools';
+import MapRoutes from './MapRoutes';
+import { Polyline } from './Polyline';
 import '../components/css/Admin.css';
 
-
-function DrawingTool({ onPolylineComplete }) {
+function Admin() {
     const map = useMap();
-    const drawingLibrary = useMapsLibrary('drawing');
-    const [drawingManager, setDrawingManager] = useState(null);
+    const [routes, setRoutes] = useState([]);
+    const [isDrawing, setIsDrawing] = useState(false);
+    const [tempPath, setTempPath] = useState([]);
+    const [mousePosition, setMousePosition] = useState(null);
+
+    const drawingStateRef = useRef({ isDrawing, tempPath });
 
     useEffect(() => {
-        if (!drawingLibrary || !map) return;
+        drawingStateRef.current.isDrawing = isDrawing;
+        drawingStateRef.current.tempPath = tempPath;
+    }, [isDrawing, tempPath]);
 
-        const manager = new drawingLibrary.DrawingManager({
-            drawingMode: drawingLibrary.OverlayType.POLYLINE,
-            drawingControl: true,
-            drawingControlOptions: {
-                position: window.google.maps.ControlPosition.TOP_CENTER,
-                drawingModes: [drawingLibrary.OverlayType.POLYLINE],
-            },
-            polylineOptions: {
-                strokeColor: '#FF0000',
-                strokeOpacity: 0.8,
-                strokeWeight: 4,
-                clickable: true,
-                editable: true,
-            },
+    useEffect(() => {
+        if (!map) return;
+
+        map.setOptions({
+            draggableCursor: isDrawing ? 'crosshair' : 'grab',
+            cursor: isDrawing ? 'crosshair' : 'default',
         });
 
-        manager.setMap(map);
-
-        window.google.maps.event.addListener(manager, 'overlaycomplete', (event) => {
-            if (event.type === window.google.maps.drawing.OverlayType.POLYLINE) {
-                const path = event.overlay.getPath().getArray().map(latLng => ({
-                    lat: latLng.lat(),
-                    lng: latLng.lng(),
-                }));
-                onPolylineComplete(path);
+        const clickListener = map.addListener('click', (e) => {
+            const { isDrawing } = drawingStateRef.current;
+            if (isDrawing) {
+                const newPoint = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+                setTempPath((prevPath) => [...prevPath, newPoint]);
             }
         });
 
-        setDrawingManager(manager);
+        const dblClickListener = map.addListener('dblclick', () => {
+            const { isDrawing, tempPath } = drawingStateRef.current;
+            if (isDrawing && tempPath.length > 1) {
+                const newRoute = {
+                    id: Date.now(),
+                    path: tempPath,
+                    waypoints: [
+                        { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng },
+                        { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng }
+                    ]
+                };
+                setRoutes(prevRoutes => [...prevRoutes, newRoute]);
+            }
+            setIsDrawing(false);
+            setTempPath([]);
+        });
+        
+        const mouseMoveListener = map.addListener('mousemove', (e) => {
+            const { isDrawing } = drawingStateRef.current;
+            if (isDrawing) {
+                setMousePosition({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+            }
+        });
 
         return () => {
-            if (drawingManager) {
-                drawingManager.setMap(null);
-            }
+            window.google.maps.event.removeListener(clickListener);
+            window.google.maps.event.removeListener(dblClickListener);
+            window.google.maps.event.removeListener(mouseMoveListener);
         };
-    }, [drawingLibrary, map]);
+    }, [map]);
 
-    return null;
-}
-
-function Admin() {
-    const [waypoints, setWaypoints] = useState([]);
-
-    const handlePolylineComplete = (path) => {
-        console.log('New polyline coordinates:', path);
-        alert('Polyline drawn! Check the console for coordinates.');
-
-        const start = path[0];
-        const end = path[path.length - 1];
-
-        const newWaypoints = [
-            { id: Date.now(), name: 'Start Point', lat: start.lat, lng: start.lng },
-            { id: Date.now() + 1, name: 'End Point', lat: end.lat, lng: end.lng },
-        ];
-        
-        setWaypoints(prevWaypoints => [...prevWaypoints, ...newWaypoints]);
-        
-        console.log('Waypoints:', newWaypoints);
+    const handleRemoveRoute = (routeId) => {
+        setRoutes(prevRoutes => prevRoutes.filter(route => route.id !== routeId));
     };
 
-    const handleRemoveWaypoint = (id) => {
-        setWaypoints(prevWaypoints => prevWaypoints.filter(wp => wp.id !== id));
+    const handleStopDrawing = () => {
+        if (isDrawing && tempPath.length > 1) {
+            const newRoute = {
+                id: Date.now(),
+                path: tempPath,
+                waypoints: [
+                    { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng },
+                    { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng }
+                ]
+            };
+            setRoutes(prevRoutes => [...prevRoutes, newRoute]);
+        }
+        setIsDrawing(false);
+        setTempPath([]);
     };
+
+    const livePath = isDrawing && mousePosition && tempPath.length > 0
+        ? [...tempPath, mousePosition]
+        : tempPath;
 
     return (
         <div style={{ height: '100%', width: '100%' }} id='admin-tools'>
@@ -83,12 +97,30 @@ function Admin() {
                 defaultZoom={12}
                 defaultCenter={{ lat: 52.7061, lng: -2.7533 }}
             >
-                <DrawingTool onPolylineComplete={handlePolylineComplete} />
+                {isDrawing && livePath.length > 1 && (
+                    <Polyline
+                        path={livePath}
+                        strokeColor="#FF0000"
+                        strokeOpacity={0.8}
+                        strokeWeight={4}
+                        clickable={false}
+                    />
+                )}
+                <MapRoutes routes={routes} />
             </Map>
+            
+            <div className="drawing-tool">
+                {!isDrawing ? (
+                    <button onClick={() => setIsDrawing(true)}>Start Drawing</button>
+                ) : (
+                    <button onClick={handleStopDrawing}>Stop Drawing</button>
+                )}
+            </div>
+            
             <Modal>
                 <AdmTools 
-                    waypoints={waypoints} 
-                    onRemoveWaypoint={handleRemoveWaypoint} 
+                    routes={routes} 
+                    onRemoveRoute={handleRemoveRoute} 
                 />
             </Modal>
         </div>
