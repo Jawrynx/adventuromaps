@@ -4,6 +4,10 @@
     justify-content: space-between;
     height: 100%;
 
+    h2 {
+        text-align: center;;
+    }
+
     .waypoints-list {
         display: flex;
         flex-direction: column;
@@ -15,6 +19,16 @@
         
             td {
                 text-align: center;
+
+                #waypoint-name {
+                    width: 90%;
+                    color: black;
+                    text-align: center;
+                }
+            }
+
+            tr > td:last-child {
+                padding-left: 5px;
             }
         }
     }
@@ -31,3 +45,17 @@
         }
     }
 }
+
+#admin-tools {
+    .modal-content {
+        position: absolute;
+        top: 60px;
+        right: 5px;
+        width: 500px;
+
+        .modal-close {
+            display: none;
+        }
+    }
+}
+
