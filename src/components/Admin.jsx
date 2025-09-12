@@ -6,7 +6,7 @@ import MapRoutes from './MapRoutes';
 import { Polyline } from './Polyline';
 import '../components/css/Admin.css';
 
-function Admin() {
+function Admin({ mapId }) {
     const map = useMap();
     const [routes, setRoutes] = useState([]);
     const [isDrawing, setIsDrawing] = useState(false);
@@ -71,6 +71,21 @@ function Admin() {
         setRoutes(prevRoutes => prevRoutes.filter(route => route.id !== routeId));
     };
 
+    const handleUpdateWaypointName = (routeId, waypointIndex, newName) => {
+        setRoutes(prevRoutes =>
+            prevRoutes.map(route =>
+                route.id === routeId
+                    ? {
+                        ...route,
+                        waypoints: route.waypoints.map((waypoint, index) =>
+                            index === waypointIndex ? { ...waypoint, name: newName } : waypoint
+                        )
+                    }
+                    : route
+            )
+        );
+    };
+
     const handleStopDrawing = () => {
         if (isDrawing && tempPath.length > 1) {
             const newRoute = {
@@ -94,6 +109,7 @@ function Admin() {
     return (
         <div style={{ height: '100%', width: '100%' }} id='admin-tools'>
             <Map
+                mapId={mapId}
                 defaultZoom={12}
                 defaultCenter={{ lat: 52.7061, lng: -2.7533 }}
             >
@@ -120,7 +136,8 @@ function Admin() {
             <Modal>
                 <AdmTools 
                     routes={routes} 
-                    onRemoveRoute={handleRemoveRoute} 
+                    onRemoveRoute={handleRemoveRoute}
+                    onUpdateWaypointName={handleUpdateWaypointName}
                 />
             </Modal>
         </div>

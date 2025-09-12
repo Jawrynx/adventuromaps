@@ -1,10 +1,8 @@
-// AdmTools.jsx
-
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
-function AdmTools({ routes, onRemoveRoute }) {
+function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName }) {
     return (
         <div id='admin'>
             <button id='minimize-button' onClick={() => {
@@ -23,10 +21,17 @@ function AdmTools({ routes, onRemoveRoute }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {routes.map((route) => (
+                        {routes.map((route, index) => (
                             <React.Fragment key={route.id}>
-                                <tr>
-                                    <td><input type="text" name="waypoint-name" id="waypoint-name-start" placeholder={route.waypoints[0].name} onChange={(e) => route.waypoints[0].name = e.target.value} /></td>
+                                <tr className='route-start-row'>
+                                    <td>
+                                        <input 
+                                            type="text" 
+                                            name="waypoint-name-start"
+                                            value={route.waypoints[0].name}
+                                            onChange={(e) => onUpdateWaypointName(route.id, 0, e.target.value)} 
+                                        />
+                                    </td>
                                     <td>{route.waypoints[0].lat.toFixed(6)}</td>
                                     <td>{route.waypoints[0].lng.toFixed(6)}</td>
                                     <td rowSpan="2">
@@ -39,7 +44,14 @@ function AdmTools({ routes, onRemoveRoute }) {
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td><input type="text" name="waypoint-name" id="waypoint-name-end" placeholder={route.waypoints[1].name} onChange={(e) => route.waypoints[1].name = e.target.value} /></td>
+                                    <td>
+                                        <input 
+                                            type="text" 
+                                            name="waypoint-name-end"
+                                            value={route.waypoints[1].name}
+                                            onChange={(e) => onUpdateWaypointName(route.id, 1, e.target.value)} 
+                                        />
+                                    </td>
                                     <td>{route.waypoints[1].lat.toFixed(6)}</td>
                                     <td>{route.waypoints[1].lng.toFixed(6)}</td>
                                 </tr>

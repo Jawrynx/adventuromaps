@@ -92,7 +92,7 @@ body {
 .drawing-tool {
   position: absolute;
   top: 10px;
-  left: 80vw;
+  right: 60px;
   z-index: 1;
 
   button {

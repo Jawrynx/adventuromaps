@@ -45,7 +45,7 @@ const MainContent = () => {
                     <Route path="/guides" element={<div>Guides/Safety Page</div>} />
                     <Route path="/settings" element={<div>Settings Page</div>} />
                     <Route path="/help" element={<div>Help Page</div>} />
-                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/admin" element={<Admin mapId="8a2ac04064bf3833742b72c4" />} />
                 </Routes>
                 {activeItem === 'explore' && (
                     <Modal onClose={() => setActiveItem('map')}>
