@@ -60,6 +60,7 @@
 #admin-tools {
     .modal-content {
         position: absolute;
+        overflow-y: hidden;
         top: 60px;
         right: 5px;
         width: 500px;
@@ -73,35 +74,69 @@
     .waypoints-table {
         border-collapse: separate;
         border-spacing: 0;
-    } 
+    }
 
     .waypoints-table tbody .route-start-row td:first-child {
         border-top-left-radius: 8px;
         border-left: 1px solid white;
+        transition: 0.3s ease-in-out;
     }
 
     .waypoints-table tbody .route-start-row td:last-child {
         border-top-right-radius: 8px;
-        border-bottom-right-radius: 8px;
         border-right: 1px solid white;
-        border-bottom: 1px solid white;
+        transition: 0.3s ease-in-out;
     }
 
     .waypoints-table tbody .route-start-row td {
         padding: 10px 0 5px 0;
         background-color: #444;
         border-top: 1px solid white;
+        transition: 0.3s ease-in-out;
     }
 
     .waypoints-table tbody .route-start-row+tr td {
         padding-bottom: 10px;
         background-color: #444;
         border-bottom: 1px solid white;
+        transition: 0.3s ease-in-out;
     }
 
     .waypoints-table tbody .route-start-row+tr td:first-child {
         border-bottom-left-radius: 8px;
         border-left: 1px solid white;
+        transition: 0.3s ease-in-out;
+    }
+
+    .waypoints-table tbody .route-start-row+tr td:last-child {
+        border-bottom-right-radius: 8px;
+        border-right: 1px solid white;
+        transition: 0.3s ease-in-out;
+    }
+
+    .waypoints-table tbody tr.route-start-row:hover td,
+    .waypoints-table tbody tr.route-start-row:hover+tr td {
+        background-color: #555;
+        border-color: #ccc;
+        transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+    }
+
+    .waypoints-table tbody tr.route-start-row:hover td:first-child,
+    .waypoints-table tbody tr.route-start-row:hover+tr td:first-child {
+        border-left-color: #ccc;
+    }
+
+    .waypoints-table tbody tr.route-start-row:hover td:last-child,
+    .waypoints-table tbody tr.route-start-row:hover+tr td:last-child {
+        border-right-color: #ccc;
+    }
+    
+    .waypoints-table tbody tr.route-start-row:hover td {
+        border-top-color: #ccc;
+    }
+
+    .waypoints-table tbody tr.route-start-row:hover+tr td {
+        border-bottom-color: #ccc;
     }
 
     #minimize-button {
@@ -144,4 +179,79 @@
     bottom: 40px;
     border-radius: 12px;
     padding: 2px 5px;
+}
+
+.waypoint-editor {
+    overflow-y: scroll;
+    top: 50px;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+
+    h3 {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 1.5rem;
+        background-color: #111;
+        margin: 20px;
+        padding: 3px;
+        border-radius: 20px;
+    }
+
+    p {
+        width: 50%;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .editor-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        
+        input {
+            width: 90%;
+            color: white;
+            text-align: center;
+            background-color: #444;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+    }
+
+    #description-editor {
+        width: 100%;
+        height: 50%;
+
+        label {
+            margin-bottom: 5px;
+        }
+
+        textarea {
+            width: 90%;
+            height: 100%;
+            padding: 5px;
+            color: black;
+            border: none;
+            margin-right: 5px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+    }
+
+    .editor-buttons {
+        display: flex;
+        justify-content: space-evenly;
+        width: 100%;
+        padding-bottom: 10px;
+
+        button {
+            width: 46%;
+        }
+    }
 }

@@ -92,6 +92,13 @@ button {
     }
 }
 
+.info-button {
+    padding: 4px;
+    border: none;
+    border-radius: 7px;
+    transition: 0.3s ease-in-out;
+}
+
 
 .adm-button {
     font-weight: bold;

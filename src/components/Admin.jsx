@@ -112,6 +112,7 @@ function Admin({ mapId }) {
                 mapId={mapId}
                 defaultZoom={12}
                 defaultCenter={{ lat: 52.7061, lng: -2.7533 }}
+                clickableIcons={false}
             >
                 {isDrawing && livePath.length > 1 && (
                     <Polyline
