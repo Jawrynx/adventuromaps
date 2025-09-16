@@ -12,6 +12,7 @@ function Admin({ mapId }) {
     const [isDrawing, setIsDrawing] = useState(false);
     const [tempPath, setTempPath] = useState([]);
     const [mousePosition, setMousePosition] = useState(null);
+    const [isCreatingItem, setIsCreatingItem] = useState(false);
 
     const drawingStateRef = useRef({ isDrawing, tempPath });
 
@@ -27,7 +28,6 @@ function Admin({ mapId }) {
             draggableCursor: isDrawing ? 'crosshair' : 'grab',
             cursor: isDrawing ? 'crosshair' : 'default',
         });
-
         const clickListener = map.addListener('click', (e) => {
             const { isDrawing } = drawingStateRef.current;
             if (isDrawing) {
@@ -52,7 +52,7 @@ function Admin({ mapId }) {
             setIsDrawing(false);
             setTempPath([]);
         });
-        
+
         const mouseMoveListener = map.addListener('mousemove', (e) => {
             const { isDrawing } = drawingStateRef.current;
             if (isDrawing) {
@@ -106,6 +106,10 @@ function Admin({ mapId }) {
         ? [...tempPath, mousePosition]
         : tempPath;
 
+    const handleCreateItem = () => {
+        setIsCreatingItem(true);
+    };
+
     return (
         <div style={{ height: '100%', width: '100%' }} id='admin-tools'>
             <Map
@@ -125,20 +129,31 @@ function Admin({ mapId }) {
                 )}
                 <MapRoutes routes={routes} />
             </Map>
-            
+
             <div className="drawing-tool">
-                {!isDrawing ? (
-                    <button onClick={() => setIsDrawing(true)}>Start Drawing</button>
+                {isCreatingItem ? (
+                    <>
+                        {!isDrawing ? (
+                            <button onClick={() => setIsDrawing(true)}>Start Drawing</button>
+                        ) : (
+                            <button onClick={handleStopDrawing}>Stop Drawing</button>
+                        )}
+                        <button onClick={() => setIsCreatingItem(false)} style={{ marginLeft: '10px', backgroundColor: 'red' }}>Clear Explore/Adventure Item</button>
+                    </>
                 ) : (
-                    <button onClick={handleStopDrawing}>Stop Drawing</button>
+                    <>
+                        <button onClick={() => handleCreateItem()} style={{ marginRight: '10px', backgroundColor: 'green' }}>Create Exploration/Adventure</button>
+                    </>
                 )}
             </div>
-            
+
             <Modal>
-                <AdmTools 
-                    routes={routes} 
+                <AdmTools
+                    routes={routes}
                     onRemoveRoute={handleRemoveRoute}
                     onUpdateWaypointName={handleUpdateWaypointName}
+                    isCreatingItem={isCreatingItem}
+                    onSetCreatingItem={setIsCreatingItem}
                 />
             </Modal>
         </div>

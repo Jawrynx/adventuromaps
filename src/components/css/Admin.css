@@ -1,10 +1,9 @@
 #admin {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     height: 100%;
 
-    h2 {
+    h2, h3 {
         text-align: center;
         ;
     }
@@ -252,6 +251,36 @@
 
         button {
             width: 46%;
+        }
+    }
+}
+
+.admin-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+
+    h1 {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+    }
+    
+    h2 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+
+    button {
+        background-color: green;
+        padding: 10px;
+        font-size: 1.2rem;
+        font-weight: bold;
+
+        &:hover {
+            background-color: #016e01;
         }
     }
 }
