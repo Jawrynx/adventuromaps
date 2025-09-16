@@ -6,13 +6,13 @@ function MapRoutes({ routes }) {
     return (
         <>
             {routes.map((route) => {
-                const startPoint = route.path[0];
-                const endPoint = route.path[route.path.length - 1];
+                const startPoint = route.coordinates[0];
+                const endPoint = route.coordinates[route.coordinates.length - 1];
 
                 return (
                     <React.Fragment key={route.id}>
                         <Polyline
-                            path={route.path}
+                            path={route.coordinates}
                             strokeColor="#FF0000"
                             strokeOpacity={0.8}
                             strokeWeight={4}

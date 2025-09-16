@@ -11,7 +11,7 @@ const initialFormState = {
     difficulty: ''
 };
 
-function CreateItemForm({ onComplete, onCancel }) {
+function CreateItemForm({ onComplete, onCancel, saveItem }) {
     const [formData, setFormData] = useState(initialFormState);
 
     const handleChange = (e) => {
@@ -30,13 +30,20 @@ function CreateItemForm({ onComplete, onCancel }) {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const dataToSubmit = {
             ...formData,
             categories: formData.categories.split(',').map(c => c.trim()).filter(c => c)
         };
-        onComplete(dataToSubmit);
+
+        try {
+            const docId = await saveItem(dataToSubmit);
+            onComplete({ ...dataToSubmit, id: docId });
+        } catch (error) {
+            console.error("Failed to save item:", error);
+            alert("An error occurred while saving the item. Please try again.");
+        }
     };
 
     return (
@@ -72,7 +79,7 @@ function CreateItemForm({ onComplete, onCancel }) {
             <div className="form-group">
                 <label>
                     Image URL:
-                    <input type="file" name="image_url" value={formData.image_url} onChange={handleChange} />
+                    <input type="text" name="image_url" value={formData.image_url} onChange={handleChange} />
                 </label>
             </div>
             <div className="form-group">

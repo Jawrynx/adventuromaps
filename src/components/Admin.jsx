@@ -16,6 +16,10 @@ function Admin({ mapId }) {
 
     const drawingStateRef = useRef({ isDrawing, tempPath });
 
+    const handleClearRoutes = () => {
+        setRoutes([]);
+    };
+
     useEffect(() => {
         drawingStateRef.current.isDrawing = isDrawing;
         drawingStateRef.current.tempPath = tempPath;
@@ -41,7 +45,7 @@ function Admin({ mapId }) {
             if (isDrawing && tempPath.length > 1) {
                 const newRoute = {
                     id: Date.now(),
-                    path: tempPath,
+                    coordinates: tempPath,
                     waypoints: [
                         { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng },
                         { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng }
@@ -90,7 +94,7 @@ function Admin({ mapId }) {
         if (isDrawing && tempPath.length > 1) {
             const newRoute = {
                 id: Date.now(),
-                path: tempPath,
+                coordinates: tempPath,
                 waypoints: [
                     { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng },
                     { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng }
@@ -154,6 +158,7 @@ function Admin({ mapId }) {
                     onUpdateWaypointName={handleUpdateWaypointName}
                     isCreatingItem={isCreatingItem}
                     onSetCreatingItem={setIsCreatingItem}
+                    onClearRoutes={handleClearRoutes}
                 />
             </Modal>
         </div>

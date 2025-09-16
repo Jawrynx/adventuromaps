@@ -3,22 +3,84 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 import WaypointEditor from './WaypointEditor';
 import CreateItemForm from './CreateItemForm';
+import { collection, addDoc, doc } from "firebase/firestore";
+import { db } from "../firebase";
 
-function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem }) {
+function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes }) {
     const [editingWaypoint, setEditingWaypoint] = useState(null);
     const [hasCreatedItemInfo, setHasCreatedItemInfo] = useState(false);
     const [itemData, setItemData] = useState(null);
+    const [itemId, setItemId] = useState(null);
 
-    const handleCreateItemComplete = (data) => {
+    const handleCreateItemComplete = async (data) => {
+        const id = await saveItemToFirestore(data);
+        setItemId(id);
         setItemData(data);
         setHasCreatedItemInfo(true);
-        console.log("Initial item data created:", data);
+        console.log("Initial item data created with ID:", id);
     };
 
     const handleCancelCreation = () => {
         onSetCreatingItem(false);
         setHasCreatedItemInfo(false);
         setItemData(null);
+        setItemId(null);
+    };
+
+    const saveItemToFirestore = async (data) => {
+        const collectionName = data.type === 'exploration' ? 'exploration' : 'adventure';
+        try {
+            const docRef = await addDoc(collection(db, collectionName), {
+                ...data,
+                createdAt: new Date(),
+                status: 'draft'
+            });
+            console.log("Document successfully written with ID:", docRef.id, "to collection:", collectionName);
+            return docRef.id;
+        } catch (e) {
+            console.error("Error adding document:", e);
+            throw e;
+        }
+    };
+    
+    const saveRoutesToFirestore = async () => {
+        if (!itemId) {
+            console.error("Cannot save routes: No item ID found. Please create an item first.");
+            alert("Error: No item ID found. Please create an item first.");
+            return;
+        }
+
+        console.log("Attempting to save routes for item ID:", itemId);
+
+        try {
+            const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
+            
+            for (const route of routes) {
+                console.log("Saving new route...");
+
+                const routeDocRef = await addDoc(routesCollectionRef, {
+                    coordinates: route.coordinates,
+                });
+                console.log("Route document successfully written with ID:", routeDocRef.id);
+    
+                const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeDocRef.id, 'waypoints');
+                
+                console.log("Saving waypoints for route ID:", routeDocRef.id);
+                for (const waypoint of route.waypoints) {
+                    await addDoc(waypointsCollectionRef, {
+                        ...waypoint,
+                        name: waypoint.name,
+                    });
+                }
+                console.log("Waypoints saved for route ID:", routeDocRef.id);
+            }
+            alert("Routes and waypoints saved to Firestore successfully! 🎉");
+            console.log("All routes and waypoints have been saved.");
+
+        } catch (e) {
+            console.error("Error saving routes:", e);
+            alert("Failed to save routes. See console for details.");
+        }
     };
 
     const handleEditClick = (route, waypointIndex) => {
@@ -44,10 +106,15 @@ function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem,
                 <>
                     {hasCreatedItemInfo ? (
                         <>
-                            <h3>{itemData.name} - {itemData.type}</h3>
+                            <h3 style={{margin: '5px 0', backgroundColor: '#444', width: 'fit-content', alignSelf: 'center', padding: '10px', borderRadius: '10px'}}>
+                                - {itemData.type === 'exploration' ? 'Exploration' : 'Adventure'} -
+                                <br />
+                                <span style={{fontSize: '1.6rem'}}>{itemData.name}</span> 
+                            </h3>
                             {editingWaypoint ? (
                                 <WaypointEditor
                                     waypointData={editingWaypoint}
+                                    itemType={itemData.type}
                                     onClose={handleCloseEditor}
                                 />
                             ) : (
@@ -129,16 +196,20 @@ function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem,
                                         </table>
                                     </div>
                                     <div className="tools-container">
-                                        <button className="adm-button green">Save Route</button>
-                                        <button className="adm-button red">Clear Route</button>
-                                        <button className="adm-button green">Export Route</button>
-                                        <button className="adm-button blue">Import Route</button>
+                                        <button className="adm-button green" onClick={saveRoutesToFirestore}>Save Draft</button>
+                                        <button className="adm-button red" onClick={onClearRoutes}>Clear Route</button>
+                                        <button className="adm-button green">Publish Route</button>
+                                        <button className="adm-button blue">Load Route</button>
                                     </div>
                                 </>
                             )}
                         </>
                     ) : (
-                        <CreateItemForm onComplete={handleCreateItemComplete} onCancel={handleCancelCreation} />
+                        <CreateItemForm
+                            onComplete={handleCreateItemComplete}
+                            onCancel={handleCancelCreation}
+                            saveItem={saveItemToFirestore}
+                        />
                     )}
                 </>
             ) : (

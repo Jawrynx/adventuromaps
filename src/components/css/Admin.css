@@ -243,6 +243,15 @@
         }
     }
 
+    textarea {
+        width: 90%;
+        height: 100px;
+        padding: 5px;
+        color: black;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+
     .editor-buttons {
         display: flex;
         justify-content: space-evenly;
