@@ -20,9 +20,13 @@ Adventuro Maps is designed to create a more immersive and interactive travel exp
 
 ## Getting Started
 
+**For Explorers and Adventurers!**
+
 The App is at VERY EARLY stages of development. An initial release date for the `1st November 2025` has been set. Exploration, Adventure Quests and Guides will be developed over time! The Download (*once ready!*) will be available below.
 
 - **DOWNLOAD**: Not Available (Release *1st NOVEMBER 2025*)
+
+**For Developers wishing to help development**
 
 To get the app up and running on your local machine from this repository, follow these steps.
 
@@ -32,6 +36,8 @@ You'll need `npm` installed on your machine.
 
 ```npm install npm@latest -g```
 
+You'll need to setup your own Firebase project and create a firestore database and a 'web (</>)' app to generate firebaseConfig variables (i.e. an API Key, Project ID, Storage Bucket, etc.)
+
 ### Installation
 1. Clone the repository:
    `git clone https://github.com/jawrynx/adventuromaps.git`
@@ -39,6 +45,11 @@ You'll need `npm` installed on your machine.
    `cd adventuromaps`
 3. Install dependencies:
    `npm install`
+4. Create a ```.env```, Add your FirebaseConfig to a ```.env``` file in the format ```VITE_FIREBASE_<VARIABLE_NAME>```
+
+5. Test saving an Exploration/Adventure Item to your database!
+
+6. Ready to Develop :D
 
 ### Usage
 
