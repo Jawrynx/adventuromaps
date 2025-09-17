@@ -8,6 +8,8 @@ const initialFormState = {
     subDescription: '',
     image_url: '',
     categories: '',
+    estimatedTime: '',
+    keyLocations: '',
     difficulty: ''
 };
 
@@ -42,7 +44,8 @@ function CreateItemForm({ onComplete, onCancel, saveItem }) {
 
         const dataToSubmit = {
             ...formData,
-            categories: formData.categories.split(',').map(c => c.trim()).filter(c => c)
+            categories: formData.categories.split(',').map(c => c.trim()).filter(c => c),
+            keyLocations: formData.keyLocations.split(',').map(loc => loc.trim()).filter(loc => loc)
         };
 
         try {
@@ -76,13 +79,13 @@ function CreateItemForm({ onComplete, onCancel, saveItem }) {
             </div>
             <div className="form-group">
                 <label>
-                    Description:
+                    Short Description:
                     <textarea name="description" value={formData.description} onChange={handleChange} required />
                 </label>
             </div>
             <div className="form-group">
                 <label>
-                    Sub-Description:
+                    Long Description:
                     <textarea name="subDescription" value={formData.subDescription} onChange={handleChange} />
                 </label>
             </div>
@@ -96,6 +99,18 @@ function CreateItemForm({ onComplete, onCancel, saveItem }) {
                 <label>
                     Categories (comma-separated):
                     <input type="text" name="categories" value={formData.categories} onChange={handleChange} />
+                </label>
+            </div>
+            <div className="form-group">
+                <label>
+                    Estimated Time:
+                    <input type="text" name="estimatedTime" value={formData.estimatedTime} onChange={handleChange} />
+                </label>
+            </div>
+            <div className="form-group">
+                <label>
+                    Key Locations (comma-separated):
+                    <input type="text" name="keyLocations" value={formData.keyLocations} onChange={handleChange} />
                 </label>
             </div>
             {formData.type === 'adventure' && (

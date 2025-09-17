@@ -4,6 +4,8 @@ import Modal from './Modal';
 import AdmTools from './AdmTools';
 import MapRoutes from './MapRoutes';
 import { Polyline } from './Polyline';
+import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase";
 import '../components/css/Admin.css';
 
 function Admin({ mapId }) {
@@ -23,7 +25,7 @@ function Admin({ mapId }) {
 
     useEffect(() => {
         if (!map) return;
-
+        
         const clickListener = map.addListener('click', (e) => {
             const { isDrawing } = drawingStateRef.current;
             if (isDrawing) {
@@ -104,6 +106,84 @@ function Admin({ mapId }) {
         setTempPath([]);
     };
 
+    const handleSaveDraft = async (itemData, itemId) => {
+        if (!itemId) {
+            console.error("Cannot save routes: No item ID found.");
+            alert("Error: No item ID found. Please create an item first.");
+            return;
+        }
+
+        const newRoutesWithIds = await Promise.all(
+            routes.map(async (route) => {
+                let routeDocRef;
+                let newWaypointsWithIds = [];
+
+                if (route.firestoreId) {
+                    // Route exists, update it
+                    routeDocRef = doc(db, itemData.type, itemId, 'routes', route.firestoreId);
+                    await updateDoc(routeDocRef, {
+                        coordinates: route.coordinates,
+                    });
+                    console.log("Route document successfully updated with ID:", route.firestoreId);
+                } else {
+                    // Route is new, add it
+                    const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
+                    routeDocRef = await addDoc(routesCollectionRef, {
+                        coordinates: route.coordinates,
+                    });
+                    console.log("New route document successfully written with ID:", routeDocRef.id);
+                }
+
+                // Handle waypoints for this route
+                const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeDocRef.id, 'waypoints');
+                
+                await Promise.all(
+                    route.waypoints.map(async (waypoint) => {
+                        if (waypoint.firestoreId) {
+                            // Waypoint exists, update it
+                            const waypointDocRef = doc(waypointsCollectionRef, waypoint.firestoreId);
+                            await updateDoc(waypointDocRef, { ...waypoint });
+                            console.log("Waypoint updated:", waypoint.firestoreId);
+                            newWaypointsWithIds.push(waypoint);
+                        } else {
+                            // Waypoint is new, add it
+                            const docRef = await addDoc(waypointsCollectionRef, { ...waypoint });
+                            console.log("New waypoint added with ID:", docRef.id);
+                            newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
+                        }
+                    })
+                );
+
+                return { ...route, firestoreId: routeDocRef.id, waypoints: newWaypointsWithIds };
+            })
+        );
+        
+        setRoutes(newRoutesWithIds);
+
+        alert("Routes and waypoints saved to Firestore successfully! 🎉");
+        console.log("All routes and waypoints have been saved.");
+    };
+
+    const handlePublish = async (itemData, itemId) => {
+        if (!itemId) {
+            alert("Error: No item ID found. Please save a draft first");
+            return;
+        }
+
+        try {
+            const docRef = doc(db, itemData.type, itemId);
+            await updateDoc(docRef, {
+                status: 'published',
+                publishedAt: new Date(),
+            });
+            console.log(`Item: ${itemId} has been published.`);
+            alert(`Item: ${itemId} has been published.`);
+        } catch (error) {
+            console.error("Error publishing item:", error);
+            alert("Error publishing item. Please try again.");
+        }
+    }
+
     const livePath = isDrawing && mousePosition && tempPath.length > 0
         ? [...tempPath, mousePosition]
         : tempPath;
@@ -156,6 +236,8 @@ function Admin({ mapId }) {
                     isCreatingItem={isCreatingItem}
                     onSetCreatingItem={setIsCreatingItem}
                     onClearRoutes={handleClearRoutes}
+                    onSaveDraft={handleSaveDraft}
+                    onPublish={handlePublish}
                 />
             </Modal>
         </div>

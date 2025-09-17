@@ -13,6 +13,7 @@
         flex-direction: column;
         align-items: center;
         height: 80%;
+        overflow-y: auto;
 
         .waypoints-table {
             width: 100%;

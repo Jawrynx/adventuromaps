@@ -3,10 +3,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 import WaypointEditor from './WaypointEditor';
 import CreateItemForm from './CreateItemForm';
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
 
-function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes }) {
+function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish }) {
     const [editingWaypoint, setEditingWaypoint] = useState(null);
     const [hasCreatedItemInfo, setHasCreatedItemInfo] = useState(false);
     const [itemData, setItemData] = useState(null);
@@ -57,43 +57,20 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         setItemId(null);
     };
 
-    const saveRoutesToFirestore = async () => {
-        if (!itemId) {
-            console.error("Cannot save routes: No item ID found. Please create an item first.");
-            alert("Error: No item ID found. Please create an item first.");
+    const handleSaveButtonClick = () => {
+        if (!itemData || !itemId) {
+            alert("Please create an item first.");
             return;
         }
+        onSaveDraft(itemData, itemId);
+    };
 
-        console.log("Attempting to save routes for item ID:", itemId);
-
-        try {
-            const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
-
-            for (const route of routes) {
-                console.log("Saving new route...");
-
-                const routeDocRef = await addDoc(routesCollectionRef, {
-                    coordinates: route.coordinates,
-                });
-                console.log("Route document successfully written with ID:", routeDocRef.id);
-
-                const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeDocRef.id, 'waypoints');
-                
-                console.log("Saving waypoints for route ID:", routeDocRef.id);
-                for (const waypoint of route.waypoints) {
-                    await addDoc(waypointsCollectionRef, {
-                        ...waypoint,
-                    });
-                }
-                console.log("Waypoints saved for route ID:", routeDocRef.id);
-            }
-            alert("Routes and waypoints saved to Firestore successfully! 🎉");
-            console.log("All routes and waypoints have been saved.");
-
-        } catch (e) {
-            console.error("Error saving routes:", e);
-            alert("Failed to save routes. See console for details.");
+    const handlePublishButtonClick = () => {
+        if (!itemData || !itemId) {
+            alert("Please create an item first.");
+            return;
         }
+        onPublish(itemData, itemId);
     };
 
     const handleEditClick = (route, waypointIndex) => {
@@ -209,9 +186,9 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                         </table>
                                     </div>
                                     <div className="tools-container">
-                                        <button className="adm-button green" onClick={saveRoutesToFirestore}>Save Draft</button>
+                                        <button className="adm-button green" onClick={handleSaveButtonClick}>Save Draft</button>
                                         <button className="adm-button red" onClick={onClearRoutes}>Clear Route</button>
-                                        <button className="adm-button green">Publish Route</button>
+                                        <button className="adm-button green" onClick={handlePublishButtonClick}>Publish Route</button>
                                         <button className="adm-button blue">Load Route</button>
                                     </div>
                                 </>
