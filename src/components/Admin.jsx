@@ -16,10 +16,6 @@ function Admin({ mapId }) {
 
     const drawingStateRef = useRef({ isDrawing, tempPath });
 
-    const handleClearRoutes = () => {
-        setRoutes([]);
-    };
-
     useEffect(() => {
         drawingStateRef.current.isDrawing = isDrawing;
         drawingStateRef.current.tempPath = tempPath;
@@ -28,10 +24,6 @@ function Admin({ mapId }) {
     useEffect(() => {
         if (!map) return;
 
-        map.setOptions({
-            draggableCursor: isDrawing ? 'crosshair' : 'grab',
-            cursor: isDrawing ? 'crosshair' : 'default',
-        });
         const clickListener = map.addListener('click', (e) => {
             const { isDrawing } = drawingStateRef.current;
             if (isDrawing) {
@@ -65,11 +57,17 @@ function Admin({ mapId }) {
         });
 
         return () => {
-            window.google.maps.event.removeListener(clickListener);
-            window.google.maps.event.removeListener(dblClickListener);
-            window.google.maps.event.removeListener(mouseMoveListener);
+            if (window.google && window.google.maps && window.google.maps.event) {
+                window.google.maps.event.removeListener(clickListener);
+                window.google.maps.event.removeListener(dblClickListener);
+                window.google.maps.event.removeListener(mouseMoveListener);
+            }
         };
     }, [map]);
+
+    const handleClearRoutes = () => {
+        setRoutes([]);
+    };
 
     const handleRemoveRoute = (routeId) => {
         setRoutes(prevRoutes => prevRoutes.filter(route => route.id !== routeId));
@@ -133,7 +131,6 @@ function Admin({ mapId }) {
                 )}
                 <MapRoutes routes={routes} />
             </Map>
-
             <div className="drawing-tool">
                 {isCreatingItem ? (
                     <>
@@ -150,10 +147,10 @@ function Admin({ mapId }) {
                     </>
                 )}
             </div>
-
             <Modal>
                 <AdmTools
                     routes={routes}
+                    setRoutes={setRoutes}
                     onRemoveRoute={handleRemoveRoute}
                     onUpdateWaypointName={handleUpdateWaypointName}
                     isCreatingItem={isCreatingItem}

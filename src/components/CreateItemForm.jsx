@@ -13,6 +13,7 @@ const initialFormState = {
 
 function CreateItemForm({ onComplete, onCancel, saveItem }) {
     const [formData, setFormData] = useState(initialFormState);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -32,6 +33,13 @@ function CreateItemForm({ onComplete, onCancel, saveItem }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (isSaving) {
+            return;
+        }
+
+        setIsSaving(true);
+
         const dataToSubmit = {
             ...formData,
             categories: formData.categories.split(',').map(c => c.trim()).filter(c => c)
@@ -43,6 +51,8 @@ function CreateItemForm({ onComplete, onCancel, saveItem }) {
         } catch (error) {
             console.error("Failed to save item:", error);
             alert("An error occurred while saving the item. Please try again.");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -102,8 +112,12 @@ function CreateItemForm({ onComplete, onCancel, saveItem }) {
                 </div>
             )}
             <div className="form-actions">
-                <button type="submit" className="adm-button green">Start Creating Route</button>
-                <button type="button" onClick={onCancel} className="adm-button red">Cancel</button>
+                <button type="submit" className="adm-button green" disabled={isSaving}>
+                    {isSaving ? 'Saving...' : 'Start Creating Route'}
+                </button>
+                <button type="button" onClick={onCancel} className="adm-button red" disabled={isSaving}>
+                    Cancel
+                </button>
             </div>
         </form>
     );

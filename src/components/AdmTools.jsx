@@ -3,29 +3,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 import WaypointEditor from './WaypointEditor';
 import CreateItemForm from './CreateItemForm';
-import { collection, addDoc, doc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
-function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes }) {
+function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes }) {
     const [editingWaypoint, setEditingWaypoint] = useState(null);
     const [hasCreatedItemInfo, setHasCreatedItemInfo] = useState(false);
     const [itemData, setItemData] = useState(null);
     const [itemId, setItemId] = useState(null);
-
-    const handleCreateItemComplete = async (data) => {
-        const id = await saveItemToFirestore(data);
-        setItemId(id);
-        setItemData(data);
-        setHasCreatedItemInfo(true);
-        console.log("Initial item data created with ID:", id);
-    };
-
-    const handleCancelCreation = () => {
-        onSetCreatingItem(false);
-        setHasCreatedItemInfo(false);
-        setItemData(null);
-        setItemId(null);
-    };
 
     const saveItemToFirestore = async (data) => {
         const collectionName = data.type === 'exploration' ? 'exploration' : 'adventure';
@@ -42,7 +27,36 @@ function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem,
             throw e;
         }
     };
-    
+
+    const handleCreateItemComplete = ({ id, ...data }) => {
+        setItemId(id);
+        setItemData(data);
+        setHasCreatedItemInfo(true);
+        console.log("Initial item data created with ID:", id);
+    };
+
+    const handleUpdateWaypoint = (routeId, waypointIndex, newWaypointData) => {
+        const updatedRoutes = routes.map(route => {
+            if (route.id === routeId) {
+                const newWaypoints = [...route.waypoints];
+                newWaypoints[waypointIndex] = {
+                    ...newWaypoints[waypointIndex],
+                    ...newWaypointData
+                };
+                return { ...route, waypoints: newWaypoints };
+            }
+            return route;
+        });
+        setRoutes(updatedRoutes);
+    };
+
+    const handleCancelCreation = () => {
+        onSetCreatingItem(false);
+        setHasCreatedItemInfo(false);
+        setItemData(null);
+        setItemId(null);
+    };
+
     const saveRoutesToFirestore = async () => {
         if (!itemId) {
             console.error("Cannot save routes: No item ID found. Please create an item first.");
@@ -54,7 +68,7 @@ function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem,
 
         try {
             const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
-            
+
             for (const route of routes) {
                 console.log("Saving new route...");
 
@@ -62,14 +76,13 @@ function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem,
                     coordinates: route.coordinates,
                 });
                 console.log("Route document successfully written with ID:", routeDocRef.id);
-    
+
                 const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeDocRef.id, 'waypoints');
                 
                 console.log("Saving waypoints for route ID:", routeDocRef.id);
                 for (const waypoint of route.waypoints) {
                     await addDoc(waypointsCollectionRef, {
                         ...waypoint,
-                        name: waypoint.name,
                     });
                 }
                 console.log("Waypoints saved for route ID:", routeDocRef.id);
@@ -101,7 +114,6 @@ function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem,
                 document.getElementById('modal').classList.toggle('minimized');
             }}>_</button>
             <h2>Admin Tools</h2>
-
             {isCreatingItem ? (
                 <>
                     {hasCreatedItemInfo ? (
@@ -116,6 +128,7 @@ function AdmTools({ routes, onRemoveRoute, onUpdateWaypointName, isCreatingItem,
                                     waypointData={editingWaypoint}
                                     itemType={itemData.type}
                                     onClose={handleCloseEditor}
+                                    onSave={handleUpdateWaypoint}
                                 />
                             ) : (
                                 <>

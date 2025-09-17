@@ -1,39 +1,30 @@
-// src/components/WaypointEditor.jsx
+import React, { useState, useEffect } from 'react';
 
-import React from 'react';
+function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
+    const [description, setDescription] = useState(waypointData.waypoint.description || '');
+    const [instructions, setInstructions] = useState(waypointData.waypoint.instructions || '');
+    const [image, setImage] = useState(null);
+    const [narration, setNarration] = useState(null);
+    const [keyframes, setKeyframes] = useState(null);
 
-function WaypointEditor({ waypointData, itemType, onClose }) {
-    const [description, setDescription] = React.useState('');
-    const [instructions, setInstructions] = React.useState('');
-    const [image, setImage] = React.useState(null);
-    const [narration, setNarration] = React.useState(null);
-    const [keyframes, setKeyframes] = React.useState(null);
+    useEffect(() => {
+        setDescription(waypointData.waypoint.description || '');
+        setInstructions(waypointData.waypoint.instructions || '');
+        setImage(null);
+        setNarration(null);
+        setKeyframes(null);
+    }, [waypointData]);
 
     const handleSave = () => {
-        console.log("Saving data for waypoint:", waypointData.waypoint.name);
-        console.log("Description:", description);
-        if (itemType === 'adventure') {
-            console.log("Instructions:", instructions);
-        }
-        console.log("Image:", image);
-        console.log("Narration:", narration);
-        console.log("Keyframes:", keyframes);
-
         const waypointDataToSave = {
             description,
+            instructions,
             image,
             narration,
             keyframes
         };
 
-        if (itemType === 'adventure') {
-            waypointDataToSave.instructions = instructions;
-        }
-
-        // You would typically pass waypointDataToSave back to the parent component
-        // or a state management solution to handle the actual saving to Firestore.
-        // For now, we'll just close the editor.
-
+        onSave(waypointData.routeId, waypointData.waypointIndex, waypointDataToSave);
         onClose();
     };
 
