@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMap, useMapEvents } from '@vis.gl/react-google-maps';
-import { Polyline } from './Polyline';
+import { Polyline } from '../map/Polyline';
 
 function DrawingTool({ onPolylineComplete }) {
     const [path, setPath] = useState([]);

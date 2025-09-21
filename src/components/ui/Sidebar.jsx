@@ -1,35 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import './css/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools } from '@fortawesome/free-solid-svg-icons';
+import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 function Sidebar({ activeItem, onSidebarClick }) {
     const location = useLocation();
+    const [isOpen, setIsOpen] = useState(true);
+
+    const toggleSidebar = () => {
+        setIsOpen(!isOpen);
+    };
 
     return (
-        <div id='sidebar'>
+        <div id='sidebar' className={isOpen ? 'open' : 'closed'}>
             <div className='sidebar-links'>
+                <div className="menu-toggle" onClick={toggleSidebar}>
+                    <FontAwesomeIcon icon={isOpen ? faTimes : faBars} />
+                </div>
                 <div 
                     className={`sidebar-link ${location.pathname === '/' && activeItem === 'map' ? 'active' : ''}`}
                     onClick={() => onSidebarClick('map', '/')}
                 >
                     <FontAwesomeIcon icon={faMap} />
-                    <p>Map</p>
+                    {isOpen && <p>Map</p>}
                 </div>
                 <div 
                     className={`sidebar-link ${activeItem === 'explore' ? 'active' : ''}`}
                     onClick={() => onSidebarClick('explore', '/')}
                 >
                     <FontAwesomeIcon icon={faCompass} />
-                    <p>Explore</p>
+                    {isOpen && <p>Explore</p>}
                 </div>
                 <div 
                     className={`sidebar-link ${activeItem === 'adventures' ? 'active' : ''}`}
                     onClick={() => onSidebarClick('adventures', '/')}
                 >
                     <FontAwesomeIcon icon={faHatCowboy} />
-                    <p>Adventures</p>
+                    {isOpen && <p>Adventures</p>}
                 </div>
 
                 <div 
@@ -37,21 +45,21 @@ function Sidebar({ activeItem, onSidebarClick }) {
                     onClick={() => onSidebarClick('guides', '/guides')}
                 >
                     <FontAwesomeIcon icon={faBook} />
-                    <p>Guides/Safety</p>
+                    {isOpen && <p>Guides/Safety</p>}
                 </div>
                 <div 
                     className={`sidebar-link ${location.pathname === '/settings' ? 'active' : ''}`}
                     onClick={() => onSidebarClick('settings', '/settings')}
                 >
                     <FontAwesomeIcon icon={faGear} />
-                    <p>Settings</p>
+                    {isOpen && <p>Settings</p>}
                 </div>
                 <div 
                     className={`sidebar-link ${location.pathname === '/admin' ? 'active' : ''}`}
                     onClick={() => onSidebarClick('admin', '/admin')}
                 >
                     <FontAwesomeIcon icon={faTools} />
-                    <p>Admin Tools</p>
+                    {isOpen && <p>Admin Tools</p>}
                 </div>
             </div>
             <div className='sidebar-footer'>
@@ -60,9 +68,9 @@ function Sidebar({ activeItem, onSidebarClick }) {
                     onClick={() => onSidebarClick('help', '/help')}
                 >
                     <FontAwesomeIcon icon={faQuestionCircle} />
-                    <p>Help</p>
+                    {isOpen && <p>Help</p>}
                 </div>
-                <span>AdventuroMaps v0.1.0</span>
+                {isOpen && <span>AdventuroMaps v0.1.0</span>}
             </div>
         </div>
     );

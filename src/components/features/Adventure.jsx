@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faChevronDown, faEllipsisV, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
-import { db } from "../firebase";
+import { db } from "../../services/firebase";
 
 function Adventure({ onSelectRoute }) {
   const [showMore, setShowMore] = useState({});

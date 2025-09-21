@@ -1,0 +1,122 @@
+/* Sidebar Container */
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    background-color: #222;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    transition: width 0.3s ease;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 0;
+    z-index: 10;
+}
+
+/* Open State */
+#sidebar.open {
+    width: 250px;
+}
+
+/* Closed State */
+#sidebar.closed {
+    width: 70px; 
+}
+
+/* Sidebar Links */
+.sidebar-links {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 35px;
+    transition: 0.2s ease-in-out;
+    cursor: pointer;
+    margin: 5px 0;
+    padding: 0 10px;
+}
+
+.sidebar-link:hover {
+    background-color: #444;
+}
+
+.sidebar-link.active {
+    background-color: #444;
+}
+
+/* Sidebar Link Text (p tag) */
+.sidebar-link p {
+    font-family: 'TASA Explorer', cursive;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-left: 10px;
+    padding: 5px;
+    border-radius: 15px;
+    width: 100%;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s ease-in-out;
+}
+
+.sidebar-link:hover p, .sidebar-link.active p {
+    color: yellow;
+}
+
+/* Sidebar Icons */
+.sidebar-link svg {
+    font-size: 1.5rem;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar-footer span {
+    font-family: 'Chelsea Market', cursive;
+    font-size: 14px;
+    padding: 10px 0;
+    width: 100%;
+    text-align: center;
+}
+
+/* Menu Toggle Button */
+.menu-toggle {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 1.5rem;
+}
+
+/* Closed State Specific Styles */
+#sidebar.closed .sidebar-link {
+    justify-content: center;
+    padding: 0;
+}
+
+#sidebar.closed .sidebar-link p {
+    display: none;
+}
+
+#sidebar.closed .sidebar-footer {
+    display: none; 
+}

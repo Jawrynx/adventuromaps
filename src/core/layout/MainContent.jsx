@@ -1,14 +1,14 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import MainMap from './components/MainMap';
-import Modal from './components/Modal';
-import Explore from './components/Explore';
-import Adventure from './components/Adventure';
-import Admin from './components/Admin';
-import DemoView from './components/DemoView';
+import Sidebar from '../../components/ui/Sidebar';
+import MainMap from '../../components/map/MainMap';
+import Modal from '../../components/ui/Modal';
+import Explore from '../../components/features/Explore';
+import Adventure from '../../components/features/Adventure';
+import Admin from '../../components/features/Admin';
+import DemoView from '../../components/features/DemoView';
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "../../services/firebase";
 
 const MainContent = () => {
     const navigate = useNavigate();
@@ -24,6 +24,15 @@ const MainContent = () => {
     const [currentDemoPath, setCurrentDemoPath] = useState([]);
     
     const handleSidebarClick = useCallback((item, path) => {
+        if (isDemoMode) {
+            setStructuredRouteData([]);
+            setIsDemoMode(false);
+            setActiveWaypoint(null);
+            setCurrentDemoPath([]);
+            setCurrentZoom(3);
+            setCurrentWaypointIndex(0);
+        }
+
         if (item !== 'map') {
             setActiveRoute(null);
             setStructuredRouteData([]);
@@ -35,7 +44,7 @@ const MainContent = () => {
         }
         setActiveItem(item);
         navigate(path);
-    }, [navigate]);
+    }, [navigate, isDemoMode]);
 
     const handleRouteSelection = useCallback((routeData) => {
         setActiveRoute(routeData);
@@ -53,15 +62,12 @@ const MainContent = () => {
         setCurrentWaypointIndex(0);
         setCurrentDemoPath([]);
 
-        // Find the very first waypoint to start the demo
         if (structuredData.length > 0 && structuredData[0].waypoints.length > 0) {
             const firstWaypoint = structuredData[0].waypoints[0];
             const coords = firstWaypoint.coordinates || { lat: firstWaypoint.lat, lng: firstWaypoint.lng };
             setActiveWaypoint(coords);
-            // Initialize the demo path with all coordinates from the first route
             if (structuredData[0].path && structuredData[0].path.length > 0) {
                 console.log('First route path:', structuredData[0].path);
-                // Show the complete path for the first route
                 setCurrentDemoPath(structuredData[0].path);
             }
         } else {
@@ -84,7 +90,6 @@ const MainContent = () => {
         let currentWaypoint = null;
         let currentRoute = null;
 
-        // Find the correct route and the current waypoint based on the cumulative index
         for (const route of structuredRouteData) {
             if (index >= cumulativeWaypointCount && index < cumulativeWaypointCount + route.waypoints.length) {
                 const relativeIndex = index - cumulativeWaypointCount;
@@ -100,7 +105,6 @@ const MainContent = () => {
             setActiveWaypoint(coords);
             setCurrentWaypointIndex(index);
             
-            // Show the complete path for the current route
             console.log('Current route:', currentRoute);
             console.log('Current waypoint:', currentWaypoint);
             console.log('Full path:', currentRoute.path);
@@ -124,7 +128,6 @@ const MainContent = () => {
         return allWps;
     }, [structuredRouteData]);
     
-    // Updated memoizedCurrentDemoPath to use the correct state
     const memoizedCurrentDemoPath = useMemo(() => currentDemoPath, [currentDemoPath]);
 
     const mapProps = useMemo(() => {

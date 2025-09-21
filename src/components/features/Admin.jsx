@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Map, useMap } from '@vis.gl/react-google-maps';
-import Modal from './Modal';
-import AdmTools from './AdmTools';
-import MapRoutes from './MapRoutes';
-import { Polyline } from './Polyline';
+import Modal from '../ui/Modal';
+import AdmTools from '../tools/AdmTools';
+import MapRoutes from '../map/MapRoutes';
+import { Polyline } from '../map/Polyline';
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase";
-import '../components/css/Admin.css';
+import { db } from "../../services/firebase";
+import './css/Admin.css';
 
 function Admin({ mapId }) {
     const map = useMap();

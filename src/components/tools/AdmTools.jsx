@@ -4,9 +4,9 @@ import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 import WaypointEditor from './WaypointEditor';
 import CreateItemForm from './CreateItemForm';
 import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
-import { db } from "../firebase";
-import { uploadFile } from '../uploadService';
-import '../components/css/Admin.css';
+import { db } from "../../services/firebase";
+import { uploadFile } from '../../services/uploadService';
+import '../features/css/Admin.css';
 
 function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish }) {
     const [editingWaypoint, setEditingWaypoint] = useState(null);
