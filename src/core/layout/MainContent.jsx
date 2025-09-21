@@ -144,7 +144,7 @@ const MainContent = () => {
     return (
         <div style={{ display: 'flex', height: '100vh' }}>
             <Sidebar activeItem={activeItem} onSidebarClick={handleSidebarClick} />
-            <div style={{ flexGrow: 1 }}>
+            <div style={{ width: 'calc(100% - 70px)', position: 'relative', left: '70px'  }}>
                 <Routes>
                     <Route path="/" element={<MainMap {...mapProps} />} />
                     <Route path="/guides" element={<div>Guides/Safety Page</div>} />

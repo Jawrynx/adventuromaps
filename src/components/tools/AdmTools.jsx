@@ -247,7 +247,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                     }
                 `}
             </style>
-            <p style={{ marginTop: '10px' }}>Loading routes...</p>
+            <p style={{ marginTop: '10px' }}>Loading...</p>
         </div>
     );
 

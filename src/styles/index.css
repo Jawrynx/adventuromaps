@@ -97,7 +97,7 @@ body {
 .drawing-tool {
   position: absolute;
   top: 10px;
-  right: 60px;
+  right: 0;
   z-index: 1;
 
   button {
@@ -114,4 +114,98 @@ body {
       background-color: #0056b3;
     }
   }
+}
+
+/* Google Maps Styles */
+
+.gm-style-mtc-bbw {
+  gap: 5px;
+  font-family: 'TASA Explorer' !important;
+}
+
+.gm-style-mtc-bbw .gm-style-mtc:first-of-type>button {
+  background-color: #444 !important;
+  color: white !important;
+  border-radius: 10px;
+  font-family: 'Sigmar' !important;
+}
+
+.gm-style-mtc-bbw .gm-style-mtc:last-of-type>button {
+  background-color: #333 !important;
+  color: white !important;
+  border-radius: 10px;
+  font-family: 'Sigmar' !important;
+
+}
+
+.gm-style .gm-style-mtc ul {
+  background-color: #333 !important;
+  margin-top: 5px !important;
+  border-radius: 10px !important;
+
+  li {
+    background-color: #333 !important;
+    border-radius: 10px;
+      font-family: 'TASA Explorer' !important;
+
+    span {
+      margin-right: 2px;
+      
+      span {
+        background-color: white !important;
+        border-radius: 5px !important;
+      }
+    }
+  }
+}
+
+.gm-style .gm-style-mtc label {
+    font-family: 'TASA Explorer' !important;
+    font-weight: bold !important;
+
+}
+
+.gm-fullscreen-control {
+  display: none !important;
+}
+
+.gm-control-active {
+  background-color: #333 !important;
+  color: white !important;
+  
+  img {
+    filter: invert(100%) !important;
+    border-radius: 50%;
+  }
+}
+
+.gm-svpc {
+  background-color: #555 !important;
+  border-radius: 10px !important;
+}
+
+div[draggable="false"] {
+  background: none !important;
+  box-shadow: none !important;
+
+  button:last-child {
+    margin-top: 5px !important;
+  }
+}
+
+.gm-style-cc {
+  display: none !important;
+}
+
+.gm-iv-profile-link {
+  display: flex;
+  flex-wrap: wrap;
+  text-wrap: wrap;
+  max-width: 150px;
+
+  font-size: 1rem !important;
+}
+
+.gm-iv-address-link {
+  display: none;
 }

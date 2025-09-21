@@ -6,7 +6,7 @@ import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTool
 
 function Sidebar({ activeItem, onSidebarClick }) {
     const location = useLocation();
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
 
     const toggleSidebar = () => {
         setIsOpen(!isOpen);

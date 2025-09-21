@@ -219,11 +219,11 @@ function Admin({ mapId }) {
                         ) : (
                             <button onClick={handleStopDrawing}>Stop Drawing</button>
                         )}
-                        <button onClick={() => setIsCreatingItem(false)} style={{ marginLeft: '10px', backgroundColor: 'red' }}>Clear Explore/Adventure Item</button>
+                        <button onClick={() => setIsCreatingItem(false)} style={{ margin: '0 5px', backgroundColor: 'red' }}>Clear Explore/Adventure Item</button>
                     </>
                 ) : (
                     <>
-                        <button onClick={() => handleCreateItem()} style={{ marginRight: '10px', backgroundColor: 'green' }}>Create Exploration/Adventure</button>
+                        <button onClick={() => handleCreateItem()} style={{ marginRight: '5px', backgroundColor: 'green' }}>Create Exploration/Adventure</button>
                     </>
                 )}
             </div>
