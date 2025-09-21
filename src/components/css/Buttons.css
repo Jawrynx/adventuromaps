@@ -10,23 +10,23 @@
 }
 
 .red {
-    background-color: #ff4c4c;
+    background-color: #ff4c4c !important;
     color: white;
     transition: 0.3s ease-in-out;
 
     &:hover {
         transition: 0.3s ease-in-out;
-        background-color: #680000;
+        background-color: #680000 !important;
     }
 }
 
 .blue {
-    background-color: #4a90e2;
+    background-color: #4a90e2 !important;
     transition: 0.3s ease-in-out;
 
     &:hover {
         transition: 0.3s ease-in-out;
-        background-color: #004888;
+        background-color: #004888 !important;
     }
 }
 

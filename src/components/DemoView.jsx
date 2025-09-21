@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import './css/DemoView.css';
 
 function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex }) {
     const totalWaypoints = waypoints.length;
-    
+
     useEffect(() => {
         if (totalWaypoints > 0) {
             onWaypointChange(currentWaypointIndex);
@@ -41,10 +42,18 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex }
             </div>
             <div className="waypoint-card">
                 <h3>{currentWaypoint.name}</h3>
-                <p>{currentWaypoint.description}</p>
-                {currentWaypoint.media_url && (
-                    <img src={currentWaypoint.media_url} alt={currentWaypoint.name} />
-                )}
+                <div className="waypoint-info">
+                    <div className="waypoint-media">
+                        {currentWaypoint.image_urls && (
+                            <>
+                                {currentWaypoint.image_urls.map((imageUrl) => {
+                                    <img key={imageUrl} src={imageUrl} alt={currentWaypoint.name} />
+                                })}
+                            </>
+                        )}
+                    </div>
+                    <p>{currentWaypoint.description}</p>
+                </div>
             </div>
             <div className="demo-controls">
                 <button onClick={handlePrevious} disabled={currentWaypointIndex === 0}>

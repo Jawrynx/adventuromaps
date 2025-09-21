@@ -45,7 +45,7 @@ function Admin({ mapId }) {
                         { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng }
                     ]
                 };
-                setRoutes(prevRoutes => [...prevRoutes, newRoute]);
+                setRoutes(prevRoutes => [...(prevRoutes || []), newRoute]);
             }
             setIsDrawing(false);
             setTempPath([]);

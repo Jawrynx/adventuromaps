@@ -1,25 +1,55 @@
 import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
 function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
     const [description, setDescription] = useState(waypointData.waypoint.description || '');
     const [instructions, setInstructions] = useState(waypointData.waypoint.instructions || '');
-    const [image, setImage] = useState(null);
+    const [images, setImages] = useState([]);
+    const [previewImageUrls, setPreviewImageUrls] = useState([]);
     const [narration, setNarration] = useState(null);
     const [keyframes, setKeyframes] = useState(null);
 
     useEffect(() => {
         setDescription(waypointData.waypoint.description || '');
         setInstructions(waypointData.waypoint.instructions || '');
-        setImage(null);
+        setImages([]);
         setNarration(null);
         setKeyframes(null);
+
+        if (waypointData.waypoint.image_urls && waypointData.waypoint.image_urls.length > 0) {
+            setPreviewImageUrls(waypointData.waypoint.image_urls);
+        } else {
+            setPreviewImageUrls([]);
+        }
     }, [waypointData]);
+
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        const newImages = [...images, ...files];
+        setImages(newImages);
+
+        const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+        setPreviewImageUrls(prevUrls => [...prevUrls, ...newPreviewUrls]);
+    };
+
+    const handleRemoveImage = (indexToRemove) => {
+        setPreviewImageUrls(prevUrls => {
+            const newUrls = prevUrls.filter((_, index) => index !== indexToRemove);
+            return newUrls;
+        });
+
+        setImages(prevFiles => {
+            const newFiles = prevFiles.filter((_, index) => index !== indexToRemove);
+            return newFiles;
+        });
+    };
 
     const handleSave = () => {
         const waypointDataToSave = {
             description,
             instructions,
-            image,
+            images,
             narration,
             keyframes
         };
@@ -55,13 +85,24 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
             )}
 
             <div className="editor-section">
-                <label htmlFor="image-upload">Upload Image (Optional):</label>
+                <label htmlFor="image-upload">Upload Images (Optional):</label>
                 <input
                     type="file"
                     id="image-upload"
                     accept="image/*"
-                    onChange={(e) => setImage(e.target.files[0])}
+                    multiple
+                    onChange={handleImageChange}
                 />
+                <div className="images-preview">
+                    {previewImageUrls.map((url, index) => (
+                        <div key={index} className="image">
+                            <button className='remove-image' onClick={() => handleRemoveImage(index)}>
+                                <FontAwesomeIcon icon={faTrash} />
+                            </button>
+                            <img src={url} alt={`Waypoint Preview ${index + 1}`} />
+                        </div>
+                    ))}
+                </div>
             </div>
 
             <div className="editor-section">
