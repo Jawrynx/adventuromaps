@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 import WaypointEditor from './WaypointEditor';
 import CreateItemForm from './CreateItemForm';
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { uploadFile } from '../../services/uploadService';
 import '../features/css/Admin.css';
@@ -88,30 +88,96 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
     const fetchDraftItems = async (itemType) => {
         setLoadingItems(true);
-        const q = query(collection(db, itemType), where("type", "==", itemType), where("status", "==", "draft"));
-        const querySnapshot = await getDocs(q);
-        const fetchedItems = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        setItemsToLoad(fetchedItems);
-        setLoadingItems(false);
+        try {
+            // Fetch main items
+            console.log('Fetching draft items of type:', itemType);
+            const q = query(collection(db, itemType), where("type", "==", itemType), where("status", "==", "draft"));
+            const querySnapshot = await getDocs(q);
+            
+            // Process each item
+            const fetchedItems = [];
+            for (const doc of querySnapshot.docs) {
+                try {
+                    const data = doc.data();
+                    console.log(`Processing item ${doc.id}:`, data);
+
+                    // Fetch routes
+                    const routesCollection = collection(db, itemType, doc.id, 'routes');
+                    const routesSnapshot = await getDocs(routesCollection);
+                    
+                    const routes = [];
+                    for (const routeDoc of routesSnapshot.docs) {
+                        try {
+                            const routeData = routeDoc.data();
+                            
+                            // Fetch waypoints
+                            const waypointsCollection = collection(db, itemType, doc.id, 'routes', routeDoc.id, 'waypoints');
+                            const waypointsSnapshot = await getDocs(waypointsCollection);
+                            const waypoints = waypointsSnapshot.docs.map(wp => ({
+                                id: wp.id,
+                                ...wp.data()
+                            }));
+
+                            routes.push({
+                                id: routeDoc.id,
+                                ...routeData,
+                                waypoints: waypoints || []
+                            });
+                        } catch (routeError) {
+                            console.error(`Error processing route ${routeDoc.id}:`, routeError);
+                        }
+                    }
+
+                    const itemWithRoutes = {
+                        id: doc.id,
+                        ...data,
+                        routes: routes || []
+                    };
+                    console.log('Processed item with routes:', itemWithRoutes);
+                    fetchedItems.push(itemWithRoutes);
+                } catch (itemError) {
+                    console.error(`Error processing item ${doc.id}:`, itemError);
+                }
+            }
+            
+            console.log('All fetched items:', fetchedItems);
+            setItemsToLoad(fetchedItems);
+        } catch (error) {
+            console.error('Error in fetchDraftItems:', error);
+        } finally {
+            setLoadingItems(false);
+        }
     };
 
     const handleLoadItems = (itemType) => {
         setItemsToLoad([]);
         onSetCreatingItem(true);
         setHasCreatedItemInfo(false);
+        setLoadingItems(true); // Set loading state before fetching
         fetchDraftItems(itemType);
     };
 
     const handleSelectItemToLoad = (item) => {
+        console.log('Loading item:', item);
+        console.log('Routes in loaded item:', item.routes);
+        
+        if (!item.routes || item.routes.length === 0) {
+            console.warn('No routes found in loaded item');
+        }
+        
+        // Make sure waypoints are properly structured in each route
+        const routesToSet = (item.routes || []).map(route => ({
+            ...route,
+            waypoints: route.waypoints || []
+        }));
+        
+        console.log('Structured routes being set:', routesToSet);
+        
         setItemId(item.id);
         setItemData(item);
-        setRoutes(item.routes || []);
+        setRoutes(routesToSet);
         setHasCreatedItemInfo(true);
         setItemsToLoad([]);
-        // Added to close the main load menu
         onSetCreatingItem(true);
     };
 
@@ -128,7 +194,13 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             alert("Please create or load an item first.");
             return;
         }
-        onSaveDraft(itemData, itemId);
+        // Make sure routes are included in the itemData
+        const updatedItemData = {
+            ...itemData,
+            routes: routes // Include the current routes in the save data
+        };
+        console.log('Saving draft with data:', updatedItemData);
+        onSaveDraft(updatedItemData, itemId);
     };
 
     const handlePublishButtonClick = () => {
@@ -151,6 +223,34 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         setEditingWaypoint(null);
     };
 
+    const LoadingSpinner = () => (
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px'
+        }}>
+            <div style={{
+                border: '4px solid #f3f3f3',
+                borderTop: '4px solid #3498db',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                animation: 'spin 1s linear infinite',
+            }}></div>
+            <style>
+                {`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}
+            </style>
+            <p style={{ marginTop: '10px' }}>Loading routes...</p>
+        </div>
+    );
+
     return (
         <div id='admin'>
             <button id='minimize-button' onClick={() => {
@@ -159,7 +259,9 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             <h2>Admin Tools</h2>
             {isCreatingItem ? (
                 <>
-                    {hasCreatedItemInfo ? (
+                    {loadingItems ? (
+                        <LoadingSpinner />
+                    ) : hasCreatedItemInfo ? (
                         <>
                             <h3 style={{ margin: '5px 0', backgroundColor: '#444', width: 'fit-content', alignSelf: 'center', padding: '10px', borderRadius: '10px' }}>
                                 - {itemData.type === 'exploration' ? 'Exploration' : 'Adventure'} -
@@ -270,28 +372,29 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                             )}
                         </>
                     ) : (
-                        itemsToLoad.length > 0 ? (
+                        loadingItems ? (
+                            <div className="loading-container">
+                                <div className="loading-spinner"></div>
+                                <p>Loading draft items...</p>
+                            </div>
+                        ) : itemsToLoad.length > 0 ? (
                             <div className="load-items-list">
                                 <h3>Select a Draft Item to Load:</h3>
-                                {loadingItems ? (
-                                    <p>Loading...</p>
-                                ) : (
-                                    itemsToLoad.map(item => (
-                                        <div key={item.id} className="load-item">
-                                            <span>{item.name}</span>
-                                            <button onClick={() => handleSelectItemToLoad(item)}>LOAD</button>
-                                        </div>
-                                    ))
-                                )}
+                                {itemsToLoad.map(item => (
+                                    <div key={item.id} className="load-item">
+                                        <span>{item.name}</span>
+                                        <button onClick={() => handleSelectItemToLoad(item)}>LOAD</button>
+                                    </div>
+                                ))}
                                 <button className='adm-button blue' onClick={handleCancelCreation}>Cancel</button>
                             </div>
-                        ) : (
+                        ) : !hasCreatedItemInfo ? (
                             <CreateItemForm
                                 onComplete={handleCreateItemComplete}
                                 onCancel={handleCancelCreation}
                                 saveItem={saveItemToFirestore}
                             />
-                        )
+                        ) : null
                     )}
                 </>
             ) : (

@@ -35,7 +35,8 @@ button {
     border-radius: 7px;
 }
 
-.explore-buttons button {
+.explore-buttons button,
+.adventure-buttons button {
     border: none;
     border-radius: 10px;
     font-size: 2rem;

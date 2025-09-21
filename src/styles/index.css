@@ -43,25 +43,30 @@ body {
     margin-bottom: 10px;
   }
 
-  .explore-buttons {
+  .explore-buttons,
+  .adventure-buttons {
     position: relative;
     margin-top: 5px;
     width: 100%;
     text-align: right;
   }
 
-  .explore-more-container {
+  .explore-more-container,
+  .adventure-more-container {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0s ease-in-out;
+    transition: max-height 0.5s ease-in-out;
   }
 
-  .explore-more-container.expanded {
-    max-height: 5000px;
-    transition: max-height 3s ease-in-out;
+  .explore-more-container.expanded,
+  .adventure-more-container.expanded {
+    max-height: 280px;
+    overflow-y: scroll;
+    transition: max-height 0.5s ease-in-out;
   }
 
-  .explore-more {
+  .explore-more,
+  .adventure-more {
     margin-top: 10px;
     background-color: #292929;
     padding: 10px;
