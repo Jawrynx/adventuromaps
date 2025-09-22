@@ -13,6 +13,10 @@ body {
 #adventure,
 #explore {
   padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 
   h1 {
     margin-bottom: 10px;
@@ -20,6 +24,9 @@ body {
 
   ul {
     list-style-type: none;
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 10px;
   }
 
   .adventure-item,
@@ -30,9 +37,15 @@ body {
     margin-bottom: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
+    position: relative;
+    width: 100%;
 
     &:hover {
       background-color: #444;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
     }
   }
 
@@ -55,14 +68,21 @@ body {
   .adventure-more-container {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.5s ease-in-out;
+    transition: max-height 0.5s cubic-bezier(0, 1, 0, 1);
   }
 
   .explore-more-container.expanded,
   .adventure-more-container.expanded {
-    max-height: 280px;
-    overflow-y: scroll;
-    transition: max-height 0.5s ease-in-out;
+    max-height: 1000px;
+    overflow-y: auto;
+    transition: max-height 1s ease-in-out;
+  }
+
+  .explore-item,
+  .adventure-item {
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .explore-more,
@@ -84,6 +104,7 @@ body {
       display: flex;
       flex-direction: column;
       align-items: center;
+      text-align: center;
     }
 
 
@@ -92,6 +113,10 @@ body {
       list-style: circle;
     }
   }
+}
+
+.route-info > p {
+  text-align: center;
 }
 
 .drawing-tool {
@@ -211,5 +236,28 @@ div[draggable="false"] {
 }
 
 #admin > div {
-  overflow-y: scroll;
+  overflow-y: auto;
+}
+
+/* Custom scrollbar styling */
+#explore ul::-webkit-scrollbar,
+#adventure ul::-webkit-scrollbar {
+  width: 8px;
+}
+
+#explore ul::-webkit-scrollbar-track,
+#adventure ul::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 4px;
+}
+
+#explore ul::-webkit-scrollbar-thumb,
+#adventure ul::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+#explore ul::-webkit-scrollbar-thumb:hover,
+#adventure ul::-webkit-scrollbar-thumb:hover {
+  background: #666;
 }

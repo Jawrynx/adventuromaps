@@ -103,8 +103,27 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
             </div>
             <div className="form-group">
                 <label>
-                    Image URL:
-                    <input type="text" name="image_url" value={formData.image_url} onChange={handleChange} />
+                    Image:
+                    {formData.image_url ? (
+                        <div className="image-preview">
+                            <img src={formData.image_url} alt="Current" style={{ maxWidth: '200px', marginBottom: '10px' }} />
+                        </div>
+                    ) : null}
+                    <input 
+                        type="file" 
+                        name="image" 
+                        accept="image/*"
+                        onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                                setFormData(prevData => ({
+                                    ...prevData,
+                                    imageFile: file, // Store the file object
+                                    image_url: '' // Clear the existing URL
+                                }));
+                            }
+                        }}
+                    />
                 </label>
             </div>
             <div className="form-group">

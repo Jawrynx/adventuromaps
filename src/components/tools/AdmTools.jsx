@@ -20,8 +20,20 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
     const saveItemToFirestore = async (data) => {
         const collectionName = data.type === 'exploration' ? 'exploration' : 'adventure';
         try {
+            // Handle image upload if there's a file
+            let imageUrl = data.image_url;
+            if (data.imageFile) {
+                const timestamp = Date.now();
+                const imagePath = `images/${collectionName}/${timestamp}_${data.imageFile.name}`;
+                imageUrl = await uploadFile(data.imageFile, imagePath);
+            }
+
+            // Remove the imageFile from data before saving to Firestore
+            const { imageFile, ...dataToSave } = data;
+
             const docRef = await addDoc(collection(db, collectionName), {
-                ...data,
+                ...dataToSave,
+                image_url: imageUrl,
                 createdAt: new Date(),
                 status: 'draft'
             });
@@ -198,9 +210,21 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
     const handleEditComplete = async (updatedData, shouldLoad = false) => {
         try {
+            // Handle image upload if there's a file
+            let imageUrl = updatedData.image_url;
+            if (updatedData.imageFile) {
+                const timestamp = Date.now();
+                const imagePath = `images/${updatedData.type}/${timestamp}_${updatedData.imageFile.name}`;
+                imageUrl = await uploadFile(updatedData.imageFile, imagePath);
+            }
+
+            // Remove the imageFile from data before saving to Firestore
+            const { imageFile, ...dataToSave } = updatedData;
+
             const docRef = doc(db, updatedData.type, editingItem.id);
             await updateDoc(docRef, {
-                ...updatedData,
+                ...dataToSave,
+                image_url: imageUrl,
                 updatedAt: new Date()
             });
             

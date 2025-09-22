@@ -36,9 +36,6 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex }
         <div className="demo-container">
             <div className="demo-header">
                 <h2>Waypoint Demo</h2>
-                <button onClick={onClose} className="close-button">
-                    <FontAwesomeIcon icon={faTimes} />
-                </button>
             </div>
             <div className="waypoint-card">
                 <h3>{currentWaypoint.name}</h3>
