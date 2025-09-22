@@ -368,4 +368,8 @@
         position: absolute;
         bottom: 10px;
     }
+
+    button:first-child {
+        margin-right: 10px;
+    }
 }

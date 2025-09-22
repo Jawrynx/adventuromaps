@@ -15,6 +15,7 @@ function Admin({ mapId }) {
     const [tempPath, setTempPath] = useState([]);
     const [mousePosition, setMousePosition] = useState(null);
     const [isCreatingItem, setIsCreatingItem] = useState(false);
+    const [hasCreatedItemInfo, setHasCreatedItemInfo] = useState(false);
 
     const drawingStateRef = useRef({ isDrawing, tempPath });
 
@@ -39,11 +40,11 @@ function Admin({ mapId }) {
             if (isDrawing && tempPath.length > 1) {
                 const newRoute = {
                     id: Date.now(),
-                    order: routes.length + 1,  // Add order field based on current number of routes
+                    order: routes.length + 1,
                     coordinates: tempPath,
                     waypoints: [
-                        { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },  // Add order field for start point
-                        { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 }  // Add order field for end point
+                        { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },
+                        { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 }
                     ]
                 };
                 setRoutes(prevRoutes => [...(prevRoutes || []), newRoute]);
@@ -95,11 +96,11 @@ function Admin({ mapId }) {
         if (isDrawing && tempPath.length > 1) {
             const newRoute = {
                 id: Date.now(),
-                order: routes.length + 1,  // Add order field based on current number of routes
+                order: routes.length + 1, 
                 coordinates: tempPath,
                 waypoints: [
-                    { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },  // Add order field for start point
-                    { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 }  // Add order field for end point
+                    { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },
+                    { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 } 
                 ]
             };
             setRoutes(prevRoutes => [...prevRoutes, newRoute]);
@@ -116,48 +117,43 @@ function Admin({ mapId }) {
         }
 
         const newRoutesWithIds = await Promise.all(
-            routes.map(async (route, index) => {  // Added index parameter
+            routes.map(async (route, index) => {
                 let routeDocRef;
                 let newWaypointsWithIds = [];
-                const routeOrder = index + 1;  // Calculate order based on array position
+                const routeOrder = index + 1;
 
                 if (route.firestoreId) {
-                    // Route exists, update it
                     routeDocRef = doc(db, itemData.type, itemId, 'routes', route.firestoreId);
                     await updateDoc(routeDocRef, {
                         coordinates: route.coordinates,
-                        order: routeOrder  // Update order even for existing routes
+                        order: routeOrder
                     });
                     console.log("Route document successfully updated with ID:", route.firestoreId);
                 } else {
-                    // Route is new, add it
                     const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
                     routeDocRef = await addDoc(routesCollectionRef, {
                         coordinates: route.coordinates,
-                        order: routeOrder  // Use the calculated order based on array position
+                        order: routeOrder 
                     });
                     console.log("New route document successfully written with ID:", routeDocRef.id);
                 }
 
-                // Handle waypoints for this route
                 const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeDocRef.id, 'waypoints');
                 
                 await Promise.all(
                     route.waypoints.map(async (waypoint) => {
                         if (waypoint.firestoreId) {
-                            // Waypoint exists, update it
                             const waypointDocRef = doc(waypointsCollectionRef, waypoint.firestoreId);
                             await updateDoc(waypointDocRef, { 
                                 ...waypoint,
-                                order: waypoint.order // Ensure order is included in updates
+                                order: waypoint.order
                             });
                             console.log("Waypoint updated:", waypoint.firestoreId);
                             newWaypointsWithIds.push(waypoint);
                         } else {
-                            // Waypoint is new, add it
                             const docRef = await addDoc(waypointsCollectionRef, { 
                                 ...waypoint,
-                                order: waypoint.order // Ensure order is included for new waypoints
+                                order: waypoint.order
                             });
                             console.log("New waypoint added with ID:", docRef.id);
                             newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
@@ -168,7 +164,7 @@ function Admin({ mapId }) {
                 return { 
                     ...route, 
                     firestoreId: routeDocRef.id, 
-                    order: routeOrder,  // Update the order in our local state
+                    order: routeOrder,
                     waypoints: newWaypointsWithIds 
                 };
             })
@@ -206,6 +202,7 @@ function Admin({ mapId }) {
 
     const handleCreateItem = () => {
         setIsCreatingItem(true);
+        setHasCreatedItemInfo(false);
     };
 
     return (
@@ -228,20 +225,15 @@ function Admin({ mapId }) {
                 <MapRoutes routes={routes} />
             </Map>
             <div className="drawing-tool">
-                {isCreatingItem ? (
-                    <>
-                        {!isDrawing ? (
-                            <button onClick={() => setIsDrawing(true)}>Start Drawing</button>
-                        ) : (
-                            <button onClick={handleStopDrawing}>Stop Drawing</button>
-                        )}
-                        <button onClick={() => setIsCreatingItem(false)} style={{ margin: '0 5px', backgroundColor: 'red' }}>Clear Explore/Adventure Item</button>
-                    </>
-                ) : (
-                    <>
-                        <button onClick={() => handleCreateItem()} style={{ marginRight: '5px', backgroundColor: 'green' }}>Create Exploration/Adventure</button>
-                    </>
-                )}
+                {!isCreatingItem ? (
+                    <button onClick={() => handleCreateItem()} style={{ marginRight: '5px', backgroundColor: 'green' }}>Create Exploration/Adventure</button>
+                ) : hasCreatedItemInfo ? (
+                    !isDrawing ? (
+                        <button onClick={() => setIsDrawing(true)}>Start Drawing</button>
+                    ) : (
+                        <button onClick={handleStopDrawing}>Stop Drawing</button>
+                    )
+                ) : null}
             </div>
             <Modal>
                 <AdmTools
@@ -250,10 +242,20 @@ function Admin({ mapId }) {
                     onRemoveRoute={handleRemoveRoute}
                     onUpdateWaypointName={handleUpdateWaypointName}
                     isCreatingItem={isCreatingItem}
-                    onSetCreatingItem={setIsCreatingItem}
+                    onSetCreatingItem={(value) => {
+                        setIsCreatingItem(value);
+                        if (!value) {
+                            setHasCreatedItemInfo(false);
+                        }
+                    }}
                     onClearRoutes={handleClearRoutes}
                     onSaveDraft={handleSaveDraft}
                     onPublish={handlePublish}
+                    hasCreatedItemInfo={hasCreatedItemInfo}
+                    onHasCreatedItemInfoChange={(value) => {
+                        console.log('Setting hasCreatedItemInfo to:', value);
+                        setHasCreatedItemInfo(value);
+                    }}
                 />
             </Modal>
         </div>

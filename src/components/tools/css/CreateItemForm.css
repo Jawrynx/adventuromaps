@@ -9,7 +9,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-    overflow-y: scroll;
+    overflow-y: auto;
 
     .form-group {
         width: 100%;

@@ -13,8 +13,12 @@ const initialFormState = {
     difficulty: ''
 };
 
-function CreateItemForm({ onComplete, onCancel, saveItem }) {
-    const [formData, setFormData] = useState(initialFormState);
+function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing }) {
+    const [formData, setFormData] = useState(initialData ? {
+        ...initialData,
+        categories: Array.isArray(initialData.categories) ? initialData.categories.join(', ') : initialData.categories || '',
+        keyLocations: Array.isArray(initialData.keyLocations) ? initialData.keyLocations.join(', ') : initialData.keyLocations || ''
+    } : initialFormState);
     const [isSaving, setIsSaving] = useState(false);
 
     const handleChange = (e) => {
@@ -33,7 +37,7 @@ function CreateItemForm({ onComplete, onCancel, saveItem }) {
         }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e, shouldLoad = false) => {
         e.preventDefault();
 
         if (isSaving) {
@@ -49,19 +53,27 @@ function CreateItemForm({ onComplete, onCancel, saveItem }) {
         };
 
         try {
-            const docId = await saveItem(dataToSubmit);
-            onComplete({ ...dataToSubmit, id: docId });
+            if (isEditing) {
+                onComplete(dataToSubmit, shouldLoad);
+            } else {
+                const docId = await saveItem(dataToSubmit);
+                onComplete({ ...dataToSubmit, id: docId }, shouldLoad);
+            }
         } catch (error) {
-            console.error("Failed to save item:", error);
-            alert("An error occurred while saving the item. Please try again.");
+            console.error(isEditing ? "Failed to update item:" : "Failed to save item:", error);
+            alert("An error occurred. Please try again.");
         } finally {
             setIsSaving(false);
         }
     };
 
+    const handleSubmitAndLoad = (e) => {
+        handleSubmit(e, true);
+    };
+
     return (
         <form onSubmit={handleSubmit} className="create-item-form">
-            <h2>Create a New Item</h2>
+            <h2>{isEditing ? 'Edit Item' : 'Create a New Item'}</h2>
             <div className="form-group">
                 <label>
                     Item Type:
@@ -128,8 +140,13 @@ function CreateItemForm({ onComplete, onCancel, saveItem }) {
             )}
             <div className="form-actions">
                 <button type="submit" className="adm-button green" disabled={isSaving}>
-                    {isSaving ? 'Saving...' : 'Start Creating Route'}
+                    {isSaving ? 'Saving...' : isEditing ? 'Update' : 'Submit'}
                 </button>
+                {isEditing && (
+                    <button type="button" onClick={handleSubmitAndLoad} className="adm-button blue" disabled={isSaving}>
+                        Submit & Load
+                    </button>
+                )}
                 <button type="button" onClick={onCancel} className="adm-button red" disabled={isSaving}>
                     Cancel
                 </button>

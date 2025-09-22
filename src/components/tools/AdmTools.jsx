@@ -3,19 +3,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 import WaypointEditor from './WaypointEditor';
 import CreateItemForm from './CreateItemForm';
-import { collection, addDoc, query, where, getDocs, orderBy } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { uploadFile } from '../../services/uploadService';
 import '../features/css/Admin.css';
 
-function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish }) {
+function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish, hasCreatedItemInfo, onHasCreatedItemInfoChange }) {
     const [editingWaypoint, setEditingWaypoint] = useState(null);
-    const [hasCreatedItemInfo, setHasCreatedItemInfo] = useState(false);
     const [itemData, setItemData] = useState(null);
     const [itemId, setItemId] = useState(null);
     const [loadingItems, setLoadingItems] = useState(false);
     const [itemsToLoad, setItemsToLoad] = useState([]);
     const [showLoadDropdown, setShowLoadDropdown] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
 
     const saveItemToFirestore = async (data) => {
         const collectionName = data.type === 'exploration' ? 'exploration' : 'adventure';
@@ -36,7 +36,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
     const handleCreateItemComplete = ({ id, ...data }) => {
         setItemId(id);
         setItemData(data);
-        setHasCreatedItemInfo(true);
+        onHasCreatedItemInfoChange(true);
         console.log("Initial item data created with ID:", id);
     };
 
@@ -89,19 +89,16 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
     const fetchDraftItems = async (itemType) => {
         setLoadingItems(true);
         try {
-            // Fetch main items
             console.log('Fetching draft items of type:', itemType);
             const q = query(collection(db, itemType), where("type", "==", itemType), where("status", "==", "draft"));
             const querySnapshot = await getDocs(q);
             
-            // Process each item
             const fetchedItems = [];
             for (const doc of querySnapshot.docs) {
                 try {
                     const data = doc.data();
                     console.log(`Processing item ${doc.id}:`, data);
 
-                    // Fetch routes
                     const routesCollection = collection(db, itemType, doc.id, 'routes');
                     const routesSnapshot = await getDocs(routesCollection);
                     
@@ -110,7 +107,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                         try {
                             const routeData = routeDoc.data();
                             
-                            // Fetch waypoints
                             const waypointsCollection = collection(db, itemType, doc.id, 'routes', routeDoc.id, 'waypoints');
                             const waypointsSnapshot = await getDocs(waypointsCollection);
                             const waypoints = waypointsSnapshot.docs.map(wp => ({
@@ -152,8 +148,8 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
     const handleLoadItems = (itemType) => {
         setItemsToLoad([]);
         onSetCreatingItem(true);
-        setHasCreatedItemInfo(false);
-        setLoadingItems(true); // Set loading state before fetching
+        onHasCreatedItemInfoChange(false);
+        setLoadingItems(true);
         fetchDraftItems(itemType);
     };
 
@@ -165,7 +161,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             console.warn('No routes found in loaded item');
         }
         
-        // Make sure waypoints are properly structured in each route
         const routesToSet = (item.routes || []).map(route => ({
             ...route,
             waypoints: route.waypoints || []
@@ -176,17 +171,65 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         setItemId(item.id);
         setItemData(item);
         setRoutes(routesToSet);
-        setHasCreatedItemInfo(true);
         setItemsToLoad([]);
         onSetCreatingItem(true);
+        onHasCreatedItemInfoChange(true);
     };
 
     const handleCancelCreation = () => {
         onSetCreatingItem(false);
-        setHasCreatedItemInfo(false);
+        onHasCreatedItemInfoChange(false);
         setItemData(null);
         setItemId(null);
         setItemsToLoad([]);
+        setEditingItem(null);
+    };
+
+    const handleEditItem = (item) => {
+        console.log('Editing item:', item);
+        setEditingItem(item);
+        setItemsToLoad([]);
+        setItemId(item.id);
+        setItemData(item);
+        setRoutes(item.routes || []);
+        onSetCreatingItem(true);
+        setHasCreatedItemInfo(true);
+    };
+
+    const handleEditComplete = async (updatedData, shouldLoad = false) => {
+        try {
+            const docRef = doc(db, updatedData.type, editingItem.id);
+            await updateDoc(docRef, {
+                ...updatedData,
+                updatedAt: new Date()
+            });
+            
+            setItemsToLoad(prevItems => 
+                prevItems.map(item => 
+                    item.id === editingItem.id ? { ...item, ...updatedData } : item
+                )
+            );
+            
+            setEditingItem(null);
+            alert("Item updated successfully!");
+
+            if (shouldLoad) {
+                const updatedItem = {
+                    ...editingItem,
+                    ...updatedData,
+                    routes: editingItem.routes || []
+                };
+                setItemId(updatedItem.id);
+                setItemData(updatedItem);
+                setRoutes(updatedItem.routes);
+                onHasCreatedItemInfoChange(true);
+            } else {
+                handleLoadItems(updatedData.type);
+            }
+        } catch (error) {
+            console.error("Error updating item:", error);
+            alert("Error updating item. Please try again.");
+        }
     };
 
     const handleSaveButtonClick = () => {
@@ -194,10 +237,9 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             alert("Please create or load an item first.");
             return;
         }
-        // Make sure routes are included in the itemData
         const updatedItemData = {
             ...itemData,
-            routes: routes // Include the current routes in the save data
+            routes: routes
         };
         console.log('Saving draft with data:', updatedItemData);
         onSaveDraft(updatedItemData, itemId);
@@ -383,10 +425,24 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                 {itemsToLoad.map(item => (
                                     <div key={item.id} className="load-item">
                                         <span>{item.name}</span>
-                                        <button onClick={() => handleSelectItemToLoad(item)}>LOAD</button>
+                                        <div className="item-buttons">
+                                            <button onClick={() => handleSelectItemToLoad(item)} className='blue'>LOAD</button>
+                                            <button onClick={() => handleEditItem(item)} className="edit-button">EDIT</button>
+                                        </div>
                                     </div>
                                 ))}
                                 <button className='adm-button blue' onClick={handleCancelCreation}>Cancel</button>
+                            </div>
+                        ) : editingItem ? (
+                            <div>
+                                <h3>Editing {editingItem.name}</h3>
+                                <CreateItemForm
+                                    onComplete={handleEditComplete}
+                                    onCancel={handleCancelCreation}
+                                    initialData={editingItem}
+                                    isEditing={true}
+                                    saveItem={null}
+                                />
                             </div>
                         ) : !hasCreatedItemInfo ? (
                             <CreateItemForm
