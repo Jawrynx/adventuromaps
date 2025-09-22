@@ -145,7 +145,7 @@ function Adventure({ onSelectRoute, onStartDemo }) {
                   {item.difficulty && (
                     <>
                       <h3>Difficulty Level</h3>
-                      <p>{item.difficulty}</p>
+                      <p>{item.difficulty === 'easy' ? 'Easy' : item.difficulty === 'medium' ? 'Medium' : 'Hard'}</p>
                     </>
                   )}
                 </div>
