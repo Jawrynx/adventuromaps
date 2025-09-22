@@ -39,10 +39,11 @@ function Admin({ mapId }) {
             if (isDrawing && tempPath.length > 1) {
                 const newRoute = {
                     id: Date.now(),
+                    order: routes.length + 1,  // Add order field based on current number of routes
                     coordinates: tempPath,
                     waypoints: [
-                        { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng },
-                        { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng }
+                        { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },  // Add order field for start point
+                        { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 }  // Add order field for end point
                     ]
                 };
                 setRoutes(prevRoutes => [...(prevRoutes || []), newRoute]);
@@ -94,10 +95,11 @@ function Admin({ mapId }) {
         if (isDrawing && tempPath.length > 1) {
             const newRoute = {
                 id: Date.now(),
+                order: routes.length + 1,  // Add order field based on current number of routes
                 coordinates: tempPath,
                 waypoints: [
-                    { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng },
-                    { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng }
+                    { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },  // Add order field for start point
+                    { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 }  // Add order field for end point
                 ]
             };
             setRoutes(prevRoutes => [...prevRoutes, newRoute]);
@@ -114,15 +116,17 @@ function Admin({ mapId }) {
         }
 
         const newRoutesWithIds = await Promise.all(
-            routes.map(async (route) => {
+            routes.map(async (route, index) => {  // Added index parameter
                 let routeDocRef;
                 let newWaypointsWithIds = [];
+                const routeOrder = index + 1;  // Calculate order based on array position
 
                 if (route.firestoreId) {
                     // Route exists, update it
                     routeDocRef = doc(db, itemData.type, itemId, 'routes', route.firestoreId);
                     await updateDoc(routeDocRef, {
                         coordinates: route.coordinates,
+                        order: routeOrder  // Update order even for existing routes
                     });
                     console.log("Route document successfully updated with ID:", route.firestoreId);
                 } else {
@@ -130,6 +134,7 @@ function Admin({ mapId }) {
                     const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
                     routeDocRef = await addDoc(routesCollectionRef, {
                         coordinates: route.coordinates,
+                        order: routeOrder  // Use the calculated order based on array position
                     });
                     console.log("New route document successfully written with ID:", routeDocRef.id);
                 }
@@ -142,19 +147,30 @@ function Admin({ mapId }) {
                         if (waypoint.firestoreId) {
                             // Waypoint exists, update it
                             const waypointDocRef = doc(waypointsCollectionRef, waypoint.firestoreId);
-                            await updateDoc(waypointDocRef, { ...waypoint });
+                            await updateDoc(waypointDocRef, { 
+                                ...waypoint,
+                                order: waypoint.order // Ensure order is included in updates
+                            });
                             console.log("Waypoint updated:", waypoint.firestoreId);
                             newWaypointsWithIds.push(waypoint);
                         } else {
                             // Waypoint is new, add it
-                            const docRef = await addDoc(waypointsCollectionRef, { ...waypoint });
+                            const docRef = await addDoc(waypointsCollectionRef, { 
+                                ...waypoint,
+                                order: waypoint.order // Ensure order is included for new waypoints
+                            });
                             console.log("New waypoint added with ID:", docRef.id);
                             newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
                         }
                     })
                 );
 
-                return { ...route, firestoreId: routeDocRef.id, waypoints: newWaypointsWithIds };
+                return { 
+                    ...route, 
+                    firestoreId: routeDocRef.id, 
+                    order: routeOrder,  // Update the order in our local state
+                    waypoints: newWaypointsWithIds 
+                };
             })
         );
         

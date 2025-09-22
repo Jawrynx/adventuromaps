@@ -4,65 +4,98 @@ import { faPlay, faChevronDown, faEllipsisV, faChevronUp } from '@fortawesome/fr
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../../services/firebase";
 
-function Adventure({ onSelectRoute }) {
+function Adventure({ onSelectRoute, onStartDemo }) {
   const [showMore, setShowMore] = useState({});
   const [adventures, setAdventures] = useState([]);
   const [loading, setLoading] = useState(true); 
 
-  useEffect(() => {
-    const getAdventures = async () => {
-      try {
-        const adventuresCollection = collection(db, "adventure");
-        const q = query(adventuresCollection, where("status", "==", "published"));
-        const querySnapshot = await getDocs(q);
-        
-        const fetchedAdventures = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        
-        setAdventures(fetchedAdventures);
-        console.log("Fetched published adventures:", fetchedAdventures);
-      } catch (error) {
-        console.error("Error fetching adventures:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    getAdventures();
-  }, []);
+  
+  useEffect(() => {
+    const getAdventures = async () => {
+      try {
+        const adventuresCollection = collection(db, "adventure");
+        const q = query(adventuresCollection, where("status", "==", "published"));
+        const querySnapshot = await getDocs(q);
 
-  const toggleShowMore = (itemId) => {
+        const fetchedAdventures = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setAdventures(fetchedAdventures);
+      } catch (error) {
+        console.error("Error fetching adventures:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getAdventures();
+  }, []);  const toggleShowMore = (itemId) => {
     setShowMore(prevShowMore => ({
       ...prevShowMore,
       [itemId]: !prevShowMore[itemId]
     }));
   };
 
-  const handleItemClick = async (adventureData) => {
-    console.log("Selected adventure:", adventureData);
-    
-    try {
-      const routesCollectionRef = collection(db, "adventure", adventureData.id, "routes");
-      
-      const q = query(routesCollectionRef, orderBy("order"));
-      const routesSnapshot = await getDocs(q);
-      
-      const fetchedRoutes = routesSnapshot.docs.map(doc => doc.data().coordinates);
-      
-      const flattenedCoordinates = fetchedRoutes.flat();
-      
-      onSelectRoute(flattenedCoordinates);
-      
-      console.log("Route coordinates sent to parent:", flattenedCoordinates);
-    } catch (error) {
-      console.error("Error fetching route subcollection:", error);
-      alert("Error loading route data. Please check the console for details.");
-    }
-  };
+  const handleDemoClick = async (adventureData) => {
+    try {
+      const routesCollectionRef = collection(db, "adventure", adventureData.id, "routes");
+      const routesQuery = query(routesCollectionRef, orderBy("order"));
+      const routesSnapshot = await getDocs(routesQuery);
 
-  if (loading) {
+      const structuredRoutes = [];
+
+      for (const routeDoc of routesSnapshot.docs) {
+        const routeId = routeDoc.id;
+        const routeData = routeDoc.data();
+
+        const waypointsCollectionRef = collection(db, "adventure", adventureData.id, "routes", routeId, "waypoints");
+        const waypointsQuery = query(waypointsCollectionRef, orderBy("order"));
+        const waypointsSnapshot = await getDocs(waypointsQuery);
+
+        const routeWaypoints = waypointsSnapshot.docs.map(waypointDoc => ({
+          id: waypointDoc.id,
+          ...waypointDoc.data()
+        }));
+
+        const routePath = Array.isArray(routeData.coordinates) ? routeData.coordinates : [];
+        
+        structuredRoutes.push({
+          id: routeId,
+          waypoints: routeWaypoints,
+          path: routePath
+        });
+      }
+
+      const hasWaypoints = structuredRoutes.some(route => route.waypoints.length > 0);
+      const hasPath = structuredRoutes.some(route => route.path.length > 0);
+
+      if (hasWaypoints && hasPath) {
+        onStartDemo(structuredRoutes);
+      } else {
+        console.warn("No waypoints or path found for this adventure.");
+        alert("No waypoints or path found to start a demo.");
+      }
+    } catch (error) {
+      console.error("Error fetching demo data:", error);
+      alert("Error loading demo data. Please check the console for details.");
+    }
+  };
+
+  const handleRouteClick = async (adventureData) => {
+    try {
+      const routesCollectionRef = collection(db, "adventure", adventureData.id, "routes");
+      const q = query(routesCollectionRef, orderBy("order"));
+      const routesSnapshot = await getDocs(q);
+
+      const fetchedRoutes = routesSnapshot.docs.map(doc => doc.data().coordinates);
+      const flattenedCoordinates = fetchedRoutes.flat();
+      onSelectRoute(flattenedCoordinates);
+    } catch (error) {
+      console.error("Error fetching route subcollection:", error);
+    }
+  };  if (loading) {
     return (
       <div id='adventure'>
         <p>Loading adventures...</p>
@@ -84,7 +117,7 @@ function Adventure({ onSelectRoute }) {
       <h1>Adventure</h1>
       <ul>
         {adventures.map(item => (
-          <li key={item.id} className='adventure-item' onClick={() => handleItemClick(item)}>
+                    <li key={item.id} className='adventure-item' onClick={() => handleRouteClick(item)}>
             <img src={item.image_url} alt={item.name} width='100%' height='100px' className='adventure-image' />
             <h2>{item.name}</h2>
             <p>{item.description}</p>
@@ -132,7 +165,7 @@ function Adventure({ onSelectRoute }) {
               <button className='more-button' onClick={(e) => { e.stopPropagation(); toggleShowMore(item.id); }}>
                 <FontAwesomeIcon icon={showMore[item.id] ? faChevronUp : faChevronDown} />
               </button>
-              <button className='demo-button' onClick={(e) => { e.stopPropagation(); handleItemClick(item); }}>
+              <button className='demo-button' onClick={(e) => { e.stopPropagation(); handleDemoClick(item); }}>
                 <FontAwesomeIcon icon={faPlay} />
               </button>
               <button className='options-button' onClick={(e) => { e.stopPropagation(); }}><FontAwesomeIcon icon={faEllipsisV} /></button>
