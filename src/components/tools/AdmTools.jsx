@@ -199,13 +199,13 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
     const handleEditItem = (item) => {
         console.log('Editing item:', item);
-        setEditingItem(item);
-        setItemsToLoad([]);
         setItemId(item.id);
         setItemData(item);
         setRoutes(item.routes || []);
+        setEditingItem(item);
+        setItemsToLoad([]);
         onSetCreatingItem(true);
-        setHasCreatedItemInfo(true);
+        onHasCreatedItemInfoChange(false);
     };
 
     const handleEditComplete = async (updatedData, shouldLoad = false) => {
@@ -438,7 +438,18 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                             )}
                         </>
                     ) : (
-                        loadingItems ? (
+                        editingItem ? (
+                            <div>
+                                <h3>Editing {editingItem.name}</h3>
+                                <CreateItemForm
+                                    onComplete={handleEditComplete}
+                                    onCancel={handleCancelCreation}
+                                    initialData={editingItem}
+                                    isEditing={true}
+                                    saveItem={null}
+                                />
+                            </div>
+                        ) : loadingItems ? (
                             <div className="loading-container">
                                 <div className="loading-spinner"></div>
                                 <p>Loading draft items...</p>
@@ -457,7 +468,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                 ))}
                                 <button className='adm-button blue' onClick={handleCancelCreation}>Cancel</button>
                             </div>
-                        ) : editingItem ? (
+                        ) : !hasCreatedItemInfo ? (
                             <div>
                                 <h3>Editing {editingItem.name}</h3>
                                 <CreateItemForm
