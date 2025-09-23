@@ -5,10 +5,8 @@ import MainMap from '../../components/map/MainMap';
 import Modal from '../../components/ui/Modal';
 import Explore from '../../components/features/Explore';
 import Adventure from '../../components/features/Adventure';
-import Admin from '../../components/features/Admin';
+import Admin from '../../components/admin/Admin';
 import DemoView from '../../components/features/DemoView';
-import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
-import { db } from "../../services/firebase";
 
 const MainContent = () => {
     const navigate = useNavigate();

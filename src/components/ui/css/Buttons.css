@@ -103,5 +103,6 @@ button {
 
 .adm-button {
     font-weight: bold;
-    height: 20px;
+    height: 25px;
+    padding: 0 5px;
 }

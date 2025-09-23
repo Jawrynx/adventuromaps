@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Map, useMap } from '@vis.gl/react-google-maps';
 import Modal from '../ui/Modal';
-import AdmTools from '../tools/AdmTools';
+import AdmTools from './AdmTools';
 import MapRoutes from '../map/MapRoutes';
 import { Polyline } from '../map/Polyline';
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";

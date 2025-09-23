@@ -6,7 +6,7 @@ import CreateItemForm from './CreateItemForm';
 import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { uploadFile } from '../../services/uploadService';
-import '../features/css/Admin.css';
+import './css/Admin.css';
 
 function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish, hasCreatedItemInfo, onHasCreatedItemInfoChange }) {
     const [editingWaypoint, setEditingWaypoint] = useState(null);
@@ -104,7 +104,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             console.log('Fetching draft items of type:', itemType);
             const q = query(collection(db, itemType), where("type", "==", itemType), where("status", "==", "draft"));
             const querySnapshot = await getDocs(q);
-            
+
             const fetchedItems = [];
             for (const doc of querySnapshot.docs) {
                 try {
@@ -113,12 +113,12 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
                     const routesCollection = collection(db, itemType, doc.id, 'routes');
                     const routesSnapshot = await getDocs(routesCollection);
-                    
+
                     const routes = [];
                     for (const routeDoc of routesSnapshot.docs) {
                         try {
                             const routeData = routeDoc.data();
-                            
+
                             const waypointsCollection = collection(db, itemType, doc.id, 'routes', routeDoc.id, 'waypoints');
                             const waypointsSnapshot = await getDocs(waypointsCollection);
                             const waypoints = waypointsSnapshot.docs.map(wp => ({
@@ -147,7 +147,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                     console.error(`Error processing item ${doc.id}:`, itemError);
                 }
             }
-            
+
             console.log('All fetched items:', fetchedItems);
             setItemsToLoad(fetchedItems);
         } catch (error) {
@@ -168,18 +168,18 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
     const handleSelectItemToLoad = (item) => {
         console.log('Loading item:', item);
         console.log('Routes in loaded item:', item.routes);
-        
+
         if (!item.routes || item.routes.length === 0) {
             console.warn('No routes found in loaded item');
         }
-        
+
         const routesToSet = (item.routes || []).map(route => ({
             ...route,
             waypoints: route.waypoints || []
         }));
-        
+
         console.log('Structured routes being set:', routesToSet);
-        
+
         setItemId(item.id);
         setItemData(item);
         setRoutes(routesToSet);
@@ -227,13 +227,13 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                 image_url: imageUrl,
                 updatedAt: new Date()
             });
-            
-            setItemsToLoad(prevItems => 
-                prevItems.map(item => 
+
+            setItemsToLoad(prevItems =>
+                prevItems.map(item =>
                     item.id === editingItem.id ? { ...item, ...updatedData } : item
                 )
             );
-            
+
             setEditingItem(null);
             alert("Item updated successfully!");
 
@@ -422,8 +422,8 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                     </div>
                                     <div className="tools-container">
                                         <button className="adm-button green" onClick={handleSaveButtonClick}>Save Draft</button>
-                                        <button className="adm-button red" onClick={onClearRoutes}>Clear Route</button>
                                         <button className="adm-button green" onClick={handlePublishButtonClick}>Publish Route</button>
+                                        <button className="adm-button red" onClick={onClearRoutes}>Clear Route</button>
                                         <div className="load-button-container" style={{ position: 'relative' }}>
                                             <button className="adm-button blue" onClick={() => setShowLoadDropdown(!showLoadDropdown)}>Load Route</button>
                                             {showLoadDropdown && (
