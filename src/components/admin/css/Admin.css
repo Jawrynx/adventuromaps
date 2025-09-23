@@ -72,11 +72,18 @@
                 display: flex;
                 justify-content: space-evenly;
                 margin-top: 10px;
+                scale: 0;
+                transition: scale 0.3s ease-in-out;
 
                 button {
                     width: 48%;
                     padding: 5px;
                 }
+            }
+
+            .load-dropdown.show-dropdown {
+                scale: 1;
+                transition: scale 0.3s ease-in-out;
             }
         }
     }
@@ -332,6 +339,20 @@
         justify-content: space-evenly;
         width: 100%;
         height: 100px;
+    }
+}
+
+.loading-spinner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    scale: 1.5;
+    
+    p {
+        font-family: 'Sigmar', sans-serif !important;
+        text-transform: uppercase;
     }
 }
 

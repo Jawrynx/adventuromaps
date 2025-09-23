@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
+import LoadingSpinner from '../ui/LoadingSpinner';
+
 import WaypointEditor from './WaypointEditor';
 import CreateItemForm from './CreateItemForm';
+
 import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { uploadFile } from '../../services/uploadService';
+
 import './css/Admin.css';
 
 function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish, hasCreatedItemInfo, onHasCreatedItemInfoChange }) {
@@ -16,6 +20,8 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
     const [itemsToLoad, setItemsToLoad] = useState([]);
     const [showLoadDropdown, setShowLoadDropdown] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+
+    const dropdownRef = useRef(null);
 
     const saveItemToFirestore = async (data) => {
         const collectionName = data.type === 'exploration' ? 'exploration' : 'adventure';
@@ -289,34 +295,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         setEditingWaypoint(null);
     };
 
-    const LoadingSpinner = () => (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-        }}>
-            <div style={{
-                border: '4px solid #f3f3f3',
-                borderTop: '4px solid #3498db',
-                borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                animation: 'spin 1s linear infinite',
-            }}></div>
-            <style>
-                {`
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                `}
-            </style>
-            <p style={{ marginTop: '10px' }}>Loading...</p>
-        </div>
-    );
-
     return (
         <div id='admin'>
             <button id='minimize-button' onClick={() => {
@@ -326,7 +304,9 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             {isCreatingItem ? (
                 <>
                     {loadingItems ? (
-                        <LoadingSpinner />
+                        <div className='loading-spinner'>
+                            <LoadingSpinner />
+                        </div>
                     ) : hasCreatedItemInfo ? (
                         <>
                             <h3 style={{ margin: '5px 0', backgroundColor: '#444', width: 'fit-content', alignSelf: 'center', padding: '10px', borderRadius: '10px' }}>
@@ -425,13 +405,18 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                         <button className="adm-button green" onClick={handlePublishButtonClick}>Publish Route</button>
                                         <button className="adm-button red" onClick={onClearRoutes}>Clear Route</button>
                                         <div className="load-button-container" style={{ position: 'relative' }}>
-                                            <button className="adm-button blue" onClick={() => setShowLoadDropdown(!showLoadDropdown)}>Load Route</button>
-                                            {showLoadDropdown && (
-                                                <div className="load-dropdown">
+                                            <button className="adm-button blue" onClick={() => {
+                                                setShowLoadDropdown(!showLoadDropdown)
+
+                                                if (dropdownRef.current) {
+                                                    dropdownRef.current.classList.toggle('show-dropdown');
+                                                }
+                                            }
+                                            }>Load Route</button>
+                                                <div ref={dropdownRef} className="load-dropdown">
                                                     <button onClick={() => { handleLoadItems('exploration'); setShowLoadDropdown(false); }} className='blue'>Load Exploration</button>
                                                     <button onClick={() => { handleLoadItems('adventure'); setShowLoadDropdown(false); }} className='blue'>Load Adventure</button>
                                                 </div>
-                                            )}
                                         </div>
                                     </div>
                                 </>
