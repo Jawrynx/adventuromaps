@@ -35,6 +35,7 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
                 defaultZoom={zoomLevel}
                 defaultCenter={{ lat: 30, lng: 0 }}
                 mapTypeId={'terrain'}
+                mapId={mapId}
             >
                 <MapContent 
                     activeRoute={activeRoute} 

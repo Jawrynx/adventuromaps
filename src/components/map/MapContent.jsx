@@ -20,9 +20,11 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
 
         dataLayer.loadGeoJson(parksGeoJsonUrl, { idPropertyName: 'id' }, () => {
             dataLayer.setStyle({
-                fillColor: '#024900ff',
-                fillOpacity: 0.4,
-                strokeWeight: 0,
+                fillColor: '#165a01',
+                fillOpacity: 0.3,
+                strokeColor: '#000000',
+                strokeOpacity: 1,
+                strokeWeight: 0.2,
             });
         });
 
