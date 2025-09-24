@@ -45,7 +45,8 @@ You'll need to setup your own Firebase project and create a firestore database a
    `cd adventuromaps`
 3. Install dependencies:
    `npm install`
-4. Create a ```.env```, Add your FirebaseConfig to a ```.env``` file in the format ```VITE_FIREBASE_<VARIABLE_NAME>```
+4. (a) Create a ```.env```, Add your FirebaseConfig to a ```.env``` file in the format ```VITE_FIREBASE_<VARIABLE_NAME>```
+4. (b) You'll also need to attach a Google Maps JavaScript API, attach its API Key and mapId to APIProvider in App.jsx. Within MainContent.jsx look for a mapProps useMemo and attach the mapId here too. This will be passed on to the relevant <Map> component and allow loading of AdvancedMarkers etc.
 
 5. Test saving an Exploration/Adventure Item to your database!
 
