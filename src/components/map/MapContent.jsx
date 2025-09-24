@@ -1,24 +1,53 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps';
+import React, { useState, useEffect, useMemo } from 'react';
+import { AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Polyline } from './Polyline';
 
 function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint, zoomLevel }) {
     const map = useMap();
+    const mapsLib = useMapsLibrary('maps');
 
     const [path, setPath] = useState(null);
 
+
+    // Loads and Styles National Parks GeoJSON
+    useEffect(() => {
+        if (!map || !mapsLib) {
+            return;
+        }
+
+        const parksGeoJsonUrl = '/geodata/features.json';
+        const dataLayer = map.data;
+
+        dataLayer.loadGeoJson(parksGeoJsonUrl, { idPropertyName: 'id' }, () => {
+            dataLayer.setStyle({
+                fillColor: '#024900ff',
+                fillOpacity: 0.4,
+                strokeWeight: 0,
+            });
+        });
+
+        return () => {
+            if (dataLayer) {
+                dataLayer.forEach(feature => dataLayer.remove(feature));
+            }
+        };
+    }, [map, mapsLib]);
+
+
+    // Calculate visible waypoints based on active waypoint
     const visibleWaypoints = useMemo(() => {
         if (!activeWaypoint || !waypoints || waypoints.length === 0) return [];
-        
+
         const activeWaypointIndex = waypoints.findIndex(wp => {
             const coords = wp.coordinates || { lat: wp.lat, lng: wp.lng };
             return coords.lat === activeWaypoint?.lat && coords.lng === activeWaypoint?.lng;
         });
 
         if (activeWaypointIndex === -1) return [];
-        
+
         return waypoints.slice(activeWaypointIndex + 1);
     }, [waypoints, activeWaypoint]);
+
 
     useEffect(() => {
         if (!map) return;
@@ -35,12 +64,12 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
                     const coords = wp.coordinates || { lat: wp.lat, lng: wp.lng };
                     bounds.extend(coords);
                 });
-                
+
                 if (visibleWaypoints.length > 0) {
                     map.fitBounds(bounds, { top: 100, right: 500, bottom: 100, left: 100 });
                 }
             }
-        } 
+        }
         else if (activeRoute && Array.isArray(activeRoute) && activeRoute.length > 0) {
             setPath(activeRoute);
             const bounds = new window.google.maps.LatLngBounds();
