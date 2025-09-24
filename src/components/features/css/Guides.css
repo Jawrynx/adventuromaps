@@ -1,4 +1,28 @@
 #guides {
     background-color: #333;
     height: 100%;
+    display: flex;
+}
+
+.guides-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.select-category {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+}
+
+.select-category h2 {
+    margin-bottom: 15px;
+}
+
+.select-category p {
+    color: #ccc;
 }

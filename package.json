@@ -40,6 +40,7 @@
     "firebase": "^12.2.1",
     "i": "^0.3.7",
     "js-marker-clusterer": "github:googlemaps/markerclusterer",
+    "prop-types": "^15.8.1",
     "react-router-dom": "^7.8.2"
   }
 }

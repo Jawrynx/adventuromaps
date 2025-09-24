@@ -1,57 +1,35 @@
 import React from 'react'
-
+import PropTypes from 'prop-types'
 import './css/GuidesBar.css'
 
-function GuidesBar() {
+function GuidesBar({ onCategorySelect }) {
+  const categories = [
+    'Getting Started',
+    'Using the Map & Routes',
+    'Offline Maps & Sharing',
+    'Personalizing Your Experience',
+    'Trip Planning & Preparation',
+    'Emergency & First Aid',
+    'Navigation & Wayfinding',
+    'Environmental Safety & Etiquette',
+    'Activity-Specific Guides'
+  ];
+
   return (
     <div id='guidesbar'>
         <div className="categories">
             <h2>Guides & Safety</h2>
-            <div className="category">
-                <h4>
-                    Getting Started
-                </h4>
-            </div>
-            <div className="category">
-                <h4>
-                    Using the Map & Routes
-                </h4>
-            </div>
-            <div className="category">
-                <h4>
-                    Offline Maps & Sharing
-                </h4>
-            </div>
-            <div className="category">
-                <h4>
-                    Personalizing Your Experience
-                </h4>
-            </div>
-            <div className="category">
-                <h4>
-                    Trip Planning & Preparation
-                </h4>
-            </div>
-            <div className="category">
-                <h4>
-                    Emergency & First Aid
-                </h4>
-            </div>
-            <div className="category">
-                <h4>
-                    Navigation & Wayfinding
-                </h4>
-            </div>
-            <div className="category">
-                <h4>
-                    Environmental Safety & Etiquette
-                </h4>
-            </div>
-            <div className="category">
-                <h4>
-                    Activity-Specific Guides
-                </h4>
-            </div>
+            {categories.map((category) => (
+                <div 
+                    key={category} 
+                    className="category"
+                    onClick={() => onCategorySelect(category)}
+                    role="button"
+                    tabIndex={0}
+                >
+                    <h4>{category}</h4>
+                </div>
+            ))}
         </div>
         <div className="admin">
             <button className='adm-button green'>
@@ -62,7 +40,11 @@ function GuidesBar() {
             </button>
         </div>
     </div>
-  )
+  );
 }
+
+GuidesBar.propTypes = {
+  onCategorySelect: PropTypes.func.isRequired
+};
 
 export default GuidesBar;
