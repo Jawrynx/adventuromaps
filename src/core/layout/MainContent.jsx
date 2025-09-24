@@ -9,6 +9,8 @@ import Adventure from '../../components/features/Adventure';
 import Admin from '../../components/admin/Admin';
 import DemoView from '../../components/features/DemoView';
 import Guides from '../../components/features/Guides';
+import Settings from '../../components/features/Settings';
+import Help from '../../components/features/Help';
 
 const MainContent = () => {
     const navigate = useNavigate();
@@ -148,8 +150,8 @@ const MainContent = () => {
                 <Routes>
                     <Route path="/" element={<MainMap {...mapProps} />} />
                     <Route path="/guides" element={<Guides />} />
-                    <Route path="/settings" element={<div>Settings Page</div>} />
-                    <Route path="/help" element={<div>Help Page</div>} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/help" element={<Help />} />
                     <Route path="/admin" element={<Admin mapId="8a2ac04064bf3833742b72c4" />} />
                 </Routes>
                 {activeItem === 'explore' && (

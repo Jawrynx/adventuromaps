@@ -11,6 +11,7 @@
   overflow-y: none;
   width: 400px;
   height: 700px;
+  z-index: 99;
 }
 
 .modal-close {

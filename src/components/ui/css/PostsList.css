@@ -1,12 +1,55 @@
+.posts-container {
+    position: relative;
+    perspective: 1000px;
+    height: 100%;
+    overflow: hidden;
+    width: 100%;
+}
+
 .posts-list {
     padding: 20px;
     color: white;
+    opacity: 1;
+    transform-origin: center;
+    transition: all 0.1s ease-out;
+    height: 100%;
+    overflow-y: auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.posts-container {
-    button {
-        margin: 10px;
-    }
+.posts-list.exit {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+    pointer-events: none;
+}
+
+.post-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    transform: translateY(50px) rotateX(10deg);
+    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.post-wrapper.enter {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+}
+
+.post-wrapper .back-button {
+    position: sticky;
+    top: 20px;
+    left: 20px;
+    z-index: 2;
+    margin: 20px;
 }
 
 .post-item {
@@ -15,7 +58,7 @@
     padding: 15px;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.1s ease;
 }
 
 .post-item:hover {

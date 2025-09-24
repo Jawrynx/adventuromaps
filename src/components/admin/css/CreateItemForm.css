@@ -27,13 +27,13 @@
             width: 70%;
             font-weight: bold;
             padding: 5px;
-            color: black;
+            color: white;
             text-align: center;
             border: none;
         }
 
         option {
-            color: black;
+            color: white;
             font-weight: bold;
         }
 
@@ -44,7 +44,7 @@
         textarea {
             min-height: 100px;
             width: 70%;
-            color: black;
+            color: white;
             padding: 5px;
             border: none;
         }

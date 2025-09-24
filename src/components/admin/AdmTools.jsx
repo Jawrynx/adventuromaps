@@ -425,7 +425,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                     ) : (
                         editingItem ? (
                             <div>
-                                <h3>Editing {editingItem.name}</h3>
                                 <CreateItemForm
                                     onComplete={handleEditComplete}
                                     onCancel={handleCancelCreation}
@@ -455,7 +454,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                             </div>
                         ) : !hasCreatedItemInfo ? (
                             <div>
-                                <h3>Editing {editingItem.name}</h3>
                                 <CreateItemForm
                                     onComplete={handleEditComplete}
                                     onCancel={handleCancelCreation}

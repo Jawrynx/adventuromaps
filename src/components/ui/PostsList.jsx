@@ -40,6 +40,25 @@ function PostsList({ category }) {
         }
     }, [category]);
 
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const [showPostContent, setShowPostContent] = useState(false);
+
+    const handlePostSelect = (post) => {
+        setIsTransitioning(true);
+        setSelectedPost(post);
+        setTimeout(() => {
+            setShowPostContent(true);
+        }, 100);
+    };
+
+    const handleBack = () => {
+        setShowPostContent(false);
+        setTimeout(() => {
+            setSelectedPost(null);
+            setIsTransitioning(false);
+        }, 100);
+    };
+
     if (loading) {
         return <div className="posts-loading">Loading posts...</div>;
     }
@@ -53,38 +72,38 @@ function PostsList({ category }) {
         );
     }
 
-    if (selectedPost) {
-        return (
-            <div className="posts-container">
-                <button 
-                    className="back-button adm-button red"
-                    onClick={() => setSelectedPost(null)}
-                >
-                    Back to List
-                </button>
-                <Post post={selectedPost} />
-            </div>
-        );
-    }
-
     return (
-        <div className="posts-list">
-            {posts.map(post => (
-                <div 
-                    key={post.id} 
-                    className="post-item"
-                    onClick={() => setSelectedPost(post)}
-                    role="button"
-                    tabIndex={0}
-                >
-                    <h3>{post.title}</h3>
-                    <div className="post-meta">
-                        <span>By {post.author}</span>
-                        <span>•</span>
-                        <span>{new Date(post.created_at.toDate()).toLocaleDateString()}</span>
+        <div className="posts-container">
+            <div className={`posts-list ${(selectedPost && isTransitioning) ? 'exit' : ''}`}>
+                {!selectedPost && posts.map(post => (
+                    <div 
+                        key={post.id} 
+                        className="post-item"
+                        onClick={() => handlePostSelect(post)}
+                        role="button"
+                        tabIndex={0}
+                    >
+                        <h3>{post.title}</h3>
+                        <div className="post-meta">
+                            <span>By {post.author}</span>
+                            <span>•</span>
+                            <span>{new Date(post.created_at.toDate()).toLocaleDateString()}</span>
+                        </div>
                     </div>
+                ))}
+            </div>
+            
+            {selectedPost && (
+                <div className={`post-wrapper ${showPostContent ? 'enter' : ''}`}>
+                    <button 
+                        className="back-button adm-button red"
+                        onClick={handleBack}
+                    >
+                        Back to List
+                    </button>
+                    <Post post={selectedPost} />
                 </div>
-            ))}
+            )}
         </div>
     );
 }
