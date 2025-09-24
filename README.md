@@ -6,7 +6,7 @@ A stationary companion app for adventurers and explorers to plan their next jour
 
 Adventuro Maps is designed to create a more immersive and interactive travel experience. This desktop application is the planning and preparation hub, providing a wealth of information to help you prepare for your next adventure.
 
-## Features ✨
+## Core Features ✨
 
 ### Planning & Exploration
 - **Browse Adventures:** Explore a comprehensive menu of adventures, quests, and explorations from the comfort of your desktop.
@@ -17,6 +17,17 @@ Adventuro Maps is designed to create a more immersive and interactive travel exp
 ### Safety & Guides
 - **Mandatory Safety Guides:** Access crucial safety information to ensure a secure and enjoyable journey.
 - **Guides for All Levels:** Read up on tips and tricks for both new and experienced adventurers and explorers.
+
+## Future Enhancements ✨
+
+Several future enhancements will be implemented with the Desktop version, including:
+
+- **Custom Routes**: Users will be able to create their own Exploration/Adventure Routes and Publish them.
+- **User Forums**: Users will be able to chat and discuss their own tips, adventure stories and experiences.
+- **Group Events**: Users will be able to arrange organised walks, adventures and events so users who don't want to do an adventure/exploration alone but lacks the people to go with have that opportunity to.
+- **Integrated OS Maps Topo (*UK Only*)**: For premium subscribers of OS Maps, users will be able to link their account and be able to use Ordnance Survey Maps Premium Topo to see highly accurate maps that pin point every single detail of the area and terrain they are crossing.
+
+The future is exciting!
 
 ## Getting Started
 
