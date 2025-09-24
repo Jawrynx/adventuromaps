@@ -1,0 +1,58 @@
+.guide-selector {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    color: white;
+}
+
+.guide-selector h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.guides-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.guide-item {
+    background-color: #444;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.guide-item:hover {
+    background-color: #555;
+}
+
+.guide-item h3 {
+    margin: 0 0 8px 0;
+}
+
+.guide-meta {
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+.guide-meta span {
+    margin-right: 8px;
+}
+
+.guide-selector-actions {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.guide-selector-loading,
+.guide-selector-empty {
+    text-align: center;
+    padding: 20px;
+    color: white;
+}
+
+.guide-selector-empty button {
+    margin-top: 10px;
+}

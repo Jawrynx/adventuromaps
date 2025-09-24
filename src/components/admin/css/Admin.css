@@ -306,7 +306,11 @@
     height: 100%;
 
     h1 {
-        font-size: 4rem;
+        font-size: 5rem;
+        line-height: 70px;
+        text-align: center;
+        font-family: 'Sigmar', sans-serif;
+        font-weight: 100;
         margin-bottom: 20px;
         text-transform: uppercase;
     }

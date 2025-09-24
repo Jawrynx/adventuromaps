@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 
+import './css/PostsList.css';
+
+
 function PostsList({ category }) {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);

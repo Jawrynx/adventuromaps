@@ -1,0 +1,59 @@
+.guide-form {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    color: white;
+}
+
+.guide-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: #444;
+    color: white;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 200px;
+    font-family: monospace;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #666;
+    background-color: #505050;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    position: relative;
+    top: -7px;
+}
+
+.form-actions button {
+    min-width: 100px;
+}
