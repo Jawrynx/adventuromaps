@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-
+import Post from './Post';
 import './css/PostsList.css';
-
 
 function PostsList({ category }) {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedPost, setSelectedPost] = useState(null);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -53,10 +53,30 @@ function PostsList({ category }) {
         );
     }
 
+    if (selectedPost) {
+        return (
+            <div className="posts-container">
+                <button 
+                    className="back-button adm-button red"
+                    onClick={() => setSelectedPost(null)}
+                >
+                    Back to List
+                </button>
+                <Post post={selectedPost} />
+            </div>
+        );
+    }
+
     return (
         <div className="posts-list">
             {posts.map(post => (
-                <div key={post.id} className="post-item">
+                <div 
+                    key={post.id} 
+                    className="post-item"
+                    onClick={() => setSelectedPost(post)}
+                    role="button"
+                    tabIndex={0}
+                >
                     <h3>{post.title}</h3>
                     <div className="post-meta">
                         <span>By {post.author}</span>

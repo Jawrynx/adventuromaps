@@ -3,6 +3,12 @@
     color: white;
 }
 
+.posts-container {
+    button {
+        margin: 10px;
+    }
+}
+
 .post-item {
     background-color: #444;
     margin-bottom: 15px;
