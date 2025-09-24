@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
+
 import Sidebar from '../../components/ui/Sidebar';
 import MainMap from '../../components/map/MainMap';
 import Modal from '../../components/ui/Modal';
@@ -7,6 +8,7 @@ import Explore from '../../components/features/Explore';
 import Adventure from '../../components/features/Adventure';
 import Admin from '../../components/admin/Admin';
 import DemoView from '../../components/features/DemoView';
+import Guides from '../../components/features/Guides';
 
 const MainContent = () => {
     const navigate = useNavigate();
@@ -145,7 +147,7 @@ const MainContent = () => {
             <div style={{ width: 'calc(100% - 70px)', position: 'relative', left: '70px'  }}>
                 <Routes>
                     <Route path="/" element={<MainMap {...mapProps} />} />
-                    <Route path="/guides" element={<div>Guides/Safety Page</div>} />
+                    <Route path="/guides" element={<Guides />} />
                     <Route path="/settings" element={<div>Settings Page</div>} />
                     <Route path="/help" element={<div>Help Page</div>} />
                     <Route path="/admin" element={<Admin mapId="8a2ac04064bf3833742b72c4" />} />
