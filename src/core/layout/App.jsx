@@ -11,6 +11,7 @@ const App = () => {
             apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
             mapId="8a2ac04064bf3833742b72c4"
             libraries={['geometry', 'places', 'marker']}
+            version='beta'
         >
             <BrowserRouter>
                 <MainContent />

@@ -15,10 +15,32 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
             return;
         }
 
-        const parksGeoJsonUrl = '/geodata/features.json';
+        const walesNationalParksGeoJsonUrl = '/geodata/wales-national-parks.json';
+        const englandNationalParksGeoJsonUrl = '/geodata/england-national-parks.geojson';
+        const scotlandNationalParksGeoJsonUrl = '/geodata/scotland-national-parks.json';
         const dataLayer = map.data;
 
-        dataLayer.loadGeoJson(parksGeoJsonUrl, { idPropertyName: 'id' }, () => {
+        dataLayer.loadGeoJson(walesNationalParksGeoJsonUrl, { idPropertyName: 'id' }, () => {
+            dataLayer.setStyle({
+                fillColor: '#165a01',
+                fillOpacity: 0.3,
+                strokeColor: '#000000',
+                strokeOpacity: 1,
+                strokeWeight: 0.2,
+            });
+        });
+
+        dataLayer.loadGeoJson(englandNationalParksGeoJsonUrl, { idPropertyName: 'id' }, () => {
+            dataLayer.setStyle({
+                fillColor: '#165a01',
+                fillOpacity: 0.3,
+                strokeColor: '#000000',
+                strokeOpacity: 1,
+                strokeWeight: 0.2,
+            });
+        });
+
+        dataLayer.loadGeoJson(scotlandNationalParksGeoJsonUrl, { idPropertyName: 'id' }, () => {
             dataLayer.setStyle({
                 fillColor: '#165a01',
                 fillOpacity: 0.3,
