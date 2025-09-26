@@ -26,7 +26,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
     const saveItemToFirestore = async (data) => {
         const collectionName = data.type === 'exploration' ? 'exploration' : 'adventure';
         try {
-            // Handle image upload if there's a file
             let imageUrl = data.image_url;
             if (data.imageFile) {
                 const timestamp = Date.now();
@@ -34,7 +33,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                 imageUrl = await uploadFile(data.imageFile, imagePath);
             }
 
-            // Remove the imageFile from data before saving to Firestore
             const { imageFile, ...dataToSave } = data;
 
             const docRef = await addDoc(collection(db, collectionName), {
@@ -63,15 +61,21 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         let imageUrls = [];
 
         try {
+            if (updatedWaypointData.existingImageUrls && updatedWaypointData.existingImageUrls.length > 0) {
+                imageUrls = [...updatedWaypointData.existingImageUrls];
+            }
+
             if (updatedWaypointData.images && updatedWaypointData.images.length > 0) {
                 for (const file of updatedWaypointData.images) {
                     const imagePath = `images/${routeId}_waypoint_${waypointIndex}_image_${Date.now()}_${file.name}`;
                     const imageUrl = await uploadFile(file, imagePath);
                     imageUrls.push(imageUrl);
                 }
-                updatedWaypointData.image_urls = imageUrls;
-                delete updatedWaypointData.images;
             }
+
+            updatedWaypointData.image_urls = imageUrls;
+            delete updatedWaypointData.images;
+            delete updatedWaypointData.existingImageUrls;
 
             if (updatedWaypointData.narration && updatedWaypointData.narration instanceof File) {
                 const narrationPath = `audio/${routeId}_waypoint_${waypointIndex}_narration.mp3`;
@@ -87,7 +91,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
         } catch (error) {
             console.error("Failed to upload files:", error);
-            return;
+            throw error;
         }
 
         const updatedRoutes = routes.map(route => {
