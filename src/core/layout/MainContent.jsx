@@ -26,6 +26,8 @@ const MainContent = () => {
     const [structuredRouteData, setStructuredRouteData] = useState([]);
     const [currentDemoPath, setCurrentDemoPath] = useState([]);
     const [smoothPanFunction, setSmoothPanFunction] = useState(null);
+    const [isInitialDemoSetup, setIsInitialDemoSetup] = useState(false);
+    const [demoStartTime, setDemoStartTime] = useState(null);
     
     const handleSidebarClick = useCallback((item, path) => {
         if (isDemoMode || isZooming) {
@@ -62,6 +64,8 @@ const MainContent = () => {
     const handleStartDemo = useCallback((structuredData) => {
         setActiveRoute(null);
         setIsZooming(true);
+        setIsInitialDemoSetup(true);
+        setDemoStartTime(Date.now());
         setStructuredRouteData(structuredData);
         setCurrentWaypointIndex(0);
         setCurrentDemoPath([]);
@@ -77,7 +81,9 @@ const MainContent = () => {
             setCurrentZoom(17);
             
             setTimeout(() => {
+                console.log('🔄 Clearing initial demo setup flag - cinematic pan now enabled');
                 setIsZooming(false);
+                setIsInitialDemoSetup(false);
                 setIsDemoMode(true);
             }, 4000);
 
@@ -121,10 +127,13 @@ const MainContent = () => {
             setActiveWaypoint(coords);
             setCurrentWaypointIndex(index);
             
-            // Use smooth panning to the waypoint if available
-            if (smoothPanFunction) {
-                console.log('MainContent calling smoothPan with waypoint:', currentWaypoint.name, 'coords:', coords.lat, coords.lng, 'currentZoom:', currentZoom);
-                smoothPanFunction(coords.lat, coords.lng, currentZoom, true); // Use current zoom level as target for cinematic panning
+            const timeSinceDemoStart = demoStartTime ? Date.now() - demoStartTime : Infinity;
+            
+            if (smoothPanFunction && timeSinceDemoStart > 5000) {
+                console.log('✨ MainContent calling CINEMATIC PAN with waypoint:', currentWaypoint.name, 'coords:', coords.lat, coords.lng);
+                smoothPanFunction(coords.lat, coords.lng, currentZoom, true);
+            } else if (timeSinceDemoStart <= 5000) {
+                console.log('🚫 Skipping cinematic pan during initial demo period');
             }
             
             if (currentRoute.path && currentRoute.path.length > 0) {
@@ -134,7 +143,7 @@ const MainContent = () => {
             console.error('Invalid waypoint index:', index);
             setActiveWaypoint(null);
         }
-    }, [structuredRouteData]);
+    }, [structuredRouteData, isInitialDemoSetup]);
 
     const memoizedWaypoints = useMemo(() => {
         let allWps = [];
