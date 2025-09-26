@@ -2,12 +2,67 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Polyline } from './Polyline';
 
-function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint, zoomLevel }) {
+function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint, zoomLevel, isZooming }) {
     const map = useMap();
     const mapsLib = useMapsLibrary('maps');
 
     const [path, setPath] = useState(null);
     const [showBoundaries, setShowBoundaries] = useState(true);
+
+    let panPath = [];
+    let panQueue = [];
+    const STEPS = 20;
+    const smoothPanTo = (map, newLat, newLng, targetZoom) => {
+        if (panPath.length > 0) {
+            panQueue.push([newLat, newLng, targetZoom]);
+        } else {
+            panPath.push("LOCK");
+            const curLat = map.getCenter().lat();
+            const curLng = map.getCenter().lng();
+            const dLat = (newLat - curLat) / STEPS;
+            const dLng = (newLng - curLng) / STEPS;
+
+            for (let i = 0; i < STEPS; i++) {
+                panPath.push([curLat + dLat * i, curLng + dLng * i]);
+            }
+            panPath.push([newLat, newLng]);
+            panPath.shift();
+            setTimeout(() => doPan(map, targetZoom), 20);
+        }
+    };
+
+
+    const doPan = (map, targetZoom) => {
+        const next = panPath.shift();
+        if (next != null) {
+            map.panTo(new window.google.maps.LatLng(next[0], next[1]));
+            setTimeout(() => doPan(map, targetZoom), 20);
+        } else {
+            const queued = panQueue.shift();
+            if (queued != null) {
+                smoothPanTo(map, queued[0], queued[1], queued[2]);
+            } else {
+                const currentMapZoom = map.getZoom();
+                if (currentMapZoom < targetZoom) {
+                    smoothZoom(map, targetZoom, currentMapZoom);
+                }
+            }
+        }
+    };
+
+    const smoothZoom = (map, maxZoom, currentZoom) => {
+        if (currentZoom >= maxZoom) {
+            return;
+        } else {
+            const zoomListener = window.google.maps.event.addListener(map, 'zoom_changed', function(event) {
+                window.google.maps.event.removeListener(zoomListener);
+                smoothZoom(map, maxZoom, currentZoom + 1);
+            });
+            setTimeout(() => {
+                map.setZoom(currentZoom + 1);
+            }, 280);
+        }
+    };
 
 
     // Loads and Styles National Parks GeoJSON
@@ -81,18 +136,25 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         if (activePathForDemo && activePathForDemo.length > 0) {
             setPath(activePathForDemo);
             if (activeWaypoint) {
-                map.setCenter(activeWaypoint);
-                map.setZoom(zoomLevel);
-
-                const bounds = new window.google.maps.LatLngBounds();
-                bounds.extend(activeWaypoint);
-                visibleWaypoints.forEach(wp => {
-                    const coords = wp.coordinates || { lat: wp.lat, lng: wp.lng };
-                    bounds.extend(coords);
-                });
-
-                if (visibleWaypoints.length > 0) {
-                    map.fitBounds(bounds, { top: 100, right: 500, bottom: 100, left: 100 });
+                if (isZooming) {
+                    const currentZoom = map.getZoom();
+                    if (currentZoom > 8) {
+                        map.setZoom(Math.min(currentZoom, 8));
+                        setTimeout(() => {
+                            smoothPanTo(map, activeWaypoint.lat, activeWaypoint.lng, zoomLevel);
+                        }, 300);
+                    } else {
+                        smoothPanTo(map, activeWaypoint.lat, activeWaypoint.lng, zoomLevel);
+                    }
+                    
+                    return;
+                    
+                } else {
+                    map.panTo(activeWaypoint);
+                    
+                    if (Math.abs(map.getZoom() - zoomLevel) > 0.1) {
+                        map.setZoom(zoomLevel);
+                    }
                 }
             }
         }
@@ -107,7 +169,7 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
             map.setZoom(zoomLevel);
             map.setCenter({ lat: 30, lng: 0 });
         }
-    }, [activeRoute, activePathForDemo, activeWaypoint, zoomLevel, map, visibleWaypoints]);
+    }, [activeRoute, activePathForDemo, activeWaypoint, zoomLevel, map, visibleWaypoints, isZooming]);
 
     return (
         <>

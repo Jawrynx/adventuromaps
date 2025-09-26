@@ -18,6 +18,7 @@ const MainContent = () => {
     const [activeRoute, setActiveRoute] = useState(null);
     const [zoomLevel, setZoomLevel] = useState(3);
     const [isDemoMode, setIsDemoMode] = useState(false);
+    const [isZooming, setIsZooming] = useState(false);
     const [activeWaypoint, setActiveWaypoint] = useState(null);
     const [currentZoom, setCurrentZoom] = useState(3);
     const [currentWaypointIndex, setCurrentWaypointIndex] = useState(0);
@@ -26,9 +27,10 @@ const MainContent = () => {
     const [currentDemoPath, setCurrentDemoPath] = useState([]);
     
     const handleSidebarClick = useCallback((item, path) => {
-        if (isDemoMode) {
+        if (isDemoMode || isZooming) {
             setStructuredRouteData([]);
             setIsDemoMode(false);
+            setIsZooming(false);
             setActiveWaypoint(null);
             setCurrentDemoPath([]);
             setCurrentZoom(3);
@@ -58,8 +60,7 @@ const MainContent = () => {
 
     const handleStartDemo = useCallback((structuredData) => {
         setActiveRoute(null);
-        setIsDemoMode(true);
-        setCurrentZoom(17);
+        setIsZooming(true);
         setStructuredRouteData(structuredData);
         setCurrentWaypointIndex(0);
         setCurrentDemoPath([]);
@@ -69,17 +70,25 @@ const MainContent = () => {
             const coords = firstWaypoint.coordinates || { lat: firstWaypoint.lat, lng: firstWaypoint.lng };
             setActiveWaypoint(coords);
             if (structuredData[0].path && structuredData[0].path.length > 0) {
-                console.log('First route path:', structuredData[0].path);
                 setCurrentDemoPath(structuredData[0].path);
             }
+
+            setCurrentZoom(17);
+            
+            setTimeout(() => {
+                setIsZooming(false);
+                setIsDemoMode(true);
+            }, 4000);
+
         } else {
             console.warn("No waypoints found to start a demo.");
         }
-    }, []);
+    }, [currentZoom]);
 
     const handleEndDemo = useCallback(() => {
         setStructuredRouteData([]);
         setIsDemoMode(false);
+        setIsZooming(false);
         setActiveWaypoint(null);
         setCurrentDemoPath([]);
         setCurrentZoom(3);
@@ -107,15 +116,9 @@ const MainContent = () => {
             setActiveWaypoint(coords);
             setCurrentWaypointIndex(index);
             
-            console.log('Current route:', currentRoute);
-            console.log('Current waypoint:', currentWaypoint);
-            console.log('Full path:', currentRoute.path);
-            
             if (currentRoute.path && currentRoute.path.length > 0) {
                 setCurrentDemoPath(currentRoute.path);
             }
-
-            console.log(`Updated path for waypoint at index ${index}. Using full route path.`);
         } else {
             console.error('Invalid waypoint index:', index);
             setActiveWaypoint(null);
@@ -134,14 +137,15 @@ const MainContent = () => {
 
     const mapProps = useMemo(() => {
         return {
-            activeRoute: isDemoMode ? null : activeRoute,
-            activePathForDemo: isDemoMode ? memoizedCurrentDemoPath : null,
-            waypoints: isDemoMode ? memoizedWaypoints : [],
-            activeWaypoint: isDemoMode ? activeWaypoint : null,
+            activeRoute: (isDemoMode || isZooming) ? null : activeRoute,
+            activePathForDemo: (isDemoMode || isZooming) ? memoizedCurrentDemoPath : null,
+            waypoints: (isDemoMode || isZooming) ? memoizedWaypoints : [],
+            activeWaypoint: (isDemoMode || isZooming) ? activeWaypoint : null,
             mapId: "8a2ac04064bf3833742b72c4",
             zoomLevel: currentZoom,
+            isZooming: isZooming,
         };
-    }, [isDemoMode, activeRoute, memoizedCurrentDemoPath, memoizedWaypoints, activeWaypoint, currentZoom]);
+    }, [isDemoMode, isZooming, activeRoute, memoizedCurrentDemoPath, memoizedWaypoints, activeWaypoint, currentZoom]);
 
     return (
         <div style={{ display: 'flex', height: '100vh' }}>
