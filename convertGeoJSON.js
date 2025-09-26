@@ -7,7 +7,7 @@ const bngProjection = '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=4000
 const wgs84Projection = 'WGS84';
 
 // Read the GeoJSON file
-const geojsonData = JSON.parse(fs.readFileSync('./public/geodata/scotland-national-parks.geojson', 'utf8'));
+const geojsonData = JSON.parse(fs.readFileSync('./public/geodata/convert.geojson', 'utf8'));
 
 // Function to convert coordinates
 const convertCoordinates = (coordinates) => {
@@ -43,6 +43,6 @@ const convertedGeoJson = {
   features: convertedFeatures,
 };
 
-fs.writeFileSync('./public/geodata/features_wgs84.json', JSON.stringify(convertedGeoJson, null, 2), 'utf8');
+fs.writeFileSync('./public/geodata/england-aonbs.json', JSON.stringify(convertedGeoJson, null, 2), 'utf8');
 
 console.log('GeoJSON file converted successfully!');
