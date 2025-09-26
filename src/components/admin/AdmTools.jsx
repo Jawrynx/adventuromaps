@@ -452,23 +452,13 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                 ))}
                                 <button className='adm-button blue' onClick={handleCancelCreation}>Cancel</button>
                             </div>
-                        ) : !hasCreatedItemInfo ? (
-                            <div>
-                                <CreateItemForm
-                                    onComplete={handleEditComplete}
-                                    onCancel={handleCancelCreation}
-                                    initialData={editingItem}
-                                    isEditing={true}
-                                    saveItem={null}
-                                />
-                            </div>
-                        ) : !hasCreatedItemInfo ? (
+                        ) : (
                             <CreateItemForm
                                 onComplete={handleCreateItemComplete}
                                 onCancel={handleCancelCreation}
                                 saveItem={saveItemToFirestore}
                             />
-                        ) : null
+                        )
                     )}
                 </>
             ) : (
