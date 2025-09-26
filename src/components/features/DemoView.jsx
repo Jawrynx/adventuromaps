@@ -39,16 +39,16 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex }
             </div>
             <div className="waypoint-card">
                 <h3>{currentWaypoint.name}</h3>
+                <div className="waypoint-media">
+                    {currentWaypoint.image_urls && currentWaypoint.image_urls.length > 0 && (
+                        <>
+                            {currentWaypoint.image_urls.map((imageUrl, index) => (
+                                <img key={index} src={imageUrl} alt={currentWaypoint.name} />
+                            ))}
+                        </>
+                    )}
+                </div>
                 <div className="waypoint-info">
-                    <div className="waypoint-media">
-                        {currentWaypoint.image_urls && (
-                            <>
-                                {currentWaypoint.image_urls.map((imageUrl) => {
-                                    <img key={imageUrl} src={imageUrl} alt={currentWaypoint.name} />
-                                })}
-                            </>
-                        )}
-                    </div>
                     <p>{currentWaypoint.description}</p>
                 </div>
             </div>

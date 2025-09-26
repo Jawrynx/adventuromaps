@@ -96,7 +96,7 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 <div className="images-preview">
                     {previewImageUrls.map((url, index) => (
                         <div key={index} className="image">
-                            <button className='remove-image' onClick={() => handleRemoveImage(index)}>
+                            <button className='remove-image red' onClick={() => handleRemoveImage(index)}>
                                 <FontAwesomeIcon icon={faTrash} />
                             </button>
                             <img src={url} alt={`Waypoint Preview ${index + 1}`} />

@@ -29,13 +29,27 @@
         }
 
         .waypoint-info {
-            height: 400px;
+            height: 350px;
             overflow-y: scroll;
 
             p {
                 font-size: 1.5rem;
                 height: 100%;
                 position: relative;
+            }
+        }
+
+        .waypoint-media {
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+
+            img {
+                max-width: 100%;
+                max-height: 150px;
+                border-radius: 10px;
             }
         }
     }

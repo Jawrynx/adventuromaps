@@ -3,7 +3,8 @@
     flex-direction: column;
     height: 100%;
 
-    h2, h3 {
+    h2,
+    h3 {
         text-align: center;
         ;
     }
@@ -162,7 +163,7 @@
     .waypoints-table tbody tr.route-start-row:hover+tr td:last-child {
         border-right-color: #ccc;
     }
-    
+
     .waypoints-table tbody tr.route-start-row:hover td {
         border-top-color: #ccc;
     }
@@ -244,7 +245,31 @@
         flex-direction: column;
         align-items: center;
         width: 100%;
-        
+
+        .images-preview {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+
+
+            .image {
+                button {
+                    position: relative;
+                    top: -15px;
+                    left: 30px;
+                    padding: 2px;
+                }
+
+                img {
+                    width: 100px;
+                    height: 100px;
+                    object-fit: cover;
+                    border-radius: 10px;
+                    margin: 5px;
+                }
+            }
+        }
+
         input {
             width: 90%;
             color: white;
@@ -314,7 +339,7 @@
         margin-bottom: 20px;
         text-transform: uppercase;
     }
-    
+
     h2 {
         font-size: 2rem;
         margin-bottom: 20px;
@@ -353,7 +378,7 @@
     align-items: center;
     justify-content: center;
     scale: 1.5;
-    
+
     p {
         font-family: 'Sigmar', sans-serif !important;
         text-transform: uppercase;

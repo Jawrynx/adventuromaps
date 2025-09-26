@@ -185,6 +185,18 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
             {Array.isArray(path) && path.length > 0 && (
                 <Polyline path={path} strokeColor="#FF0000" strokeOpacity={0.8} strokeWeight={4} />
             )}
+            {/* Route start and end markers (for regular routes, not demo mode) */}
+            {activeRoute && Array.isArray(activeRoute) && activeRoute.length > 0 && !activeWaypoint && (
+                <>
+                    <AdvancedMarker position={activeRoute[0]} title="Route Start">
+                        <Pin background={'#00FF00'} glyphColor={'#FFF'} borderColor={'#00AA00'} />
+                    </AdvancedMarker>
+                    <AdvancedMarker position={activeRoute[activeRoute.length - 1]} title="Route End">
+                        <Pin background={'#FF4444'} glyphColor={'#FFF'} borderColor={'#CC0000'} />
+                    </AdvancedMarker>
+                </>
+            )}
+            {/* Demo mode waypoint markers */}
             {activeWaypoint && (
                 <AdvancedMarker position={activeWaypoint}>
                     <Pin background={'#FFA500'} glyphColor={'#FFF'} borderColor={'#FFA500'} />
