@@ -25,6 +25,7 @@ const MainContent = () => {
 
     const [structuredRouteData, setStructuredRouteData] = useState([]);
     const [currentDemoPath, setCurrentDemoPath] = useState([]);
+    const [smoothPanFunction, setSmoothPanFunction] = useState(null);
     
     const handleSidebarClick = useCallback((item, path) => {
         if (isDemoMode || isZooming) {
@@ -96,6 +97,10 @@ const MainContent = () => {
         setActiveRoute(null);
     }, []);
 
+    const handleSmoothPanReady = useCallback((panFunction) => {
+        setSmoothPanFunction(() => panFunction);
+    }, []);
+
     const handleWaypointChange = useCallback((index) => {
         let cumulativeWaypointCount = 0;
         let currentWaypoint = null;
@@ -115,6 +120,12 @@ const MainContent = () => {
             const coords = currentWaypoint.coordinates || { lat: currentWaypoint.lat, lng: currentWaypoint.lng };
             setActiveWaypoint(coords);
             setCurrentWaypointIndex(index);
+            
+            // Use smooth panning to the waypoint if available
+            if (smoothPanFunction) {
+                console.log('MainContent calling smoothPan with waypoint:', currentWaypoint.name, 'coords:', coords.lat, coords.lng, 'currentZoom:', currentZoom);
+                smoothPanFunction(coords.lat, coords.lng, currentZoom, true); // Use current zoom level as target for cinematic panning
+            }
             
             if (currentRoute.path && currentRoute.path.length > 0) {
                 setCurrentDemoPath(currentRoute.path);
@@ -152,7 +163,7 @@ const MainContent = () => {
             <Sidebar activeItem={activeItem} onSidebarClick={handleSidebarClick} />
             <div style={{ width: 'calc(100% - 70px)', position: 'relative', left: '70px'  }}>
                 <Routes>
-                    <Route path="/" element={<MainMap {...mapProps} />} />
+                    <Route path="/" element={<MainMap {...mapProps} onSmoothPanReady={handleSmoothPanReady} />} />
                     <Route path="/guides" element={<Guides />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/help" element={<Help />} />

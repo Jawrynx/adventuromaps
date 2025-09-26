@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Polyline } from './Polyline';
 
-function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint, zoomLevel, isZooming }) {
+function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint, zoomLevel, isZooming, onSmoothPanReady }) {
     const map = useMap();
     const mapsLib = useMapsLibrary('maps');
 
@@ -12,6 +12,7 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
     let panPath = [];
     let panQueue = [];
     const STEPS = 20;
+    
     const smoothPanTo = (map, newLat, newLng, targetZoom) => {
         if (panPath.length > 0) {
             panQueue.push([newLat, newLng, targetZoom]);
@@ -30,6 +31,75 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
             setTimeout(() => doPan(map, targetZoom), 20);
         }
     };
+
+    // Cinematic pan with zoom out/in effect for DemoView navigation (5 second duration)
+    const cinematicPanTo = (map, newLat, newLng, targetZoom) => {
+        const currentZoom = map.getZoom();
+        
+        // Force a more aggressive zoom out - go down by 3 levels minimum
+        const zoomOutLevel = Math.max(currentZoom - 3, 5);
+        
+        // CAPTURE COORDINATES BEFORE ZOOM OUT
+        const startLat = map.getCenter().lat();
+        const startLng = map.getCenter().lng();
+        
+        console.log('🎬 CINEMATIC PAN START 🎬');
+        console.log('Starting 5-second cinematic pan from', startLat, startLng, 'to', newLat, newLng);
+        console.log('Distance to travel:', Math.abs(newLat - startLat), Math.abs(newLng - startLng));
+        console.log('Zoom levels: current =', currentZoom, 'zoomOut =', zoomOutLevel, 'target =', targetZoom);
+        
+        // Phase 1: Smooth zoom out first (visible and gradual)
+        console.log('🆕 NEW VERSION - Starting smooth zoom out from', currentZoom, 'to', zoomOutLevel);
+        
+        // Set the map to the original starting position first
+        map.setCenter(new window.google.maps.LatLng(startLat, startLng));
+        
+        // Start smooth zoom out with new function
+        console.log('🔥 CALLING SMOOTH ZOOM OUT WITH NEW FUNCTION');
+        smoothZoom(map, zoomOutLevel, currentZoom, true);
+        
+        // Phase 2: Start pan after zoom out completes (3 zoom levels * 200ms = 600ms)
+        const zoomOutDuration = (currentZoom - zoomOutLevel) * 200 + 200; // Add buffer
+        
+        setTimeout(() => {
+            console.log('Zoom out complete, starting fast pan from:', startLat, startLng, 'to', newLat, newLng);
+            
+            // Faster 1.5-second animation
+            const CINEMATIC_STEPS = 30;
+            const STEP_DURATION = 50; // 30 steps × 50ms = 1500ms (1.5 seconds)
+            
+            const dLat = (newLat - startLat) / CINEMATIC_STEPS;
+            const dLng = (newLng - startLng) / CINEMATIC_STEPS;
+            
+            console.log('Delta per step:', dLat, dLng);
+            
+            let step = 0;
+            
+            const cinematicPanStep = () => {
+                if (step < CINEMATIC_STEPS) {
+                    const lat = startLat + dLat * step;
+                    const lng = startLng + dLng * step;
+                    
+                    // Use setCenter for smooth movement
+                    map.setCenter(new window.google.maps.LatLng(lat, lng));
+                    step++;
+                    setTimeout(cinematicPanStep, STEP_DURATION);
+                } else {
+                    // Phase 3: Final position and zoom back in
+                    console.log('Pan complete, starting zoom in from', zoomOutLevel, 'to', targetZoom);
+                    map.setCenter(new window.google.maps.LatLng(newLat, newLng));
+                    setTimeout(() => {
+                        console.log('Starting smoothZoom IN from', zoomOutLevel, 'to', targetZoom);
+                        smoothZoom(map, targetZoom, zoomOutLevel, false);
+                    }, 200);
+                }
+            };
+            
+            cinematicPanStep();
+        }, zoomOutDuration);
+    };
+    
+
 
 
     const doPan = (map, targetZoom) => {
@@ -50,17 +120,39 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         }
     };
 
-    const smoothZoom = (map, maxZoom, currentZoom) => {
-        if (currentZoom >= maxZoom) {
-            return;
+    const smoothZoom = (map, targetZoom, currentZoom, isZoomOut = false) => {
+        console.log('smoothZoom called: current =', currentZoom, 'target =', targetZoom, 'isZoomOut =', isZoomOut);
+        
+        if (isZoomOut) {
+            // Zooming out (decreasing zoom level)
+            if (currentZoom <= targetZoom) {
+                console.log('smoothZoom OUT complete, current zoom reached target');
+                return;
+            } else {
+                console.log('smoothZoom OUT: zooming from', currentZoom, 'to', currentZoom - 1);
+                const zoomListener = window.google.maps.event.addListener(map, 'zoom_changed', function(event) {
+                    window.google.maps.event.removeListener(zoomListener);
+                    smoothZoom(map, targetZoom, currentZoom - 1, true);
+                });
+                setTimeout(() => {
+                    map.setZoom(currentZoom - 1);
+                }, 200); // Faster for zoom out
+            }
         } else {
-            const zoomListener = window.google.maps.event.addListener(map, 'zoom_changed', function(event) {
-                window.google.maps.event.removeListener(zoomListener);
-                smoothZoom(map, maxZoom, currentZoom + 1);
-            });
-            setTimeout(() => {
-                map.setZoom(currentZoom + 1);
-            }, 280);
+            // Zooming in (increasing zoom level)
+            if (currentZoom >= targetZoom) {
+                console.log('smoothZoom IN complete, current zoom reached target');
+                return;
+            } else {
+                console.log('smoothZoom IN: zooming from', currentZoom, 'to', currentZoom + 1);
+                const zoomListener = window.google.maps.event.addListener(map, 'zoom_changed', function(event) {
+                    window.google.maps.event.removeListener(zoomListener);
+                    smoothZoom(map, targetZoom, currentZoom + 1, false);
+                });
+                setTimeout(() => {
+                    map.setZoom(currentZoom + 1);
+                }, 280);
+            }
         }
     };
 
@@ -114,6 +206,19 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         };
     }, [map, mapsLib, showBoundaries]);
 
+    // Expose smooth panning function to parent components
+    useEffect(() => {
+        if (map && onSmoothPanReady) {
+            const smoothPanFunction = (lat, lng, zoom = zoomLevel, useCinematic = false) => {
+                if (useCinematic) {
+                    cinematicPanTo(map, lat, lng, zoom);
+                } else {
+                    smoothPanTo(map, lat, lng, zoom);
+                }
+            };
+            onSmoothPanReady(smoothPanFunction);
+        }
+    }, [map, onSmoothPanReady, zoomLevel]);
 
     // Calculate visible waypoints based on active waypoint
     const visibleWaypoints = useMemo(() => {
@@ -133,10 +238,13 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
     useEffect(() => {
         if (!map) return;
 
+        console.log('MapContent useEffect triggered with activeWaypoint:', activeWaypoint, 'isZooming:', isZooming, 'activePathForDemo:', activePathForDemo?.length);
+
         if (activePathForDemo && activePathForDemo.length > 0) {
             setPath(activePathForDemo);
             if (activeWaypoint) {
                 if (isZooming) {
+                    console.log('MapContent useEffect: Initial demo zoom, using regular smoothPanTo');
                     const currentZoom = map.getZoom();
                     if (currentZoom > 8) {
                         map.setZoom(Math.min(currentZoom, 8));
@@ -150,7 +258,10 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
                     return;
                     
                 } else {
-                    map.panTo(activeWaypoint);
+                    // In demo mode navigation (not initial zooming), DON'T override the cinematic pan
+                    console.log('MapContent useEffect: Demo navigation, skipping pan to let cinematic pan handle it');
+                    // Don't call map.panTo() or smoothPanTo() during demo navigation
+                    // The cinematic pan from MainContent will handle the movement
                     
                     if (Math.abs(map.getZoom() - zoomLevel) > 0.1) {
                         map.setZoom(zoomLevel);
