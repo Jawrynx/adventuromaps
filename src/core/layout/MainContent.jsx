@@ -25,6 +25,9 @@ const MainContent = () => {
 
     const [structuredRouteData, setStructuredRouteData] = useState([]);
     const [currentDemoPath, setCurrentDemoPath] = useState([]);
+    const [smoothPanFunction, setSmoothPanFunction] = useState(null);
+    const [isInitialDemoSetup, setIsInitialDemoSetup] = useState(false);
+    const [demoStartTime, setDemoStartTime] = useState(null);
     
     const handleSidebarClick = useCallback((item, path) => {
         if (isDemoMode || isZooming) {
@@ -61,6 +64,8 @@ const MainContent = () => {
     const handleStartDemo = useCallback((structuredData) => {
         setActiveRoute(null);
         setIsZooming(true);
+        setIsInitialDemoSetup(true);
+        setDemoStartTime(Date.now());
         setStructuredRouteData(structuredData);
         setCurrentWaypointIndex(0);
         setCurrentDemoPath([]);
@@ -76,7 +81,9 @@ const MainContent = () => {
             setCurrentZoom(17);
             
             setTimeout(() => {
+                console.log('🔄 Clearing initial demo setup flag - cinematic pan now enabled');
                 setIsZooming(false);
+                setIsInitialDemoSetup(false);
                 setIsDemoMode(true);
             }, 4000);
 
@@ -94,6 +101,10 @@ const MainContent = () => {
         setCurrentZoom(3);
         setCurrentWaypointIndex(0);
         setActiveRoute(null);
+    }, []);
+
+    const handleSmoothPanReady = useCallback((panFunction) => {
+        setSmoothPanFunction(() => panFunction);
     }, []);
 
     const handleWaypointChange = useCallback((index) => {
@@ -116,6 +127,15 @@ const MainContent = () => {
             setActiveWaypoint(coords);
             setCurrentWaypointIndex(index);
             
+            const timeSinceDemoStart = demoStartTime ? Date.now() - demoStartTime : Infinity;
+            
+            if (smoothPanFunction && timeSinceDemoStart > 5000) {
+                console.log('✨ MainContent calling CINEMATIC PAN with waypoint:', currentWaypoint.name, 'coords:', coords.lat, coords.lng);
+                smoothPanFunction(coords.lat, coords.lng, currentZoom, true);
+            } else if (timeSinceDemoStart <= 5000) {
+                console.log('🚫 Skipping cinematic pan during initial demo period');
+            }
+            
             if (currentRoute.path && currentRoute.path.length > 0) {
                 setCurrentDemoPath(currentRoute.path);
             }
@@ -123,7 +143,7 @@ const MainContent = () => {
             console.error('Invalid waypoint index:', index);
             setActiveWaypoint(null);
         }
-    }, [structuredRouteData]);
+    }, [structuredRouteData, isInitialDemoSetup]);
 
     const memoizedWaypoints = useMemo(() => {
         let allWps = [];
@@ -152,7 +172,7 @@ const MainContent = () => {
             <Sidebar activeItem={activeItem} onSidebarClick={handleSidebarClick} />
             <div style={{ width: 'calc(100% - 70px)', position: 'relative', left: '70px'  }}>
                 <Routes>
-                    <Route path="/" element={<MainMap {...mapProps} />} />
+                    <Route path="/" element={<MainMap {...mapProps} onSmoothPanReady={handleSmoothPanReady} />} />
                     <Route path="/guides" element={<Guides />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/help" element={<Help />} />

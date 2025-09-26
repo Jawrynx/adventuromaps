@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Polyline } from './Polyline';
 
-function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint, zoomLevel, isZooming }) {
+function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint, zoomLevel, isZooming, onSmoothPanReady }) {
     const map = useMap();
     const mapsLib = useMapsLibrary('maps');
 
@@ -12,6 +12,7 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
     let panPath = [];
     let panQueue = [];
     const STEPS = 20;
+    
     const smoothPanTo = (map, newLat, newLng, targetZoom) => {
         if (panPath.length > 0) {
             panQueue.push([newLat, newLng, targetZoom]);
@@ -30,6 +31,53 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
             setTimeout(() => doPan(map, targetZoom), 20);
         }
     };
+
+    const cinematicPanTo = (map, newLat, newLng, targetZoom) => {
+        const currentZoom = map.getZoom();
+        
+        const zoomOutLevel = Math.max(currentZoom - 3, 5);
+        
+        const startLat = map.getCenter().lat();
+        const startLng = map.getCenter().lng();
+        
+        map.setCenter(new window.google.maps.LatLng(startLat, startLng));
+        
+        smoothZoom(map, zoomOutLevel, currentZoom, true);
+        
+        const zoomOutDuration = (currentZoom - zoomOutLevel) * 200 + 200;
+        
+        setTimeout(() => {
+            
+            const CINEMATIC_STEPS = 30;
+            const STEP_DURATION = 50;
+            
+            const dLat = (newLat - startLat) / CINEMATIC_STEPS;
+            const dLng = (newLng - startLng) / CINEMATIC_STEPS;
+            
+            
+            let step = 0;
+            
+            const cinematicPanStep = () => {
+                if (step < CINEMATIC_STEPS) {
+                    const lat = startLat + dLat * step;
+                    const lng = startLng + dLng * step;
+                    
+                    map.setCenter(new window.google.maps.LatLng(lat, lng));
+                    step++;
+                    setTimeout(cinematicPanStep, STEP_DURATION);
+                } else {
+                    map.setCenter(new window.google.maps.LatLng(newLat, newLng));
+                    setTimeout(() => {
+                        smoothZoom(map, targetZoom, zoomOutLevel, false);
+                    }, 200);
+                }
+            };
+            
+            cinematicPanStep();
+        }, zoomOutDuration);
+    };
+    
+
 
 
     const doPan = (map, targetZoom) => {
@@ -50,17 +98,32 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         }
     };
 
-    const smoothZoom = (map, maxZoom, currentZoom) => {
-        if (currentZoom >= maxZoom) {
-            return;
+    const smoothZoom = (map, targetZoom, currentZoom, isZoomOut = false) => {
+        
+        if (isZoomOut) {
+            if (currentZoom <= targetZoom) {
+                return;
+            } else {
+                const zoomListener = window.google.maps.event.addListener(map, 'zoom_changed', function(event) {
+                    window.google.maps.event.removeListener(zoomListener);
+                    smoothZoom(map, targetZoom, currentZoom - 1, true);
+                });
+                setTimeout(() => {
+                    map.setZoom(currentZoom - 1);
+                }, 200);
+            }
         } else {
-            const zoomListener = window.google.maps.event.addListener(map, 'zoom_changed', function(event) {
-                window.google.maps.event.removeListener(zoomListener);
-                smoothZoom(map, maxZoom, currentZoom + 1);
-            });
-            setTimeout(() => {
-                map.setZoom(currentZoom + 1);
-            }, 280);
+            if (currentZoom >= targetZoom) {
+                return;
+            } else {
+                const zoomListener = window.google.maps.event.addListener(map, 'zoom_changed', function(event) {
+                    window.google.maps.event.removeListener(zoomListener);
+                    smoothZoom(map, targetZoom, currentZoom + 1, false);
+                });
+                setTimeout(() => {
+                    map.setZoom(currentZoom + 1);
+                }, 280);
+            }
         }
     };
 
@@ -114,6 +177,19 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         };
     }, [map, mapsLib, showBoundaries]);
 
+    // Expose smooth panning function to parent components
+    useEffect(() => {
+        if (map && onSmoothPanReady) {
+            const smoothPanFunction = (lat, lng, zoom = zoomLevel, useCinematic = false) => {
+                if (useCinematic) {
+                    cinematicPanTo(map, lat, lng, zoom);
+                } else {
+                    smoothPanTo(map, lat, lng, zoom);
+                }
+            };
+            onSmoothPanReady(smoothPanFunction);
+        }
+    }, [map, onSmoothPanReady, zoomLevel]);
 
     // Calculate visible waypoints based on active waypoint
     const visibleWaypoints = useMemo(() => {
@@ -133,6 +209,7 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
     useEffect(() => {
         if (!map) return;
 
+
         if (activePathForDemo && activePathForDemo.length > 0) {
             setPath(activePathForDemo);
             if (activeWaypoint) {
@@ -149,9 +226,7 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
                     
                     return;
                     
-                } else {
-                    map.panTo(activeWaypoint);
-                    
+                } else {            
                     if (Math.abs(map.getZoom() - zoomLevel) > 0.1) {
                         map.setZoom(zoomLevel);
                     }
