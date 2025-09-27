@@ -3,6 +3,7 @@
     margin: 0 auto;
     padding: 20px;
     color: white;
+    z-index: 99;
 }
 
 .guide-form h2 {

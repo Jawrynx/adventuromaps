@@ -235,7 +235,13 @@ function Admin({ mapId }) {
                     )
                 ) : null}
             </div>
-            <Modal>
+            <Modal
+                isOpen={true}
+                onClose={() => {
+                    setIsCreatingItem(false);
+                    setHasCreatedItemInfo(false);
+                }}
+            >
                 <AdmTools
                     routes={routes}
                     setRoutes={setRoutes}
