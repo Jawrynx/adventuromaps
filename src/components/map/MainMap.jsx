@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Map } from '@vis.gl/react-google-maps';
 import MapContent from './MapContent';
 
-function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, mapId, zoomLevel, isZooming }) {
+function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, mapId, zoomLevel, isZooming, onSmoothPanReady }) {
 
     useEffect(() => {
         const disableStreetViewLinks = () => {
@@ -39,6 +39,7 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
                     activeWaypoint={activeWaypoint} 
                     zoomLevel={zoomLevel}
                     isZooming={isZooming}
+                    onSmoothPanReady={onSmoothPanReady}
                 />
             </Map>
         </div>
