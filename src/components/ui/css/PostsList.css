@@ -90,6 +90,48 @@
     color: white;
 }
 
+.loading-animation {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.loading-bar {
+    width: 4px;
+    height: 24px;
+    background: #555;
+    border-radius: 2px;
+    animation: loading-animation 1s ease-in-out infinite;
+}
+
+.loading-bar:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.loading-bar:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+@keyframes loading-animation {
+    0%, 100% { transform: scaleY(1); background: #555; }
+    50% { transform: scaleY(2); background: #fff; }
+}
+
+.fade-slide-in {
+    animation: fadeSlideIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .no-posts {
     display: flex;
     flex-direction: column;
@@ -107,4 +149,28 @@
 
 .no-posts p {
     color: #ccc;
+}
+
+/* Scroller Bar */
+
+/* For WebKit browsers (Chrome, Safari, Edge) */
+.posts-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.posts-list::-webkit-scrollbar-track {
+  background: #222;
+  border-radius: 10px;
+}
+
+.posts-list::-webkit-scrollbar-thumb {
+  background-color: #222;
+  border-radius: 10px;
+  border: 3px solid #222;
+}
+
+/* For Firefox */
+.posts-list {
+  scrollbar-width: thick;
+  scrollbar-color: #444 #222;
 }

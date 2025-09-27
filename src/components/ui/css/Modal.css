@@ -48,17 +48,23 @@
 
 .modal-content::-webkit-scrollbar-track {
   background: #222;
-  border-radius: 10px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-  background-color: #222;
-  border-radius: 10px;
-  border: 3px solid #222;
+  background-color: #333;
+  border-radius: 5px;
+  border: 2px solid #222;
+  margin-right: 2px;
+}
+
+.modal-content::-webkit-scrollbar-corner {
+  background: #222;
 }
 
 /* For Firefox */
 .modal-content {
-  scrollbar-width: thick;
-  scrollbar-color: #444 #222;
+  scrollbar-width: thin;
+  scrollbar-color: #333 #222;
 }

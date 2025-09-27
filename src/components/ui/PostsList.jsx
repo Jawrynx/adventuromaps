@@ -46,9 +46,10 @@ function PostsList({ category }) {
     const handlePostSelect = (post) => {
         setIsTransitioning(true);
         setSelectedPost(post);
+        // Slightly longer animation for smoother transition
         setTimeout(() => {
             setShowPostContent(true);
-        }, 100);
+        }, 300);
     };
 
     const handleBack = () => {
@@ -56,11 +57,20 @@ function PostsList({ category }) {
         setTimeout(() => {
             setSelectedPost(null);
             setIsTransitioning(false);
-        }, 100);
+        }, 300);
     };
 
     if (loading) {
-        return <div className="posts-loading">Loading posts...</div>;
+        return (
+            <div className="posts-loading">
+                <div className="loading-animation">
+                    <div className="loading-bar"></div>
+                    <div className="loading-bar"></div>
+                    <div className="loading-bar"></div>
+                </div>
+                <p>Loading posts...</p>
+            </div>
+        );
     }
 
     if (posts.length === 0) {
@@ -75,13 +85,18 @@ function PostsList({ category }) {
     return (
         <div className="posts-container">
             <div className={`posts-list ${(selectedPost && isTransitioning) ? 'exit' : ''}`}>
-                {!selectedPost && posts.map(post => (
+                {!selectedPost && posts.map((post, index) => (
                     <div 
                         key={post.id} 
-                        className="post-item"
+                        className="post-item fade-slide-in"
                         onClick={() => handlePostSelect(post)}
                         role="button"
                         tabIndex={0}
+                        style={{ 
+                            animationDelay: `${index * 0.1}s`,
+                            opacity: 0,
+                            transform: 'translateY(20px)'
+                        }}
                     >
                         <h3>{post.title}</h3>
                         <div className="post-meta">

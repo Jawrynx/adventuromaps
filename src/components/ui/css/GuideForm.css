@@ -4,6 +4,23 @@
     padding: 20px;
     color: white;
     z-index: 99;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.guide-form.animate-in {
+    animation: formSlideIn 0.4s ease-out forwards;
+}
+
+@keyframes formSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .guide-form h2 {

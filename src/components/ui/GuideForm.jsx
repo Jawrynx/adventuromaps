@@ -59,7 +59,7 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
     };
 
     return (
-        <form className="guide-form" onSubmit={handleSubmit}>
+        <form className="guide-form animate-in" onSubmit={handleSubmit}>
             <h2>{existingGuide ? 'Edit Guide' : 'Create New Guide'}</h2>
             
             <div className="form-group">
