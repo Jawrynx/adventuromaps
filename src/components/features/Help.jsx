@@ -1,17 +1,45 @@
+/**
+ * Help.jsx - Comprehensive help and support interface
+ * 
+ * This component provides users with comprehensive help resources including
+ * frequently asked questions, troubleshooting guides, and a contact form
+ * for direct support. It serves as the main help desk for the application.
+ */
+
 import React, { useState } from 'react'
 import './css/Help.css';
 
+/**
+ * Help Component
+ * 
+ * Comprehensive help and support interface that includes:
+ * - FAQ sections organized by categories
+ * - Contact form for direct support requests
+ * - Troubleshooting guides and tips
+ * - Resource links and documentation
+ * 
+ * @returns {JSX.Element} Complete help interface with FAQ and contact form
+ */
 function Help() {
+  // ========== CONTACT FORM STATE ==========
   const [contactForm, setContactForm] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
+    name: '',              // User's name
+    email: '',             // User's email address
+    subject: '',           // Message subject
+    message: ''            // Message content
   });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false); // Form submission state
+  const [submitMessage, setSubmitMessage] = useState('');  // Feedback message after submission
 
+  /**
+   * Handles input changes in the contact form
+   * 
+   * Updates the contact form state when user types in any form field.
+   * Uses dynamic property names to update the correct field.
+   * 
+   * @param {Event} e - Input change event containing field name and value
+   */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setContactForm(prev => ({
@@ -20,6 +48,15 @@ function Help() {
     }));
   };
 
+  /**
+   * Handles contact form submission
+   * 
+   * Processes the contact form submission with validation and feedback.
+   * Currently simulates submission - should be replaced with actual
+   * backend integration for real support ticket creation.
+   * 
+   * @param {Event} e - Form submission event
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
