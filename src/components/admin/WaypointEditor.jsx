@@ -1,25 +1,65 @@
+/**
+ * WaypointEditor.jsx - Advanced waypoint editing interface
+ * 
+ * Provides comprehensive waypoint editing capabilities including:
+ * - Text descriptions and instructions
+ * - Multiple image upload and management
+ * - Audio narration file upload
+ * - Keyframe file upload for animations
+ * - Different field sets for explorations vs adventures
+ */
+
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
+/**
+ * WaypointEditor Component
+ * 
+ * Advanced editor for waypoint details that allows administrators to add
+ * rich content including images, audio, and animation data to waypoints.
+ * 
+ * @param {Object} waypointData - Object containing routeId, waypointIndex, and waypoint data
+ * @param {string} itemType - Type of parent item ('exploration' or 'adventure')
+ * @param {Function} onClose - Callback to close the editor
+ * @param {Function} onSave - Callback to save waypoint changes
+ * @returns {JSX.Element} The waypoint editing interface
+ */
 function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
+    // ========== TEXT CONTENT STATE ==========
     const [description, setDescription] = useState(waypointData.waypoint.description || '');
     const [instructions, setInstructions] = useState(waypointData.waypoint.instructions || '');
-    const [images, setImages] = useState([]);
-    const [existingImageUrls, setExistingImageUrls] = useState([]);
-    const [newImagePreviews, setNewImagePreviews] = useState([]);
-    const [narration, setNarration] = useState(null);
-    const [keyframes, setKeyframes] = useState(null);
-    const [isSaving, setIsSaving] = useState(false);
+    
+    // ========== IMAGE MANAGEMENT STATE ==========
+    const [images, setImages] = useState([]);                    // New image files to upload
+    const [existingImageUrls, setExistingImageUrls] = useState([]); // Previously uploaded image URLs
+    const [newImagePreviews, setNewImagePreviews] = useState([]); // Preview URLs for new images
+    
+    // ========== MEDIA FILE STATE ==========
+    const [narration, setNarration] = useState(null);           // Audio narration file
+    const [keyframes, setKeyframes] = useState(null);           // Animation keyframes text file
+    
+    // ========== UI STATE ==========
+    const [isSaving, setIsSaving] = useState(false);            // Prevent multiple save operations
 
+    /**
+     * Initializes editor state when waypoint data changes
+     * 
+     * Resets all form fields and loads existing waypoint data
+     * when a new waypoint is selected for editing.
+     */
     useEffect(() => {
+        // Load existing text content
         setDescription(waypointData.waypoint.description || '');
         setInstructions(waypointData.waypoint.instructions || '');
+        
+        // Reset file upload states
         setImages([]);
         setNarration(null);
         setKeyframes(null);
         setNewImagePreviews([]);
 
+        // Load existing image URLs if available
         if (waypointData.waypoint.image_urls && waypointData.waypoint.image_urls.length > 0) {
             setExistingImageUrls(waypointData.waypoint.image_urls);
         } else {
@@ -27,28 +67,51 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
         }
     }, [waypointData]);
 
+    /**
+     * Handles new image file selection
+     * 
+     * Processes newly selected image files and creates preview URLs
+     * for immediate visual feedback in the interface.
+     * 
+     * @param {Event} e - File input change event
+     */
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
         const newImages = [...images, ...files];
         setImages(newImages);
 
+        // Create preview URLs for immediate display
         const newPreviewUrls = files.map(file => URL.createObjectURL(file));
         setNewImagePreviews(prevPreviews => [...prevPreviews, ...newPreviewUrls]);
     };
 
+    /**
+     * Handles image removal from waypoint
+     * 
+     * Removes either existing saved images or newly added images
+     * depending on the image type and updates the appropriate state.
+     * 
+     * @param {number} indexToRemove - Index of image to remove
+     * @param {boolean} isExisting - Whether this is an existing saved image or new image
+     */
     const handleRemoveImage = (indexToRemove, isExisting) => {
         if (isExisting) {
+            // Remove from existing image URLs (already saved to server)
             setExistingImageUrls(prevUrls => {
                 const newUrls = prevUrls.filter((_, index) => index !== indexToRemove);
                 return newUrls;
             });
         } else {
+            // Remove from new images (not yet uploaded)
             const newImageIndex = indexToRemove - existingImageUrls.length;
+            
+            // Remove preview URL
             setNewImagePreviews(prevPreviews => {
                 const newPreviews = prevPreviews.filter((_, index) => index !== newImageIndex);
                 return newPreviews;
             });
             
+            // Remove file object
             setImages(prevFiles => {
                 const newFiles = prevFiles.filter((_, index) => index !== newImageIndex);
                 return newFiles;
@@ -56,23 +119,31 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
         }
     };
 
+    /**
+     * Handles saving waypoint data with all associated media files
+     * 
+     * Compiles all waypoint data including text, images, and media files
+     * and calls the parent save handler to process uploads and database updates.
+     */
     const handleSave = async () => {
-        if (isSaving) return;
+        if (isSaving) return; // Prevent multiple save operations
         
         setIsSaving(true);
         
         try {
+            // Compile all waypoint data for saving
             const waypointDataToSave = {
                 description,
                 instructions,
-                images,
-                existingImageUrls,
-                narration,
-                keyframes
+                images,              // New image files to upload
+                existingImageUrls,   // Previously uploaded image URLs to preserve
+                narration,           // Audio narration file
+                keyframes           // Animation keyframes file
             };
 
+            // Call parent save handler with compiled data
             await onSave(waypointData.routeId, waypointData.waypointIndex, waypointDataToSave);
-            onClose();
+            onClose(); // Close editor after successful save
         } catch (error) {
             console.error('Failed to save waypoint:', error);
             alert('Failed to save waypoint. Please try again.');

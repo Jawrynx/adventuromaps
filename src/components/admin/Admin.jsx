@@ -1,32 +1,80 @@
+/**
+ * Admin.jsx - Main administrative interface for creating and managing routes
+ * 
+ * This component provides a comprehensive admin interface that allows administrators to:
+ * - Create interactive routes by drawing on the map
+ * - Manage waypoints and route data
+ * - Save and publish exploration/adventure content
+ * - Provide real-time visual feedback during route creation
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Map, useMap } from '@vis.gl/react-google-maps';
+
+// UI Components
 import Modal from '../ui/Modal';
 import AdmTools from './AdmTools';
+
+// Map Components
 import MapRoutes from '../map/MapRoutes';
 import { Polyline } from '../map/Polyline';
+
+// Firebase services
 import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
+
+// Styles
 import './css/Admin.css';
 
+/**
+ * Admin Component
+ * 
+ * The main admin interface that combines map interaction with route management tools.
+ * Handles real-time route drawing, waypoint creation, and integration with Firebase.
+ * 
+ * @param {string} mapId - Google Maps ID for map styling and configuration
+ * @returns {JSX.Element} The admin interface with interactive map and tools
+ */
 function Admin({ mapId }) {
+    // Google Maps instance hook
     const map = useMap();
-    const [routes, setRoutes] = useState([]);
-    const [isDrawing, setIsDrawing] = useState(false);
-    const [tempPath, setTempPath] = useState([]);
-    const [mousePosition, setMousePosition] = useState(null);
-    const [isCreatingItem, setIsCreatingItem] = useState(false);
-    const [hasCreatedItemInfo, setHasCreatedItemInfo] = useState(false);
+    
+    // ========== ROUTE & DRAWING STATE ==========
+    const [routes, setRoutes] = useState([]);               // Array of completed routes with waypoints
+    const [isDrawing, setIsDrawing] = useState(false);      // Whether user is actively drawing a route
+    const [tempPath, setTempPath] = useState([]);           // Temporary path coordinates while drawing
+    const [mousePosition, setMousePosition] = useState(null); // Current mouse position for live drawing preview
+    
+    // ========== ADMIN WORKFLOW STATE ==========
+    const [isCreatingItem, setIsCreatingItem] = useState(false);     // Whether item creation modal is open
+    const [hasCreatedItemInfo, setHasCreatedItemInfo] = useState(false); // Whether item info has been created
 
+    // Ref to maintain current drawing state across async operations
     const drawingStateRef = useRef({ isDrawing, tempPath });
 
+    /**
+     * Synchronizes drawing state with ref for async operations
+     * 
+     * Updates the ref whenever drawing state changes to ensure
+     * map event handlers have access to current state values.
+     */
     useEffect(() => {
         drawingStateRef.current.isDrawing = isDrawing;
         drawingStateRef.current.tempPath = tempPath;
     }, [isDrawing, tempPath]);
 
+    /**
+     * Sets up interactive map event listeners for route drawing
+     * 
+     * Manages three key interactions:
+     * - Click: Adds points to the current route path
+     * - Double-click: Completes the route and creates start/end waypoints
+     * - Mouse move: Provides live preview of route drawing
+     */
     useEffect(() => {
         if (!map) return;
         
+        // Handle single clicks to add route points
         const clickListener = map.addListener('click', (e) => {
             const { isDrawing } = drawingStateRef.current;
             if (isDrawing) {
@@ -35,9 +83,11 @@ function Admin({ mapId }) {
             }
         });
 
+        // Handle double-click to complete route drawing
         const dblClickListener = map.addListener('dblclick', () => {
             const { isDrawing, tempPath } = drawingStateRef.current;
             if (isDrawing && tempPath.length > 1) {
+                // Create new route with automatic start/end waypoints
                 const newRoute = {
                     id: Date.now(),
                     order: routes.length + 1,
@@ -53,6 +103,7 @@ function Admin({ mapId }) {
             setTempPath([]);
         });
 
+        // Handle mouse movement for live drawing preview
         const mouseMoveListener = map.addListener('mousemove', (e) => {
             const { isDrawing } = drawingStateRef.current;
             if (isDrawing) {
@@ -60,6 +111,7 @@ function Admin({ mapId }) {
             }
         });
 
+        // Clean up event listeners on component unmount
         return () => {
             if (window.google && window.google.maps && window.google.maps.event) {
                 window.google.maps.event.removeListener(clickListener);
@@ -69,14 +121,37 @@ function Admin({ mapId }) {
         };
     }, [map]);
 
+    /**
+     * Clears all routes from the current session
+     * 
+     * Removes all drawn routes and resets the route array to empty.
+     * Used when starting a new route creation session.
+     */
     const handleClearRoutes = () => {
         setRoutes([]);
     };
 
+    /**
+     * Removes a specific route by ID
+     * 
+     * Filters out the specified route from the routes array.
+     * 
+     * @param {number} routeId - Unique identifier of the route to remove
+     */
     const handleRemoveRoute = (routeId) => {
         setRoutes(prevRoutes => prevRoutes.filter(route => route.id !== routeId));
     };
 
+    /**
+     * Updates the name of a specific waypoint
+     * 
+     * Allows editing of waypoint names after route creation.
+     * Updates the waypoint name at the specified index within the specified route.
+     * 
+     * @param {number} routeId - ID of the route containing the waypoint
+     * @param {number} waypointIndex - Index of the waypoint within the route
+     * @param {string} newName - New name for the waypoint
+     */
     const handleUpdateWaypointName = (routeId, waypointIndex, newName) => {
         setRoutes(prevRoutes =>
             prevRoutes.map(route =>
@@ -92,8 +167,15 @@ function Admin({ mapId }) {
         );
     };
 
+    /**
+     * Manually stops route drawing and creates a route from current path
+     * 
+     * Alternative to double-click completion. Creates a route from the current
+     * temporary path if it has enough points, then resets drawing state.
+     */
     const handleStopDrawing = () => {
         if (isDrawing && tempPath.length > 1) {
+            // Create route with start/end waypoints from current path
             const newRoute = {
                 id: Date.now(),
                 order: routes.length + 1, 
@@ -105,10 +187,23 @@ function Admin({ mapId }) {
             };
             setRoutes(prevRoutes => [...prevRoutes, newRoute]);
         }
+        // Reset drawing state
         setIsDrawing(false);
         setTempPath([]);
     };
 
+    /**
+     * Saves route and waypoint data to Firestore as draft
+     * 
+     * Handles the complex process of saving nested route and waypoint data:
+     * - Updates existing routes/waypoints or creates new ones
+     * - Maintains proper ordering and relationships
+     * - Stores Firestore IDs for future updates
+     * - Handles the hierarchical structure: item -> routes -> waypoints
+     * 
+     * @param {Object} itemData - The parent item data (exploration/adventure)
+     * @param {string} itemId - Firestore document ID of the parent item
+     */
     const handleSaveDraft = async (itemData, itemId) => {
         if (!itemId) {
             console.error("Cannot save routes: No item ID found.");
@@ -116,12 +211,14 @@ function Admin({ mapId }) {
             return;
         }
 
+        // Process each route and save to Firestore with proper hierarchy
         const newRoutesWithIds = await Promise.all(
             routes.map(async (route, index) => {
                 let routeDocRef;
                 let newWaypointsWithIds = [];
                 const routeOrder = index + 1;
 
+                // Update existing route or create new one
                 if (route.firestoreId) {
                     routeDocRef = doc(db, itemData.type, itemId, 'routes', route.firestoreId);
                     await updateDoc(routeDocRef, {
@@ -138,11 +235,13 @@ function Admin({ mapId }) {
                     console.log("New route document successfully written with ID:", routeDocRef.id);
                 }
 
+                // Process waypoints for this route
                 const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeDocRef.id, 'waypoints');
                 
                 await Promise.all(
                     route.waypoints.map(async (waypoint) => {
                         if (waypoint.firestoreId) {
+                            // Update existing waypoint
                             const waypointDocRef = doc(waypointsCollectionRef, waypoint.firestoreId);
                             await updateDoc(waypointDocRef, { 
                                 ...waypoint,
@@ -151,6 +250,7 @@ function Admin({ mapId }) {
                             console.log("Waypoint updated:", waypoint.firestoreId);
                             newWaypointsWithIds.push(waypoint);
                         } else {
+                            // Create new waypoint
                             const docRef = await addDoc(waypointsCollectionRef, { 
                                 ...waypoint,
                                 order: waypoint.order
@@ -170,12 +270,23 @@ function Admin({ mapId }) {
             })
         );
         
+        // Update local state with Firestore IDs for future operations
         setRoutes(newRoutesWithIds);
 
         alert("Routes and waypoints saved to Firestore successfully! 🎉");
         console.log("All routes and waypoints have been saved.");
     };
 
+    /**
+     * Publishes a saved item to make it available to users
+     * 
+     * Changes the item status from 'draft' to 'published' and adds
+     * a publication timestamp. Published items become visible in the
+     * Explore and Adventure sections of the app.
+     * 
+     * @param {Object} itemData - The item data containing type information
+     * @param {string} itemId - Firestore document ID of the item to publish
+     */
     const handlePublish = async (itemData, itemId) => {
         if (!itemId) {
             alert("Error: No item ID found. Please save a draft first");
@@ -196,37 +307,54 @@ function Admin({ mapId }) {
         }
     }
 
+    // Calculate live drawing path for visual feedback
+    // Includes mouse position as the last point when actively drawing
     const livePath = isDrawing && mousePosition && tempPath.length > 0
         ? [...tempPath, mousePosition]
         : tempPath;
 
+    /**
+     * Initiates the item creation workflow
+     * 
+     * Opens the item creation modal and resets the creation state
+     * to ensure a clean start for new item creation.
+     */
     const handleCreateItem = () => {
         setIsCreatingItem(true);
         setHasCreatedItemInfo(false);
     };
 
+    // ========== COMPONENT RENDER ==========
     return (
         <div style={{ height: '100%', width: '100%' }} id='admin-tools'>
+            {/* Interactive map with route drawing capabilities */}
             <Map
                 mapId={mapId}
                 defaultZoom={12}
-                defaultCenter={{ lat: 52.7061, lng: -2.7533 }}
-                clickableIcons={false}
+                defaultCenter={{ lat: 52.7061, lng: -2.7533 }} // Centered on UK
+                clickableIcons={false} // Disable default map icons to prevent interference
             >
+                {/* Live drawing preview - shows path as user draws */}
                 {isDrawing && livePath.length > 1 && (
                     <Polyline
                         path={livePath}
-                        strokeColor="#FF0000"
+                        strokeColor="#FF0000"     // Red color for active drawing
                         strokeOpacity={0.8}
                         strokeWeight={4}
                         clickable={false}
                     />
                 )}
+                
+                {/* Display all completed routes */}
                 <MapRoutes routes={routes} />
             </Map>
+            
+            {/* Drawing control buttons */}
             <div className="drawing-tool">
                 {!isCreatingItem ? (
-                    <button onClick={() => handleCreateItem()} style={{ marginRight: '5px', backgroundColor: 'green' }}>Create Exploration/Adventure</button>
+                    <button onClick={() => handleCreateItem()} style={{ marginRight: '5px', backgroundColor: 'green' }}>
+                        Create Exploration/Adventure
+                    </button>
                 ) : hasCreatedItemInfo ? (
                     !isDrawing ? (
                         <button onClick={() => setIsDrawing(true)}>Start Drawing</button>
@@ -235,6 +363,8 @@ function Admin({ mapId }) {
                     )
                 ) : null}
             </div>
+            
+            {/* Admin tools modal - always visible during admin workflow */}
             <Modal
                 isOpen={true}
                 onClose={() => {

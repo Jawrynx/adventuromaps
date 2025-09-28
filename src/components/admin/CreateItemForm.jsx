@@ -1,6 +1,17 @@
+/**
+ * CreateItemForm.jsx - Form component for creating and editing exploration/adventure items
+ * 
+ * This form handles the creation and editing of exploration and adventure items with:
+ * - Dynamic form fields based on item type
+ * - Image file upload with preview
+ * - Form validation and submission handling
+ * - Support for both creation and editing workflows
+ */
+
 import React, { useState } from 'react';
 import './css/CreateItemForm.css';
 
+// Default form state for new items
 const initialFormState = {
     type: 'exploration',
     name: '',
@@ -13,14 +24,38 @@ const initialFormState = {
     difficulty: ''
 };
 
+/**
+ * CreateItemForm Component
+ * 
+ * A comprehensive form for creating or editing exploration/adventure items.
+ * Handles file uploads, form validation, and different submission modes.
+ * 
+ * @param {Function} onComplete - Callback when form is successfully submitted
+ * @param {Function} onCancel - Callback when form is cancelled
+ * @param {Function} saveItem - Function to save item to database (for new items)
+ * @param {Object} initialData - Pre-populated data for editing existing items
+ * @param {boolean} isEditing - Whether this is editing an existing item vs creating new
+ * @returns {JSX.Element} The item creation/editing form
+ */
 function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing }) {
+    // Initialize form data - either from provided initial data (editing mode) or default state
     const [formData, setFormData] = useState(initialData ? {
         ...initialData,
+        // Convert arrays to comma-separated strings for text inputs
         categories: Array.isArray(initialData.categories) ? initialData.categories.join(', ') : initialData.categories || '',
         keyLocations: Array.isArray(initialData.keyLocations) ? initialData.keyLocations.join(', ') : initialData.keyLocations || ''
     } : initialFormState);
+    
+    // Track saving state to prevent multiple submissions
     const [isSaving, setIsSaving] = useState(false);
 
+    /**
+     * Handles standard form input changes
+     * 
+     * Updates form data state when user types in text inputs or textareas.
+     * 
+     * @param {Event} e - The input change event
+     */
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevData => ({
@@ -29,23 +64,42 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
         }));
     };
 
+    /**
+     * Handles item type selection changes
+     * 
+     * When user changes between 'exploration' and 'adventure',
+     * resets difficulty field since it's only used for adventures.
+     * 
+     * @param {Event} e - The select change event
+     */
     const handleTypeChange = (e) => {
         setFormData(prevData => ({
             ...prevData,
             type: e.target.value,
-            difficulty: ''
+            difficulty: ''  // Reset difficulty when changing types
         }));
     };
 
+    /**
+     * Handles form submission for creating or updating items
+     * 
+     * Processes form data, converts comma-separated strings back to arrays,
+     * and either creates a new item or updates an existing one.
+     * 
+     * @param {Event} e - The form submission event
+     * @param {boolean} shouldLoad - Whether to load the item after saving (editing mode)
+     */
     const handleSubmit = async (e, shouldLoad = false) => {
         e.preventDefault();
 
+        // Prevent multiple submissions
         if (isSaving) {
             return;
         }
 
         setIsSaving(true);
 
+        // Process form data: convert comma-separated strings to arrays
         const dataToSubmit = {
             ...formData,
             categories: formData.categories.split(',').map(c => c.trim()).filter(c => c),
@@ -54,8 +108,10 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
 
         try {
             if (isEditing) {
+                // Update existing item
                 onComplete(dataToSubmit, shouldLoad);
             } else {
+                // Create new item
                 const docId = await saveItem(dataToSubmit);
                 onComplete({ ...dataToSubmit, id: docId }, shouldLoad);
             }
@@ -67,6 +123,14 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
         }
     };
 
+    /**
+     * Handles submission with automatic loading (editing mode)
+     * 
+     * Convenience function for editing mode that submits and then
+     * loads the item for immediate route editing.
+     * 
+     * @param {Event} e - The form submission event
+     */
     const handleSubmitAndLoad = (e) => {
         handleSubmit(e, true);
     };
