@@ -4,12 +4,27 @@ import './css/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 
-function Sidebar({ activeItem, onSidebarClick }) {
+function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleSidebar = () => {
-        setIsOpen(!isOpen);
+        const newState = !isOpen;
+        setIsOpen(newState);
+        if (onSidebarToggle) {
+            onSidebarToggle(newState);
+        }
+    };
+
+    const handleSidebarClick = (item, path) => {
+        onSidebarClick(item, path);
+        
+        if (isOpen) {
+            setIsOpen(false);
+            if (onSidebarToggle) {
+                onSidebarToggle(false);
+            }
+        }
     };
 
     return (
@@ -20,21 +35,21 @@ function Sidebar({ activeItem, onSidebarClick }) {
                 </div>
                 <div 
                     className={`sidebar-link ${location.pathname === '/' && activeItem === 'map' ? 'active' : ''}`}
-                    onClick={() => onSidebarClick('map', '/')}
+                    onClick={() => handleSidebarClick('map', '/')}
                 >
                     <FontAwesomeIcon icon={faMap} />
                     {isOpen && <p>Map</p>}
                 </div>
                 <div 
                     className={`sidebar-link ${activeItem === 'explore' ? 'active' : ''}`}
-                    onClick={() => onSidebarClick('explore', '/')}
+                    onClick={() => handleSidebarClick('explore', '/')}
                 >
                     <FontAwesomeIcon icon={faCompass} />
                     {isOpen && <p>Explore</p>}
                 </div>
                 <div 
                     className={`sidebar-link ${activeItem === 'adventures' ? 'active' : ''}`}
-                    onClick={() => onSidebarClick('adventures', '/')}
+                    onClick={() => handleSidebarClick('adventures', '/')}
                 >
                     <FontAwesomeIcon icon={faHatCowboy} />
                     {isOpen && <p>Adventures</p>}
@@ -42,21 +57,21 @@ function Sidebar({ activeItem, onSidebarClick }) {
 
                 <div 
                     className={`sidebar-link ${location.pathname === '/guides' ? 'active' : ''}`}
-                    onClick={() => onSidebarClick('guides', '/guides')}
+                    onClick={() => handleSidebarClick('guides', '/guides')}
                 >
                     <FontAwesomeIcon icon={faBook} />
                     {isOpen && <p>Guides/Safety</p>}
                 </div>
                 <div 
                     className={`sidebar-link ${location.pathname === '/settings' ? 'active' : ''}`}
-                    onClick={() => onSidebarClick('settings', '/settings')}
+                    onClick={() => handleSidebarClick('settings', '/settings')}
                 >
                     <FontAwesomeIcon icon={faGear} />
                     {isOpen && <p>Settings</p>}
                 </div>
                 <div 
                     className={`sidebar-link ${location.pathname === '/admin' ? 'active' : ''}`}
-                    onClick={() => onSidebarClick('admin', '/admin')}
+                    onClick={() => handleSidebarClick('admin', '/admin')}
                 >
                     <FontAwesomeIcon icon={faTools} />
                     {isOpen && <p>Admin Tools</p>}
@@ -65,7 +80,7 @@ function Sidebar({ activeItem, onSidebarClick }) {
             <div className='sidebar-footer'>
                 <div 
                     className={`sidebar-link ${location.pathname === '/help' ? 'active' : ''}`}
-                    onClick={() => onSidebarClick('help', '/help')}
+                    onClick={() => handleSidebarClick('help', '/help')}
                 >
                     <FontAwesomeIcon icon={faQuestionCircle} />
                     {isOpen && <p>Help</p>}

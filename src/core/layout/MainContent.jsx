@@ -22,6 +22,7 @@ const MainContent = () => {
     const [activeWaypoint, setActiveWaypoint] = useState(null);
     const [currentZoom, setCurrentZoom] = useState(3);
     const [currentWaypointIndex, setCurrentWaypointIndex] = useState(0);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const [structuredRouteData, setStructuredRouteData] = useState([]);
     const [currentDemoPath, setCurrentDemoPath] = useState([]);
@@ -107,6 +108,10 @@ const MainContent = () => {
         setSmoothPanFunction(() => panFunction);
     }, []);
 
+    const handleSidebarToggle = useCallback((isOpen) => {
+        setIsSidebarOpen(isOpen);
+    }, []);
+
     const handleWaypointChange = useCallback((index) => {
         let cumulativeWaypointCount = 0;
         let currentWaypoint = null;
@@ -167,10 +172,22 @@ const MainContent = () => {
         };
     }, [isDemoMode, isZooming, activeRoute, memoizedCurrentDemoPath, memoizedWaypoints, activeWaypoint, currentZoom]);
 
+    const sidebarWidth = isSidebarOpen ? 250 : 70;
+    const mainContentStyle = {
+        width: `calc(100% - ${sidebarWidth}px)`,
+        position: 'relative',
+        left: `${sidebarWidth}px`,
+        transition: 'width 0.3s ease, left 0.3s ease'
+    };
+
     return (
         <div style={{ display: 'flex', height: '100vh' }}>
-            <Sidebar activeItem={activeItem} onSidebarClick={handleSidebarClick} />
-            <div style={{ width: 'calc(100% - 70px)', position: 'relative', left: '70px'  }}>
+            <Sidebar 
+                activeItem={activeItem} 
+                onSidebarClick={handleSidebarClick}
+                onSidebarToggle={handleSidebarToggle}
+            />
+            <div style={mainContentStyle}>
                 <Routes>
                     <Route path="/" element={<MainMap {...mapProps} onSmoothPanReady={handleSmoothPanReady} />} />
                     <Route path="/guides" element={<Guides />} />
