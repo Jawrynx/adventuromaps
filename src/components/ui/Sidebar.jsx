@@ -4,10 +4,38 @@ import './css/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 
+/**
+ * Sidebar Component
+ * 
+ * Main navigation sidebar providing access to all application features.
+ * Features collapsible design with icons and labels, active state tracking,
+ * and responsive behavior that communicates with parent layout components.
+ * 
+ * Features:
+ * - Collapsible sidebar with toggle functionality
+ * - Icon-based navigation with FontAwesome icons
+ * - Active state indication for current page/feature
+ * - Auto-close on mobile/item selection
+ * - Layout communication for responsive design
+ * - Route-aware active states
+ * - Accessible navigation structure
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.activeItem - Currently active navigation item
+ * @param {Function} props.onSidebarClick - Callback when navigation item is clicked
+ * @param {Function} props.onSidebarToggle - Callback when sidebar open/close state changes
+ * @returns {JSX.Element} Collapsible navigation sidebar
+ */
 function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
 
+    /**
+     * Toggle sidebar open/closed state
+     * 
+     * Updates local state and notifies parent component of layout change
+     * for responsive design adjustments.
+     */
     const toggleSidebar = () => {
         const newState = !isOpen;
         setIsOpen(newState);
@@ -16,9 +44,19 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
         }
     };
 
+    /**
+     * Handle navigation item selection
+     * 
+     * Notifies parent of navigation choice and auto-closes sidebar
+     * if currently open for better mobile experience.
+     * 
+     * @param {string} item - Selected navigation item identifier
+     * @param {string} path - Route path for navigation
+     */
     const handleSidebarClick = (item, path) => {
         onSidebarClick(item, path);
         
+        // Auto-close sidebar after selection for better mobile UX
         if (isOpen) {
             setIsOpen(false);
             if (onSidebarToggle) {

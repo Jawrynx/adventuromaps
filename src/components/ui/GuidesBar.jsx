@@ -5,10 +5,32 @@ import GuideForm from './GuideForm'
 import GuideSelector from './GuideSelector'
 import './css/GuidesBar.css'
 
+/**
+ * GuidesBar Component
+ * 
+ * Navigation sidebar for the guides and safety section providing categorized
+ * access to help content and administrative functions. Displays category
+ * buttons for content filtering and admin controls for content management.
+ * 
+ * Features:
+ * - Categorized guide navigation
+ * - Create new guide functionality  
+ * - Edit existing guide selection
+ * - Modal-based guide management forms
+ * - Organized content categories for outdoor activities
+ * - Admin tools for content creators
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.onCategorySelect - Callback when category is selected
+ * @returns {JSX.Element} Guides navigation sidebar
+ */
 function GuidesBar({ onCategorySelect }) {
+    // Modal state management for guide creation and editing
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showModifySelector, setShowModifySelector] = useState(false);
     const [selectedGuide, setSelectedGuide] = useState(null);
+
+    // Predefined categories for organizing guide content
   const categories = [
     'Getting Started',
     'Using the Map & Routes',

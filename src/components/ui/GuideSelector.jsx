@@ -4,10 +4,35 @@ import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import './css/GuideSelector.css';
 
+/**
+ * GuideSelector Component
+ * 
+ * Modal component for selecting existing guides for modification. Fetches
+ * and displays a list of all guides from Firestore, allowing users to
+ * choose which guide to edit. Handles loading states and empty results.
+ * 
+ * Features:
+ * - Fetches guides from Firestore
+ * - Displays guides in chronological order
+ * - Loading and empty state handling
+ * - Guide selection for editing
+ * - Error handling for database operations
+ * 
+ * @param {Object} props - Component props
+ * @param {Function} props.onGuideSelect - Callback when guide is selected
+ * @param {Function} props.onClose - Callback to close selector
+ * @returns {JSX.Element} Guide selection interface
+ */
 function GuideSelector({ onGuideSelect, onClose }) {
     const [guides, setGuides] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    /**
+     * Fetch guides from Firestore on component mount
+     * 
+     * Retrieves all guide posts ordered by creation date (newest first)
+     * and updates component state with fetched data.
+     */
     useEffect(() => {
         const fetchGuides = async () => {
             try {

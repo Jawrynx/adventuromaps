@@ -1,5 +1,20 @@
 import React from 'react'
 
+/**
+ * LoadingSpinner Component
+ * 
+ * Reusable loading indicator with animated spinning circle and loading text.
+ * Provides visual feedback during async operations like data fetching,
+ * form submissions, or page transitions.
+ * 
+ * Features:
+ * - CSS animated spinning circle
+ * - Centered layout with loading text
+ * - Inline styling for portability
+ * - Consistent loading experience across the app
+ * 
+ * @returns {JSX.Element} Animated loading spinner with text
+ */
 function LoadingSpinner() {
   return (
         <div style={{
@@ -9,6 +24,7 @@ function LoadingSpinner() {
             justifyContent: 'center',
             padding: '20px'
         }}>
+            {/* Animated spinning circle */}
             <div style={{
                 border: '10px solid #f3f3f3',
                 borderTop: '10px solid #3498db',
@@ -17,6 +33,8 @@ function LoadingSpinner() {
                 height: '40px',
                 animation: 'spin 1s linear infinite',
             }}></div>
+            
+            {/* CSS keyframe animation for spinning effect */}
             <style>
                 {`
                     @keyframes spin {
@@ -25,6 +43,7 @@ function LoadingSpinner() {
                     }
                 `}
             </style>
+            
             <p style={{ marginTop: '10px' }}>Loading...</p>
         </div>
     );

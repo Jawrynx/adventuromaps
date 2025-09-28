@@ -5,11 +5,37 @@ import { db } from '../../services/firebase';
 import Post from './Post';
 import './css/PostsList.css';
 
+/**
+ * PostsList Component
+ * 
+ * Fetches and displays a list of posts filtered by category with smooth
+ * transition animations. Supports post selection to view full content
+ * and provides a back navigation to return to the list view.
+ * 
+ * Features:
+ * - Category-based post filtering from Firestore
+ * - Loading states during data fetch
+ * - Post list with title and excerpt display
+ * - Smooth transition animations between list and detail views
+ * - Full post content display with Post component
+ * - Back navigation functionality
+ * - Error handling for database operations
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.category - Category to filter posts by
+ * @returns {JSX.Element} Posts list with transition animations
+ */
 function PostsList({ category }) {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedPost, setSelectedPost] = useState(null);
 
+    /**
+     * Fetch posts by category from Firestore
+     * 
+     * Queries posts collection for guides and safety posts in the selected
+     * category, ordered by creation date (newest first).
+     */
     useEffect(() => {
         const fetchPosts = async () => {
             setLoading(true);
@@ -43,10 +69,18 @@ function PostsList({ category }) {
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [showPostContent, setShowPostContent] = useState(false);
 
+    /**
+     * Handle post selection with smooth transition
+     * 
+     * Initiates transition animation before displaying selected post content.
+     * Uses timeout to coordinate animation timing for smooth user experience.
+     * 
+     * @param {Object} post - Selected post object to display
+     */
     const handlePostSelect = (post) => {
         setIsTransitioning(true);
         setSelectedPost(post);
-        // Slightly longer animation for smoother transition
+        // Delay content display for smooth transition animation
         setTimeout(() => {
             setShowPostContent(true);
         }, 300);

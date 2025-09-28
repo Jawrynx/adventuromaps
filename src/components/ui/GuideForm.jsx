@@ -5,6 +5,29 @@ import { db } from '../../services/firebase';
 import { uploadFile } from '../../services/uploadService';
 import './css/GuideForm.css';
 
+/**
+ * GuideForm Component
+ * 
+ * Form component for creating and editing guide/post content in the application.
+ * Supports image upload with preview, multiple content categories, and both
+ * creation and editing modes. Integrates with Firebase Firestore for data
+ * persistence and Firebase Storage for image uploads.
+ * 
+ * Features:
+ * - Create new guides and posts
+ * - Edit existing content
+ * - Image upload with preview functionality
+ * - Categorized content organization
+ * - Form validation and error handling
+ * - Real-time image preview
+ * - Firebase integration for data/file storage
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.existingGuide - Existing guide data for edit mode
+ * @param {Function} props.onClose - Callback when form is closed
+ * @param {Function} props.onSuccess - Callback when form submission succeeds
+ * @returns {JSX.Element} Guide creation/editing form
+ */
 function GuideForm({ existingGuide, onClose, onSuccess }) {
     const [formData, setFormData] = useState({
         type: existingGuide?.type || 'Guide',
@@ -31,6 +54,14 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
         'Activity-Specific Guides'
     ];
 
+    /**
+     * Handle form field changes
+     * 
+     * Updates form state when user types in input fields.
+     * Uses dynamic property names to update the correct field.
+     * 
+     * @param {Event} e - Input change event
+     */
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -39,15 +70,30 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
         }));
     };
 
+    /**
+     * Handle image file selection
+     * 
+     * Processes selected image file and creates preview URL for immediate
+     * visual feedback. Stores file for upload during form submission.
+     * 
+     * @param {Event} e - File input change event
+     */
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setSelectedFile(file);
+            // Create object URL for immediate preview
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
         }
     };
 
+    /**
+     * Remove selected image
+     * 
+     * Clears image selection and preview, resets form image data,
+     * and clears the file input field.
+     */
     const removeImage = () => {
         setSelectedFile(null);
         setImagePreview(null);
@@ -55,10 +101,20 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
             ...prev,
             image_url: ''
         }));
+        // Clear file input element
         const fileInput = document.getElementById('image');
         if (fileInput) fileInput.value = '';
     };
 
+    /**
+     * Handle form submission
+     * 
+     * Processes form data, uploads image if selected, and saves guide to Firestore.
+     * Supports both creating new guides and updating existing ones. Handles
+     * error states and loading indicators during async operations.
+     * 
+     * @param {Event} e - Form submit event
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsUploading(true);
@@ -66,6 +122,7 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
         try {
             let imageUrl = formData.image_url;
             
+            // Upload new image if selected
             if (selectedFile) {
                 const fileName = `guides/${Date.now()}_${selectedFile.name}`;
                 imageUrl = await uploadFile(selectedFile, fileName);
@@ -77,17 +134,20 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
             };
             
             if (existingGuide) {
+                // Update existing guide
                 const guideRef = doc(db, 'posts', existingGuide.id);
                 await updateDoc(guideRef, {
                     ...dataToSave,
                     updated_at: serverTimestamp()
                 });
             } else {
+                // Create new guide
                 await addDoc(collection(db, 'posts'), {
                     ...dataToSave,
                     created_at: serverTimestamp()
                 });
             }
+            
             onSuccess();
             onClose();
         } catch (error) {
