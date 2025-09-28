@@ -22,6 +22,12 @@ function Post({ post }) {
                 </div>
             </header>
             
+            {post.image_url && (
+                <div className="post-image">
+                    <img src={post.image_url} alt={post.title} className="guide-image" />
+                </div>
+            )}
+            
             <div className="post-content">
                 <ReactMarkdown>{post.content}</ReactMarkdown>
             </div>
@@ -45,7 +51,8 @@ Post.propTypes = {
         title: PropTypes.string.isRequired,
         author: PropTypes.string.isRequired,
         content: PropTypes.string.isRequired,
-        created_at: PropTypes.object.isRequired
+        created_at: PropTypes.object.isRequired,
+        image_url: PropTypes.string
     }).isRequired
 };
 
