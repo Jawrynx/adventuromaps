@@ -1,45 +1,108 @@
+/**
+ * MapContent.jsx - Map content renderer and interaction controller
+ * 
+ * This component handles the rendering of map content including routes, waypoints,
+ * markers, and boundaries. It also manages smooth panning animations, zoom controls,
+ * and the integration of geographic boundary overlays for national parks and
+ * areas of outstanding natural beauty.
+ */
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { AdvancedMarker, Pin, useMap, useMapsLibrary } from '@vis.gl/react-google-maps';
 import { Polyline } from './Polyline';
 
+/**
+ * MapContent Component
+ * 
+ * Renders and manages interactive map content including:
+ * - Route polylines and demo path visualization
+ * - Waypoint markers with custom styling
+ * - Geographic boundary overlays (National Parks, AONBs)
+ * - Smooth panning animations between waypoints
+ * - Zoom level management and map bounds calculation
+ * - GeoJSON data loading and boundary display
+ * 
+ * @param {Array|null} activeRoute - Currently selected route coordinates
+ * @param {Array|null} activePathForDemo - Demo mode path coordinates
+ * @param {Array} waypoints - Array of waypoint objects for navigation
+ * @param {Object|null} activeWaypoint - Currently focused waypoint in demo mode
+ * @param {number} zoomLevel - Current map zoom level
+ * @param {boolean} isZooming - Whether map is currently animating zoom
+ * @param {Function} onSmoothPanReady - Callback when smooth pan function is ready
+ * @returns {JSX.Element} Map content with routes, markers, and boundaries
+ */
 function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint, zoomLevel, isZooming, onSmoothPanReady }) {
-    const map = useMap();
-    const mapsLib = useMapsLibrary('maps');
+    // ========== MAP REFERENCES ==========
+    const map = useMap();                        // Google Maps instance reference
+    const mapsLib = useMapsLibrary('maps');      // Google Maps library for advanced features
 
-    const [path, setPath] = useState(null);
-    const [showBoundaries, setShowBoundaries] = useState(true);
+    // ========== COMPONENT STATE ==========
+    const [path, setPath] = useState(null);             // Current route path data
+    const [showBoundaries, setShowBoundaries] = useState(true); // Toggle for boundary overlays
 
-    let panPath = [];
-    let panQueue = [];
-    const STEPS = 20;
+    // ========== SMOOTH PANNING CONFIGURATION ==========
+    let panPath = [];      // Array storing smooth pan animation steps
+    let panQueue = [];     // Queue for pending pan operations
+    const STEPS = 20;      // Number of steps for smooth pan animation
     
+    /**
+     * Smoothly pans the map to a new location with animation
+     * 
+     * Creates a smooth panning animation by dividing the movement into
+     * multiple steps. Handles queuing of multiple pan requests to prevent
+     * animation conflicts and ensures smooth user experience.
+     * 
+     * @param {google.maps.Map} map - Google Maps instance
+     * @param {number} newLat - Target latitude coordinate
+     * @param {number} newLng - Target longitude coordinate
+     * @param {number} targetZoom - Target zoom level for the destination
+     */
     const smoothPanTo = (map, newLat, newLng, targetZoom) => {
+        // Queue the request if already panning
         if (panPath.length > 0) {
             panQueue.push([newLat, newLng, targetZoom]);
         } else {
+            // Lock panning and calculate smooth animation steps
             panPath.push("LOCK");
             const curLat = map.getCenter().lat();
             const curLng = map.getCenter().lng();
             const dLat = (newLat - curLat) / STEPS;
             const dLng = (newLng - curLng) / STEPS;
 
+            // Create intermediate pan positions for smooth animation
             for (let i = 0; i < STEPS; i++) {
                 panPath.push([curLat + dLat * i, curLng + dLng * i]);
             }
             panPath.push([newLat, newLng]);
             panPath.shift();
+            // Start the smooth panning animation
             setTimeout(() => doPan(map, targetZoom), 20);
         }
     };
 
+    /**
+     * Creates a cinematic panning effect with zoom animation
+     * 
+     * Provides a more dramatic panning experience by zooming out, panning
+     * to the destination, and then zooming back in. Creates a bird's-eye
+     * view effect for long-distance navigation.
+     * 
+     * @param {google.maps.Map} map - Google Maps instance
+     * @param {number} newLat - Target latitude coordinate
+     * @param {number} newLng - Target longitude coordinate
+     * @param {number} targetZoom - Final zoom level after panning
+     */
     const cinematicPanTo = (map, newLat, newLng, targetZoom) => {
         const currentZoom = map.getZoom();
         
+        // Calculate intermediate zoom level (zoom out for overview)
         const zoomOutLevel = Math.max(currentZoom - 3, 5);
         
+        // Get current map center
         const startLat = map.getCenter().lat();
         const startLng = map.getCenter().lng();
         
+        // Set initial position
         map.setCenter(new window.google.maps.LatLng(startLat, startLng));
         
         smoothZoom(map, zoomOutLevel, currentZoom, true);
@@ -76,20 +139,32 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
             cinematicPanStep();
         }, zoomOutDuration);
     };
-    
 
-
-
+    /**
+     * Executes smooth panning animation steps
+     * 
+     * Recursively processes the pan path array to create smooth animation.
+     * Handles queued pan operations and manages zoom adjustments after
+     * panning completes. Core function for the smooth pan animation system.
+     * 
+     * @param {google.maps.Map} map - Google Maps instance
+     * @param {number} targetZoom - Target zoom level after panning completes
+     */
     const doPan = (map, targetZoom) => {
+        // Get next position in the animation sequence
         const next = panPath.shift();
         if (next != null) {
+            // Continue panning animation
             map.panTo(new window.google.maps.LatLng(next[0], next[1]));
             setTimeout(() => doPan(map, targetZoom), 20);
         } else {
+            // Panning complete, check for queued operations
             const queued = panQueue.shift();
             if (queued != null) {
+                // Process next queued pan operation
                 smoothPanTo(map, queued[0], queued[1], queued[2]);
             } else {
+                // Apply target zoom if needed
                 const currentMapZoom = map.getZoom();
                 if (currentMapZoom < targetZoom) {
                     smoothZoom(map, targetZoom, currentMapZoom);
@@ -98,12 +173,26 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         }
     };
 
+    /**
+     * Creates smooth zoom animations with stepped transitions
+     * 
+     * Provides gradual zoom in/out animations instead of instant zoom changes.
+     * Uses event listeners to chain zoom steps for smooth visual transitions
+     * and supports both zoom in and zoom out directions.
+     * 
+     * @param {google.maps.Map} map - Google Maps instance
+     * @param {number} targetZoom - Final zoom level to reach
+     * @param {number} currentZoom - Current map zoom level
+     * @param {boolean} isZoomOut - Whether this is a zoom out operation (affects timing)
+     */
     const smoothZoom = (map, targetZoom, currentZoom, isZoomOut = false) => {
         
         if (isZoomOut) {
+            // Zoom out animation
             if (currentZoom <= targetZoom) {
-                return;
+                return; // Already at or below target zoom
             } else {
+                // Listen for zoom completion before continuing
                 const zoomListener = window.google.maps.event.addListener(map, 'zoom_changed', function(event) {
                     window.google.maps.event.removeListener(zoomListener);
                     smoothZoom(map, targetZoom, currentZoom - 1, true);
@@ -113,16 +202,18 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
                 }, 200);
             }
         } else {
+            // Zoom in animation
             if (currentZoom >= targetZoom) {
-                return;
+                return; // Already at or above target zoom
             } else {
+                // Listen for zoom completion before continuing
                 const zoomListener = window.google.maps.event.addListener(map, 'zoom_changed', function(event) {
                     window.google.maps.event.removeListener(zoomListener);
                     smoothZoom(map, targetZoom, currentZoom + 1, false);
                 });
                 setTimeout(() => {
                     map.setZoom(currentZoom + 1);
-                }, 280);
+                }, 280); // Slightly slower timing for zoom in
             }
         }
     };
@@ -177,9 +268,22 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         };
     }, [map, mapsLib, showBoundaries]);
 
-    // Expose smooth panning function to parent components
+    /**
+     * Exposes smooth panning functionality to parent components
+     * 
+     * Creates a callback function that parent components can use to trigger
+     * smooth map movements. Supports both standard and cinematic pan modes.
+     */
     useEffect(() => {
         if (map && onSmoothPanReady) {
+            /**
+             * Smooth pan function exposed to parent components
+             * 
+             * @param {number} lat - Target latitude
+             * @param {number} lng - Target longitude  
+             * @param {number} zoom - Target zoom level (defaults to current zoomLevel)
+             * @param {boolean} useCinematic - Whether to use cinematic panning animation
+             */
             const smoothPanFunction = (lat, lng, zoom = zoomLevel, useCinematic = false) => {
                 if (useCinematic) {
                     cinematicPanTo(map, lat, lng, zoom);
@@ -191,10 +295,19 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         }
     }, [map, onSmoothPanReady, zoomLevel]);
 
-    // Calculate visible waypoints based on active waypoint
+    /**
+     * Calculate visible waypoints based on active waypoint position
+     * 
+     * Shows only waypoints that come after the currently active waypoint
+     * in the route sequence. This creates a progressive reveal effect
+     * as users move through the adventure.
+     * 
+     * @returns {Array} Array of waypoint objects after the active waypoint
+     */
     const visibleWaypoints = useMemo(() => {
         if (!activeWaypoint || !waypoints || waypoints.length === 0) return [];
 
+        // Find index of current active waypoint
         const activeWaypointIndex = waypoints.findIndex(wp => {
             const coords = wp.coordinates || { lat: wp.lat, lng: wp.lng };
             return coords.lat === activeWaypoint?.lat && coords.lng === activeWaypoint?.lng;
@@ -202,6 +315,7 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
 
         if (activeWaypointIndex === -1) return [];
 
+        // Return all waypoints after the active one
         return waypoints.slice(activeWaypointIndex + 1);
     }, [waypoints, activeWaypoint]);
 
