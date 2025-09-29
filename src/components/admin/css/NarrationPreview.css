@@ -1,0 +1,182 @@
+/* NarrationPreview.css - Styling for narration and keyframe preview */
+
+.narration-preview {
+    padding: 20px;
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    background: #444;
+    border-radius: 8px;
+}
+
+.preview-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.preview-header h3 {
+    color: #fff;
+    margin: 0 0 10px 0;
+}
+
+.error {
+    color: #d32f2f;
+    font-weight: bold;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #fff;
+}
+
+.preview-loading {
+    background: #555;
+    border: 2px dashed #888;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    color: #ccc;
+    font-size: 18px;
+    width: 100%;
+    height: 100%;
+}
+
+/* Animated Text Display */
+.animated-text-display {
+    background: #666;
+    border: 2px solid #333;
+    border-radius: 8px;
+    padding: 30px;
+    margin: 20px 0;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.text-content {
+    font-size: 18px;
+    line-height: 1.6;
+    text-align: center;
+    color: #fff;
+    animation: textFadeIn 0.3s ease-in;
+}
+
+@keyframes textFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Keyframes Info */
+.keyframes-info {
+    background: #e3f2fd;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-size: 14px;
+    color: #1976d2;
+    text-align: center;
+
+    p {
+        color: #222;
+    }
+}
+
+/* Audio Controls */
+.audio-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.audio-controls button {
+    min-width: 100px;
+}
+
+.yellow {
+    background-color: #5a5a5a;
+    color: #fff;
+}
+
+/* Progress Section */
+.progress-section {
+    margin: 20px 0;
+}
+
+.time-display {
+    text-align: center;
+    font-family: monospace;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #2196f3);
+    transition: width 0.1s ease;
+}
+
+/* Instructions */
+.instructions {
+    background: #fff3e0;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 20px 0;
+    border-left: 4px solid #ff9800;
+}
+
+.instructions h4 {
+    margin: 0 0 10px 0;
+    color: #f57c00;
+}
+
+.instructions p {
+    margin: 5px 0;
+    color: #333;
+}
+
+.instructions code {
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    color: #d32f2f;
+}
+
+.instructions pre {
+    background: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow-x: auto;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+/* Preview Actions */
+.preview-actions {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.preview-actions button {
+    min-width: 200px;
+    font-size: 16px;
+}

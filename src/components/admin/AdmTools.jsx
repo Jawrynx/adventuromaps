@@ -211,14 +211,30 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         const updatedRoutes = routes.map(route => {
             if (route.id === routeId) {
                 const newWaypoints = [...route.waypoints];
+                const originalWaypoint = newWaypoints[waypointIndex];
+                
+                console.log("AdmTools: Updating waypoint data:", {
+                    routeId,
+                    waypointIndex,
+                    originalWaypoint: originalWaypoint,
+                    updatedWaypointData: updatedWaypointData,
+                    originalDescription: originalWaypoint?.description,
+                    newDescription: updatedWaypointData.description
+                });
+                
                 newWaypoints[waypointIndex] = {
-                    ...newWaypoints[waypointIndex],
+                    ...originalWaypoint,
                     ...updatedWaypointData
                 };
+                
+                console.log("AdmTools: Final merged waypoint:", newWaypoints[waypointIndex]);
+                
                 return { ...route, waypoints: newWaypoints };
             }
             return route;
         });
+        
+        console.log("AdmTools: Setting updated routes:", updatedRoutes);
         setRoutes(updatedRoutes);
     };
 

@@ -12,6 +12,8 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import NarrationPreview from './NarrationPreview';
+import './css/NarrationPreview.css';
 
 /**
  * WaypointEditor Component
@@ -41,6 +43,7 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
     
     // ========== UI STATE ==========
     const [isSaving, setIsSaving] = useState(false);            // Prevent multiple save operations
+    const [showPreview, setShowPreview] = useState(false);      // Show/hide narration preview
 
     /**
      * Initializes editor state when waypoint data changes
@@ -49,9 +52,17 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
      * when a new waypoint is selected for editing.
      */
     useEffect(() => {
+        console.log("WaypointEditor: Loading waypoint data:", waypointData.waypoint);
+        
         // Load existing text content
-        setDescription(waypointData.waypoint.description || '');
-        setInstructions(waypointData.waypoint.instructions || '');
+        const newDescription = waypointData.waypoint.description || '';
+        const newInstructions = waypointData.waypoint.instructions || '';
+        
+        console.log("WaypointEditor: Setting description:", newDescription);
+        console.log("WaypointEditor: Setting instructions:", newInstructions);
+        
+        setDescription(newDescription);
+        setInstructions(newInstructions);
         
         // Reset file upload states
         setImages([]);
@@ -133,6 +144,9 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
         try {
             // Compile all waypoint data for saving
             const waypointDataToSave = {
+                // Start with existing waypoint data to preserve other fields
+                ...waypointData.waypoint,
+                // Override with updated values (these will take precedence)
                 description,
                 instructions,
                 images,              // New image files to upload
@@ -141,19 +155,20 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 keyframes,           // Animation keyframes file (if new one selected)
                 // Preserve existing narration and keyframes URLs if no new files are uploaded
                 narration_url: narration ? undefined : waypointData.waypoint.narration_url,
-                keyframes_url: keyframes ? undefined : waypointData.waypoint.keyframes_url,
-                // Explicitly include all existing waypoint data to preserve other fields
-                ...waypointData.waypoint
+                keyframes_url: keyframes ? undefined : waypointData.waypoint.keyframes_url
             };
             
             // Debug logging
             console.log("WaypointEditor: Saving waypoint data:", {
+                description: description,
+                instructions: instructions,
                 existingImageUrls,
                 newImages: images.length,
                 newNarration: narration?.name || 'none',
                 newKeyframes: keyframes?.name || 'none',
                 preservingNarrationUrl: waypointData.waypoint.narration_url && !narration,
-                preservingKeyframesUrl: waypointData.waypoint.keyframes_url && !keyframes
+                preservingKeyframesUrl: waypointData.waypoint.keyframes_url && !keyframes,
+                fullDataToSave: waypointDataToSave
             });
 
             // Call parent save handler with compiled data
@@ -166,6 +181,18 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
             setIsSaving(false);
         }
     };
+
+    // Show preview component if in preview mode
+    if (showPreview) {
+        return (
+            <NarrationPreview
+                description={description}
+                narrationUrl={waypointData.waypoint.narration_url}
+                keyframesUrl={waypointData.waypoint.keyframes_url}
+                onClose={() => setShowPreview(false)}
+            />
+        );
+    }
 
     return (
         <div className="waypoint-editor">
@@ -262,6 +289,14 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                     onChange={(e) => setKeyframes(e.target.files[0])}
                 />
                 {keyframes && <p>New keyframes file selected: {keyframes.name}</p>}
+            </div>
+
+            <div className="keyframes-preview">
+                {waypointData.waypoint.keyframes_url && waypointData.waypoint.narration_url && (
+                    <button className="adm-button blue" onClick={() => setShowPreview(true)}>
+                        Preview Keyframes with Narration
+                    </button>
+                )}
             </div>
 
             <div className="editor-buttons">
