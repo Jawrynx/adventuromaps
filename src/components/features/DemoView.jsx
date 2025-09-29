@@ -7,7 +7,7 @@
  * keyboard controls, and responsive layout for optimal user experience.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import './css/DemoView.css';
@@ -36,6 +36,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     const [currentImageIndex, setCurrentImageIndex] = useState(0); // Index for image gallery navigation
     const [touchStart, setTouchStart] = useState(null);         // Touch start position for gesture detection
     const [touchEnd, setTouchEnd] = useState(null);             // Touch end position for swipe calculation
+    const audioRef = useRef(null);                              // Reference to audio element for auto-play control
 
     /**
      * Updates map focus when waypoint changes
@@ -59,6 +60,26 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     useEffect(() => {
         setCurrentImageIndex(0);
     }, [currentWaypointIndex]);
+
+    /**
+     * Auto-plays audio when waypoint changes (if narration is enabled)
+     * 
+     * Automatically starts audio playback when navigating to a new waypoint
+     * that has narration audio available and narration is enabled.
+     */
+    useEffect(() => {
+        if (includeNarration && audioRef.current && waypoints[currentWaypointIndex]?.narration_url) {
+            // Small delay to ensure audio element is ready
+            const timer = setTimeout(() => {
+                audioRef.current.play().catch(error => {
+                    console.log('Auto-play prevented by browser:', error);
+                    // Auto-play was prevented (browser policy), user needs to interact first
+                });
+            }, 100);
+
+            return () => clearTimeout(timer);
+        }
+    }, [currentWaypointIndex, includeNarration, waypoints]);
 
     /**
      * Navigates to the next waypoint or exits demo
@@ -240,11 +261,15 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                 
                 {/* Audio Narration Section - Only displayed when narration is enabled */}
                 {includeNarration && currentWaypoint.narration_url && (
-                    <div className="waypoint-audio">
-                        <h4>🎧 Audio Guide</h4>
-                        <audio controls style={{ width: '100%', marginTop: '10px' }}>
-                            <source src={currentWaypoint.audio_url} type="audio/mpeg" />
-                            <source src={currentWaypoint.audio_url} type="audio/wav" />
+                    <div className="waypoint-audio" style={{ display: 'none' }}>
+                        <audio 
+                            ref={audioRef}
+                            controls 
+                            autoPlay
+                            style={{ width: '100%', marginTop: '10px', display: 'none' }}
+                        >
+                            <source src={currentWaypoint.narration_url} type="audio/mpeg" />
+                            <source src={currentWaypoint.narration_url} type="audio/wav" />
                             Your browser does not support the audio element.
                         </audio>
                     </div>
