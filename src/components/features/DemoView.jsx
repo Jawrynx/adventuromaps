@@ -37,6 +37,9 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     const [touchStart, setTouchStart] = useState(null);         // Touch start position for gesture detection
     const [touchEnd, setTouchEnd] = useState(null);             // Touch end position for swipe calculation
     const audioRef = useRef(null);                              // Reference to audio element for auto-play control
+    const [keyframes, setKeyframes] = useState([]);             // Parsed keyframes for text highlighting
+    const [currentKeyframeIndex, setCurrentKeyframeIndex] = useState(-1); // Currently active keyframe
+    const [textSegments, setTextSegments] = useState([]);       // Text split into segments for highlighting
 
     /**
      * Updates map focus when waypoint changes
@@ -80,6 +83,153 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             return () => clearTimeout(timer);
         }
     }, [currentWaypointIndex, includeNarration, waypoints]);
+
+    /**
+     * Fetches and parses keyframes for text highlighting
+     * 
+     * Downloads the keyframes file and processes it to create text segments
+     * that can be highlighted in sync with audio narration.
+     */
+    useEffect(() => {
+        const loadKeyframes = async () => {
+            const currentWaypoint = waypoints[currentWaypointIndex];
+            if (!currentWaypoint?.keyframes_url || !includeNarration) {
+                setKeyframes([]);
+                setTextSegments([{text: currentWaypoint?.description || "", isKeyframe: false}]);
+                setCurrentKeyframeIndex(-1);
+                return;
+            }
+
+            try {
+                // Fetch keyframes text file
+                const response = await fetch(currentWaypoint.keyframes_url);
+                const keyframesText = await response.text();
+                
+                // Parse keyframes (format: timestamp:text)
+                const parsedKeyframes = keyframesText
+                    .split('\n')
+                    .filter(line => line.trim())
+                    .map(line => {
+                        const colonIndex = line.indexOf(':');
+                        if (colonIndex === -1) return null;
+                        
+                        const timestamp = line.substring(0, colonIndex).trim();
+                        const text = line.substring(colonIndex + 1).trim();
+                        
+                        return {
+                            time: parseFloat(timestamp),
+                            text: text
+                        };
+                    })
+                    .filter(keyframe => keyframe !== null);
+
+                setKeyframes(parsedKeyframes);
+
+                // Split description into segments based on keyframe text
+                const description = currentWaypoint.description || "";
+                console.log('Description:', description);
+                console.log('Keyframes:', parsedKeyframes);
+                
+                // Create segments by finding each keyframe text in the description
+                let segments = [];
+                let processedText = "";
+                let lastIndex = 0;
+
+                // Sort keyframes by position in text (not by time)
+                const keyframesWithPositions = parsedKeyframes
+                    .map((keyframe, index) => {
+                        const position = description.indexOf(keyframe.text);
+                        return { ...keyframe, position, keyframeIndex: index };
+                    })
+                    .filter(kf => kf.position !== -1)
+                    .sort((a, b) => a.position - b.position);
+
+                console.log('Keyframes with positions:', keyframesWithPositions);
+
+                keyframesWithPositions.forEach((keyframe) => {
+                    // Add text before this keyframe (including spaces and punctuation)
+                    if (keyframe.position > lastIndex) {
+                        const beforeText = description.substring(lastIndex, keyframe.position);
+                        if (beforeText) { // Include spaces and whitespace
+                            segments.push({
+                                text: beforeText,
+                                isKeyframe: false
+                            });
+                        }
+                    }
+
+                    // Add the keyframe text
+                    segments.push({
+                        text: keyframe.text,
+                        isKeyframe: true,
+                        keyframeIndex: keyframe.keyframeIndex
+                    });
+
+                    lastIndex = keyframe.position + keyframe.text.length;
+                });
+
+                // Add any remaining text after the last keyframe
+                if (lastIndex < description.length) {
+                    const remainingText = description.substring(lastIndex);
+                    if (remainingText) { // Include all remaining text including spaces
+                        segments.push({
+                            text: remainingText,
+                            isKeyframe: false
+                        });
+                    }
+                }
+
+                console.log('Generated segments:', segments);
+                setTextSegments(segments.length > 0 ? segments : [{text: description, isKeyframe: false}]);
+                setCurrentKeyframeIndex(-1);
+
+            } catch (error) {
+                console.error('Error loading keyframes:', error);
+                setKeyframes([]);
+                setTextSegments([{text: currentWaypoint?.description || "", isKeyframe: false}]);
+                setCurrentKeyframeIndex(-1);
+            }
+        };
+
+        loadKeyframes();
+    }, [currentWaypointIndex, includeNarration, waypoints]);
+
+    /**
+     * Updates text highlighting based on audio playback time
+     * 
+     * Monitors audio current time and highlights the appropriate text segment
+     * based on keyframe timestamps for synchronized reading experience.
+     */
+    useEffect(() => {
+        const handleTimeUpdate = () => {
+            if (!audioRef.current || keyframes.length === 0) return;
+
+            const currentTime = audioRef.current.currentTime;
+            
+            // Find the active keyframe based on current audio time
+            let activeIndex = -1;
+            for (let i = keyframes.length - 1; i >= 0; i--) {
+                if (currentTime >= keyframes[i].time) {
+                    activeIndex = i;
+                    break;
+                }
+            }
+
+            setCurrentKeyframeIndex(activeIndex);
+        };
+
+        if (audioRef.current) {
+            audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+            audioRef.current.addEventListener('loadedmetadata', handleTimeUpdate);
+        }
+
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+                audioRef.current.removeEventListener('loadedmetadata', handleTimeUpdate);
+            }
+        };
+    }, [keyframes]);
 
     /**
      * Navigates to the next waypoint or exits demo
@@ -276,7 +426,26 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                 )}
                 
                 <div className="waypoint-info">
-                    <p>{currentWaypoint.description}</p>
+                    <p>
+                        {textSegments.map((segment, index) => {
+                            // Handle both string and object formats
+                            if (typeof segment === 'string') {
+                                return <span key={index}>{segment}</span>;
+                            }
+                            
+                            // Render text segment with conditional highlighting
+                            const isHighlighted = segment.isKeyframe && segment.keyframeIndex === currentKeyframeIndex;
+                            
+                            return (
+                                <span
+                                    key={index}
+                                    className={isHighlighted ? 'text-highlight' : ''}
+                                >
+                                    {segment.text}
+                                </span>
+                            );
+                        })}
+                    </p>
                 </div>
             </div>
             <div className="demo-controls">
