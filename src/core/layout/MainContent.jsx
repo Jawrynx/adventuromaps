@@ -1,5 +1,11 @@
 /**
- * MainContent.jsx - Primary layout and state management component
+ * MainContent.jsx - Primary layout and state managemen    // ========== DEMO DATA STATE ==========
+    const [structuredRouteData, setStructuredRouteData] = useState([]); // Organized route data for demo mode
+    const [currentDemoPath, setCurrentDemoPath] = useState([]);     // Current path being displayed in demo
+    const [smoothPanFunction, setSmoothPanFunction] = useState(null); // Reference to map's smooth pan function
+    const [isInitialDemoSetup, setIsInitialDemoSetup] = useState(false); // Flag for initial setup phase
+    const [demoStartTime, setDemoStartTime] = useState(null);       // Timestamp when demo started
+    const [includeNarration, setIncludeNarration] = useState(false); // Whether narration is enabled for current demoonent
  * 
  * This component serves as the main orchestrator for the AdventuroMaps application.
  * It manages the overall layout, routing, navigation state, and coordinates between
@@ -64,6 +70,7 @@ const MainContent = () => {
     const [smoothPanFunction, setSmoothPanFunction] = useState(null); // Reference to map's smooth pan function
     const [isInitialDemoSetup, setIsInitialDemoSetup] = useState(false); // Flag for initial demo setup phase
     const [demoStartTime, setDemoStartTime] = useState(null);       // Timestamp when demo started
+    const [includeNarration, setIncludeNarration] = useState(false); // Whether narration is enabled for current demo
     
     /**
      * Handles sidebar navigation clicks
@@ -127,16 +134,24 @@ const MainContent = () => {
      * - Preparing structured route data for waypoint navigation
      * - Zooming to the first waypoint
      * - Starting the demo mode with appropriate timing delays
+     * - Configuring narration preferences for the demo
      * 
-     * @param {Array} structuredData - Array of route objects with waypoints and paths
+     * @param {Object} demoOptions - Demo configuration object containing routes and options
+     * @param {Array} demoOptions.routes - Array of route objects with waypoints and paths
+     * @param {boolean} demoOptions.includeNarration - Whether narration should be enabled
      */
-    const handleStartDemo = useCallback((structuredData) => {
+    const handleStartDemo = useCallback((demoOptions) => {
+        // Extract routes and options from the parameter
+        const structuredData = demoOptions.routes || demoOptions; // Support both new and legacy format
+        const narrationEnabled = demoOptions.includeNarration || false;
+
         // Clear any existing route display
         setActiveRoute(null);
         setIsZooming(true);                 // Indicate map is zooming
         setIsInitialDemoSetup(true);        // Flag for initial setup period
         setDemoStartTime(Date.now());       // Record when demo started
         setStructuredRouteData(structuredData); // Store route data for demo navigation
+        setIncludeNarration(narrationEnabled); // Store narration preference
         setCurrentWaypointIndex(0);         // Start at first waypoint
         setCurrentDemoPath([]);             // Clear any existing demo path
 
@@ -182,6 +197,7 @@ const MainContent = () => {
         setCurrentZoom(3);                  // Reset to default zoom
         setCurrentWaypointIndex(0);         // Reset waypoint index
         setActiveRoute(null);               // Clear any route display
+        setIncludeNarration(false);         // Reset narration preference
     }, []);
 
     /**
@@ -363,6 +379,7 @@ const MainContent = () => {
                             onClose={handleEndDemo}
                             onWaypointChange={handleWaypointChange}
                             currentWaypointIndex={currentWaypointIndex}
+                            includeNarration={includeNarration}
                         />
                     </Modal>
                 )}

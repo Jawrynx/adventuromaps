@@ -21,14 +21,16 @@ import './css/DemoView.css';
  * - Handles touch gestures and keyboard navigation
  * - Automatically updates map focus as waypoints change
  * - Manages media playback and image galleries
+ * - Conditionally displays narration audio based on user preferences
  * 
  * @param {Array} waypoints - Array of waypoint objects with media and location data
  * @param {Function} onClose - Callback to exit demo mode
  * @param {Function} onWaypointChange - Callback when active waypoint changes (updates map)
  * @param {number} currentWaypointIndex - Index of currently active waypoint
+ * @param {boolean} includeNarration - Whether to show narration audio controls
  * @returns {JSX.Element} Interactive demo navigation interface
  */
-function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex }) {
+function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, includeNarration }) {
     // ========== COMPONENT STATE ==========
     const totalWaypoints = waypoints.length;                    // Total number of waypoints in route
     const [currentImageIndex, setCurrentImageIndex] = useState(0); // Index for image gallery navigation
@@ -179,6 +181,11 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex }
         <div className="demo-container">
             <div className="demo-header">
                 <h2>Waypoint Demo</h2>
+                {includeNarration && (
+                    <div className="narration-indicator">
+                        <span>🔊 Narration Enabled</span>
+                    </div>
+                )}
             </div>
             <div className="waypoint-card">
                 <h3>{currentWaypoint.name}</h3>
@@ -230,6 +237,19 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex }
                         </>
                     )}
                 </div>
+                
+                {/* Audio Narration Section - Only displayed when narration is enabled */}
+                {includeNarration && currentWaypoint.narration_url && (
+                    <div className="waypoint-audio">
+                        <h4>🎧 Audio Guide</h4>
+                        <audio controls style={{ width: '100%', marginTop: '10px' }}>
+                            <source src={currentWaypoint.audio_url} type="audio/mpeg" />
+                            <source src={currentWaypoint.audio_url} type="audio/wav" />
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                )}
+                
                 <div className="waypoint-info">
                     <p>{currentWaypoint.description}</p>
                 </div>

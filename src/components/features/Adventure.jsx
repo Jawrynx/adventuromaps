@@ -7,7 +7,7 @@
  * from Firestore's hierarchical structure (adventures -> routes -> waypoints).
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faChevronDown, faEllipsisV, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
@@ -32,7 +32,11 @@ function Adventure({ onSelectRoute, onStartDemo }) {
   // ========== COMPONENT STATE ==========
   const [showMore, setShowMore] = useState({});     // Tracks which adventure cards are expanded
   const [adventures, setAdventures] = useState([]); // Array of published adventure data
-  const [loading, setLoading] = useState(true);     // Loading state for data fetching  
+  const [loading, setLoading] = useState(true);     // Loading state for data fetching
+  const [showOptions, setShowOptions] = useState({}); // Tracks which option menus are open
+  const [includeNarration, setIncludeNarration] = useState({}); // Tracks narration preference for each item  
+  const optionsMenuRef = useRef(null); // Ref for options menu to handle outside clicks
+
   /**
    * Fetches published adventures from Firestore on component mount
    * 
@@ -76,6 +80,38 @@ function Adventure({ onSelectRoute, onStartDemo }) {
     setShowMore(prevShowMore => ({
       ...prevShowMore,
       [itemId]: !prevShowMore[itemId]
+    }));
+  };
+
+  /**
+   * Toggles the options menu for an adventure card
+   * 
+   * Shows/hides the options menu containing demo preferences
+   * like narration inclusion settings.
+   * 
+   * @param {string} itemId - The unique ID of the adventure to toggle options for
+   */
+  const toggleOptions = (itemId) => {
+
+    setShowOptions(prevShowOptions => ({
+      ...prevShowOptions,
+      [itemId]: !prevShowOptions[itemId]
+    }));
+  };
+
+  /**
+   * Handles narration preference toggle for an adventure
+   * 
+   * Updates the narration inclusion setting for demo mode.
+   * This preference will be passed to DemoView when starting a demo.
+   * 
+   * @param {string} itemId - The unique ID of the adventure
+   * @param {boolean} enabled - Whether to include narration in demo
+   */
+  const handleNarrationToggle = (itemId, enabled) => {
+    setIncludeNarration(prevState => ({
+      ...prevState,
+      [itemId]: enabled
     }));
   };
 
@@ -130,7 +166,11 @@ function Adventure({ onSelectRoute, onStartDemo }) {
 
       // Only start demo if we have both waypoints and route paths
       if (hasWaypoints && hasPath) {
-        onStartDemo(structuredRoutes);
+        const demoOptions = {
+          routes: structuredRoutes,
+          includeNarration: includeNarration[adventureData.id] || false
+        };
+        onStartDemo(demoOptions);
       } else {
         // Inform user that demo cannot be started
         console.warn("No waypoints or path found for this adventure.");
@@ -265,9 +305,23 @@ function Adventure({ onSelectRoute, onStartDemo }) {
               </button>
               
               {/* Options menu button */}
-              <button className='options-button' onClick={(e) => { e.stopPropagation(); }}>
+              <button className='options-button' onClick={(e) => { e.stopPropagation(); toggleOptions(item.id); }}>
                 <FontAwesomeIcon icon={faEllipsisV} />
               </button>
+            </div>
+
+            {/* Options Menu */}
+            <div className={`options-menu ${showOptions[item.id] ? 'options-menu-open' : 'options-menu-closed'}`} ref={optionsMenuRef} onClick={(e) => e.stopPropagation()}>
+              <div className="option-item">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={includeNarration[item.id] || false}
+                    onChange={(e) => handleNarrationToggle(item.id, e.target.checked)}
+                  />
+                  Include Narration
+                </label>
+              </div>
             </div>
           </li>
         ))}

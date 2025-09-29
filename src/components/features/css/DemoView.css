@@ -124,6 +124,11 @@
                 }
             }
         }
+
+        .waypoint-audio {
+            width: 100%;
+            z-index: 99;
+        }
     }
 
     .demo-controls {
@@ -156,6 +161,46 @@
             svg {
                 display: none;
             }
+        }
+    }
+
+    /* Narration Features Styling */
+    .narration-indicator {
+        margin-top: 5px;
+        padding: 5px 10px;
+        background-color: rgba(0, 150, 0, 0.2);
+        border: 1px solid #009600;
+        border-radius: 15px;
+        display: inline-block;
+
+        span {
+            color: #00cc00;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+    }
+
+    .waypoint-audio {
+        margin: 15px 0;
+        padding: 15px;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        border: 1px solid #444;
+
+        h4 {
+            margin: 0 0 10px 0;
+            color: #fff;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        audio {
+            border-radius: 5px;
+            background-color: #333;
+        }
+
+        audio::-webkit-media-controls-panel {
+            background-color: #333;
         }
     }
 }
