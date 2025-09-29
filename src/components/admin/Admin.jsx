@@ -236,34 +236,87 @@ function Admin({ mapId }) {
                 }
 
                 // Process waypoints for this route
-                const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeDocRef.id, 'waypoints');
+                // Use the correct route ID for the waypoints collection
+                const routeIdForWaypoints = route.firestoreId || routeDocRef.id;
+                const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeIdForWaypoints, 'waypoints');
                 
                 await Promise.all(
                     route.waypoints.map(async (waypoint) => {
+                        // Remove firestoreId and sanitize data for Firestore
+                        const { firestoreId, ...waypointDataRaw } = waypoint;
+                        
+                        // Sanitize data: remove undefined values, File objects, and other invalid Firestore data
+                        const waypointDataToSave = {};
+                        
+                        Object.entries(waypointDataRaw).forEach(([key, value]) => {
+                            // Skip undefined, null, or internal fields
+                            if (value === undefined || value === null || key.startsWith('__') || key === 'id') {
+                                return;
+                            }
+                            
+                            // Skip File objects and other complex objects that can't be serialized
+                            if (value instanceof File || value instanceof FileList) {
+                                console.warn(`Skipping File object in field: ${key}`);
+                                return;
+                            }
+                            
+                            // Handle arrays - filter out any File objects or invalid entries
+                            if (Array.isArray(value)) {
+                                const cleanArray = value.filter(item => 
+                                    item !== undefined && 
+                                    item !== null && 
+                                    !(item instanceof File) && 
+                                    !(item instanceof FileList)
+                                );
+                                if (cleanArray.length > 0) {
+                                    waypointDataToSave[key] = cleanArray;
+                                }
+                                return;
+                            }
+                            
+                            // For primitive values and valid objects
+                            waypointDataToSave[key] = value;
+                        });
+                        
+                        // Debug: Log the data being saved
+                        console.log("Saving waypoint data:", waypointDataToSave);
+                        
                         if (waypoint.firestoreId) {
-                            // Update existing waypoint
-                            const waypointDocRef = doc(waypointsCollectionRef, waypoint.firestoreId);
-                            await updateDoc(waypointDocRef, { 
-                                ...waypoint,
-                                order: waypoint.order
-                            });
-                            console.log("Waypoint updated:", waypoint.firestoreId);
-                            newWaypointsWithIds.push(waypoint);
+                            // Try to update existing waypoint
+                            try {
+                                const waypointDocRef = doc(waypointsCollectionRef, waypoint.firestoreId);
+                                await updateDoc(waypointDocRef, waypointDataToSave);
+                                console.log("Waypoint updated:", waypoint.firestoreId);
+                                newWaypointsWithIds.push(waypoint);
+                            } catch (error) {
+                                // If document doesn't exist, create a new one
+                                console.log("Waypoint document not found, creating new one:", waypoint.firestoreId, "Error:", error.message);
+                                try {
+                                    const docRef = await addDoc(waypointsCollectionRef, waypointDataToSave);
+                                    console.log("New waypoint created with ID:", docRef.id);
+                                    newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
+                                } catch (createError) {
+                                    console.error("Failed to create waypoint:", createError.message, "Data:", waypointDataToSave);
+                                    throw createError;
+                                }
+                            }
                         } else {
                             // Create new waypoint
-                            const docRef = await addDoc(waypointsCollectionRef, { 
-                                ...waypoint,
-                                order: waypoint.order
-                            });
-                            console.log("New waypoint added with ID:", docRef.id);
-                            newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
+                            try {
+                                const docRef = await addDoc(waypointsCollectionRef, waypointDataToSave);
+                                console.log("New waypoint added with ID:", docRef.id);
+                                newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
+                            } catch (createError) {
+                                console.error("Failed to create new waypoint:", createError.message, "Data:", waypointDataToSave);
+                                throw createError;
+                            }
                         }
                     })
                 );
 
                 return { 
                     ...route, 
-                    firestoreId: routeDocRef.id, 
+                    firestoreId: route.firestoreId || routeDocRef.id, 
                     order: routeOrder,
                     waypoints: newWaypointsWithIds 
                 };
