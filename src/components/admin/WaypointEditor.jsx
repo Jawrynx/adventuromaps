@@ -255,11 +255,12 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 <label htmlFor="narration-upload">Upload Narration (Optional):</label>
                 {waypointData.waypoint.narration_url && (
                     <div className="existing-file">
-                        <p>Current narration: 
-                            <a href={waypointData.waypoint.narration_url} target="_blank" rel="noopener noreferrer">
-                                Listen to current audio
-                            </a>
-                        </p>
+                        <p>Current narration:</p>
+                        <audio controls style={{ width: '100%', maxWidth: '400px' }}>
+                            <source src={waypointData.waypoint.narration_url} type="audio/mpeg" />
+                            <source src={waypointData.waypoint.narration_url} type="audio/wav" />
+                            <source src={waypointData.waypoint.narration_url} type="audio/mp3" />
+                        </audio>
                     </div>
                 )}
                 <input
@@ -275,11 +276,23 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 <label htmlFor="narration-keyframes">Narration / Text Animation (Optional):</label>
                 {waypointData.waypoint.keyframes_url && (
                     <div className="existing-file">
-                        <p>Current keyframes: 
-                            <a href={waypointData.waypoint.keyframes_url} target="_blank" rel="noopener noreferrer">
-                                View current keyframes
-                            </a>
-                        </p>
+                        <p>Current keyframes:</p>
+                        <div className="keyframes-preview-box">
+                            <iframe 
+                                src={waypointData.waypoint.keyframes_url} 
+                                style={{ 
+                                    width: '100%', 
+                                    height: '120px', 
+                                    border: '1px solid #ccc', 
+                                    borderRadius: '4px',
+                                    padding: '8px',
+                                    backgroundColor: '#f9f9f9',
+                                    fontFamily: 'monospace',
+                                    fontSize: '12px'
+                                }}
+                                title="Keyframes Content"
+                            />
+                        </div>
                     </div>
                 )}
                 <input
