@@ -178,16 +178,28 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
             // Handle narration audio file upload
             if (updatedWaypointData.narration && updatedWaypointData.narration instanceof File) {
-                const narrationPath = `audio/${routeId}_waypoint_${waypointIndex}_narration.mp3`;
+                console.log("AdmTools: Uploading narration file:", updatedWaypointData.narration.name);
+                const narrationPath = `audio/${routeId}_waypoint_${waypointIndex}_narration_${Date.now()}.mp3`;
                 const narrationUrl = await uploadFile(updatedWaypointData.narration, narrationPath);
-                updatedWaypointData.narration = narrationUrl;
+                updatedWaypointData.narration_url = narrationUrl;
+                delete updatedWaypointData.narration; // Remove file object
+                console.log("AdmTools: Narration uploaded to:", narrationUrl);
+            } else {
+                // Remove file object if it exists but preserve existing URL
+                delete updatedWaypointData.narration;
             }
 
             // Handle keyframes text file upload for animations
             if (updatedWaypointData.keyframes && updatedWaypointData.keyframes instanceof File) {
-                const keyframesPath = `keyframes/${routeId}_waypoint_${waypointIndex}_keyframes.txt`;
+                console.log("AdmTools: Uploading keyframes file:", updatedWaypointData.keyframes.name);
+                const keyframesPath = `keyframes/${routeId}_waypoint_${waypointIndex}_keyframes_${Date.now()}.txt`;
                 const keyframesUrl = await uploadFile(updatedWaypointData.keyframes, keyframesPath);
-                updatedWaypointData.keyframes = keyframesUrl;
+                updatedWaypointData.keyframes_url = keyframesUrl;
+                delete updatedWaypointData.keyframes; // Remove file object
+                console.log("AdmTools: Keyframes uploaded to:", keyframesUrl);
+            } else {
+                // Remove file object if it exists but preserve existing URL
+                delete updatedWaypointData.keyframes;
             }
 
         } catch (error) {
@@ -252,13 +264,17 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                             // Fetch waypoints for this route
                             const waypointsCollection = collection(db, itemType, doc.id, 'routes', routeDoc.id, 'waypoints');
                             const waypointsSnapshot = await getDocs(waypointsCollection);
-                            const waypoints = waypointsSnapshot.docs.map(wp => ({
-                                id: wp.id,
-                                ...wp.data()
-                            }));
+                            const waypoints = waypointsSnapshot.docs
+                                .map(wp => ({
+                                    id: wp.id,
+                                    firestoreId: wp.id,  // Preserve Firestore ID for updates
+                                    ...wp.data()
+                                }))
+                                .sort((a, b) => (a.order || 0) - (b.order || 0)); // Sort by order field
 
                             routes.push({
                                 id: routeDoc.id,
+                                firestoreId: routeDoc.id,  // Preserve Firestore ID for updates
                                 ...routeData,
                                 waypoints: waypoints || []
                             });
@@ -267,11 +283,13 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                         }
                     }
 
-                    // Combine item data with its routes
+                    // Sort routes by order and combine item data with its routes
+                    const sortedRoutes = routes.sort((a, b) => (a.order || 0) - (b.order || 0));
+                    
                     const itemWithRoutes = {
                         id: doc.id,
                         ...data,
-                        routes: routes || []
+                        routes: sortedRoutes || []
                     };
                     console.log('Processed item with routes:', itemWithRoutes);
                     fetchedItems.push(itemWithRoutes);
@@ -351,7 +369,14 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         console.log('Editing item:', item);
         setItemId(item.id);
         setItemData(item);
-        setRoutes(item.routes || []);
+        
+        // Ensure routes have proper local IDs for React state management
+        const routesWithLocalIds = (item.routes || []).map(route => ({
+            ...route,
+            id: route.id || Date.now() + Math.random() // Ensure local ID exists
+        }));
+        
+        setRoutes(routesWithLocalIds);
         setEditingItem(item);
         setItemsToLoad([]);
         onSetCreatingItem(true);

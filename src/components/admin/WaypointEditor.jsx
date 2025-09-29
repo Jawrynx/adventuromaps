@@ -137,15 +137,24 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 instructions,
                 images,              // New image files to upload
                 existingImageUrls,   // Previously uploaded image URLs to preserve
-                narration,           // Audio narration file
-                keyframes,           // Animation keyframes file
+                narration,           // Audio narration file (if new one selected)
+                keyframes,           // Animation keyframes file (if new one selected)
+                // Preserve existing narration and keyframes URLs if no new files are uploaded
+                narration_url: narration ? undefined : waypointData.waypoint.narration_url,
+                keyframes_url: keyframes ? undefined : waypointData.waypoint.keyframes_url,
                 // Explicitly include all existing waypoint data to preserve other fields
                 ...waypointData.waypoint
             };
             
             // Debug logging
-            console.log("WaypointEditor: Saving waypoint with existingImageUrls:", existingImageUrls);
-            console.log("WaypointEditor: Original waypoint image_urls:", waypointData.waypoint.image_urls);
+            console.log("WaypointEditor: Saving waypoint data:", {
+                existingImageUrls,
+                newImages: images.length,
+                newNarration: narration?.name || 'none',
+                newKeyframes: keyframes?.name || 'none',
+                preservingNarrationUrl: waypointData.waypoint.narration_url && !narration,
+                preservingKeyframesUrl: waypointData.waypoint.keyframes_url && !keyframes
+            });
 
             // Call parent save handler with compiled data
             await onSave(waypointData.routeId, waypointData.waypointIndex, waypointDataToSave);
@@ -217,22 +226,42 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
 
             <div className="editor-section">
                 <label htmlFor="narration-upload">Upload Narration (Optional):</label>
+                {waypointData.waypoint.narration_url && (
+                    <div className="existing-file">
+                        <p>Current narration: 
+                            <a href={waypointData.waypoint.narration_url} target="_blank" rel="noopener noreferrer">
+                                Listen to current audio
+                            </a>
+                        </p>
+                    </div>
+                )}
                 <input
                     type="file"
                     id="narration-upload"
                     accept="audio/*"
                     onChange={(e) => setNarration(e.target.files[0])}
                 />
+                {narration && <p>New narration file selected: {narration.name}</p>}
             </div>
 
             <div className="editor-section">
                 <label htmlFor="narration-keyframes">Narration / Text Animation (Optional):</label>
+                {waypointData.waypoint.keyframes_url && (
+                    <div className="existing-file">
+                        <p>Current keyframes: 
+                            <a href={waypointData.waypoint.keyframes_url} target="_blank" rel="noopener noreferrer">
+                                View current keyframes
+                            </a>
+                        </p>
+                    </div>
+                )}
                 <input
                     type="file"
                     id="narration-keyframes"
                     accept=".txt"
                     onChange={(e) => setKeyframes(e.target.files[0])}
                 />
+                {keyframes && <p>New keyframes file selected: {keyframes.name}</p>}
             </div>
 
             <div className="editor-buttons">
