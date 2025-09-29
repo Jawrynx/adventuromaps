@@ -138,8 +138,14 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 images,              // New image files to upload
                 existingImageUrls,   // Previously uploaded image URLs to preserve
                 narration,           // Audio narration file
-                keyframes           // Animation keyframes file
+                keyframes,           // Animation keyframes file
+                // Explicitly include all existing waypoint data to preserve other fields
+                ...waypointData.waypoint
             };
+            
+            // Debug logging
+            console.log("WaypointEditor: Saving waypoint with existingImageUrls:", existingImageUrls);
+            console.log("WaypointEditor: Original waypoint image_urls:", waypointData.waypoint.image_urls);
 
             // Call parent save handler with compiled data
             await onSave(waypointData.routeId, waypointData.waypointIndex, waypointDataToSave);

@@ -268,9 +268,8 @@ function Admin({ mapId }) {
                                     !(item instanceof File) && 
                                     !(item instanceof FileList)
                                 );
-                                if (cleanArray.length > 0) {
-                                    waypointDataToSave[key] = cleanArray;
-                                }
+                                // Always include arrays, even if empty, to properly clear fields
+                                waypointDataToSave[key] = cleanArray;
                                 return;
                             }
                             

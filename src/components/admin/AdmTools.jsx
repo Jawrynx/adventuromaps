@@ -141,13 +141,27 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         let imageUrls = [];
 
         try {
+            // Debug logging
+            console.log("AdmTools: Processing waypoint data:", {
+                existingImageUrls: updatedWaypointData.existingImageUrls,
+                newImages: updatedWaypointData.images?.length || 0,
+                originalImageUrls: updatedWaypointData.image_urls
+            });
+
             // Handle existing image URLs (preserve previously uploaded images)
-            if (updatedWaypointData.existingImageUrls && updatedWaypointData.existingImageUrls.length > 0) {
+            if (updatedWaypointData.existingImageUrls && updatedWaypointData.existingImageUrls.length >= 0) {
+                // Use the existingImageUrls array which may have been modified (items removed)
                 imageUrls = [...updatedWaypointData.existingImageUrls];
+                console.log("AdmTools: Using existingImageUrls:", imageUrls);
+            } else if (updatedWaypointData.image_urls) {
+                // Fallback to existing image_urls if existingImageUrls is not provided
+                imageUrls = [...updatedWaypointData.image_urls];
+                console.log("AdmTools: Falling back to original image_urls:", imageUrls);
             }
 
             // Upload new image files if provided
             if (updatedWaypointData.images && updatedWaypointData.images.length > 0) {
+                console.log("AdmTools: Uploading new images:", updatedWaypointData.images.length);
                 for (const file of updatedWaypointData.images) {
                     const imagePath = `images/${routeId}_waypoint_${waypointIndex}_image_${Date.now()}_${file.name}`;
                     const imageUrl = await uploadFile(file, imagePath);
@@ -159,6 +173,8 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             updatedWaypointData.image_urls = imageUrls;
             delete updatedWaypointData.images;          // Remove file objects
             delete updatedWaypointData.existingImageUrls; // Remove temporary array
+            
+            console.log("AdmTools: Final image_urls:", updatedWaypointData.image_urls);
 
             // Handle narration audio file upload
             if (updatedWaypointData.narration && updatedWaypointData.narration instanceof File) {
