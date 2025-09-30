@@ -596,8 +596,8 @@ function Admin({ mapId }) {
             {/* Interactive map with route drawing capabilities */}
             <Map
                 mapId={mapId}
-                defaultZoom={12}
-                defaultCenter={{ lat: 52.7061, lng: -2.7533 }} // Centered on UK
+                defaultZoom={3}
+                defaultCenter={{ lat: 30, lng: 0 }} // Centered on UK
                 clickableIcons={false} // Disable default map icons to prevent interference
                 mapTypeId="terrain" // Default Map view with Terrain enabled
             >
