@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { Map, useMap } from '@vis.gl/react-google-maps';
 
 // UI Components
@@ -49,6 +50,17 @@ function Admin({ mapId }) {
     const [isCreatingItem, setIsCreatingItem] = useState(false);     // Whether item creation modal is open
     const [hasCreatedItemInfo, setHasCreatedItemInfo] = useState(false); // Whether item info has been created
 
+    // ========== SEARCH STATE ==========
+    const [searchValue, setSearchValue] = useState('');             // Search input value
+    const [suggestions, setSuggestions] = useState([]);             // Array of place suggestions
+    const [showSuggestions, setShowSuggestions] = useState(false);  // Whether to show suggestions dropdown
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1); // For keyboard navigation
+    const [inputPosition, setInputPosition] = useState({ top: 0, left: 0, width: 0 }); // Input position for portal dropdown
+    
+    // Refs for autocomplete service and search functionality
+    const autocompleteServiceRef = useRef(null);
+    const searchInputRef = useRef(null);
+    
     // Ref to maintain current drawing state across async operations
     const drawingStateRef = useRef({ isDrawing, tempPath });
 
@@ -62,6 +74,15 @@ function Admin({ mapId }) {
         drawingStateRef.current.isDrawing = isDrawing;
         drawingStateRef.current.tempPath = tempPath;
     }, [isDrawing, tempPath]);
+
+    /**
+     * Initialize Google Places AutocompleteService when Google Maps loads
+     */
+    useEffect(() => {
+        if (window.google && window.google.maps && window.google.maps.places) {
+            autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
+        }
+    }, [map]);
 
     /**
      * Sets up interactive map event listeners for route drawing
@@ -366,6 +387,199 @@ function Admin({ mapId }) {
         : tempPath;
 
     /**
+     * Portal component for suggestions dropdown
+     * Renders outside modal to avoid z-index issues
+     */
+    const SuggestionsPortal = () => {
+        if (!showSuggestions || suggestions.length === 0) return null;
+
+        return ReactDOM.createPortal(
+            <div style={{
+                position: 'absolute',
+                top: `${inputPosition.top}px`,
+                left: `${inputPosition.left}px`,
+                width: `${inputPosition.width}px`,
+                backgroundColor: 'white',
+                border: '1px solid #ccc',
+                borderRadius: '0 0 4px 4px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                zIndex: 9999 // Higher than modal z-index
+            }}>
+                {suggestions.map((suggestion, index) => (
+                    <div
+                        key={suggestion.place_id}
+                        style={{
+                            padding: '8px 12px',
+                            cursor: 'pointer',
+                            backgroundColor: selectedSuggestionIndex === index ? '#f0f0f0' : 'white',
+                            borderBottom: index < suggestions.length - 1 ? '1px solid #eee' : 'none',
+                            fontSize: '14px'
+                        }}
+                        onMouseDown={() => handleSuggestionSelect(suggestion.place_id, suggestion.description)}
+                        onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                    >
+                        <div style={{ fontWeight: '500', color: '#333' }}>
+                            {suggestion.structured_formatting?.main_text || suggestion.description}
+                        </div>
+                        {suggestion.structured_formatting?.secondary_text && (
+                            <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
+                                {suggestion.structured_formatting.secondary_text}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>,
+            document.body
+        );
+    };
+
+    /**
+     * Fetches place suggestions from Google Places AutocompleteService
+     * 
+     * Called when user types in the search input to provide real-time suggestions.
+     */
+    const fetchSuggestions = (input) => {
+        if (!input.trim() || !autocompleteServiceRef.current) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return;
+        }
+
+        const request = {
+            input: input,
+            componentRestrictions: { country: 'gb' }, // Restrict to UK, remove if you want global search
+        };
+
+        autocompleteServiceRef.current.getPlacePredictions(request, (predictions, status) => {
+            if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
+                setSuggestions(predictions);
+                setShowSuggestions(true);
+                setSelectedSuggestionIndex(-1);
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        });
+    };
+
+    /**
+     * Updates the dropdown position based on input element position
+     */
+    const updateInputPosition = () => {
+        if (searchInputRef.current) {
+            const rect = searchInputRef.current.getBoundingClientRect();
+            setInputPosition({
+                top: rect.bottom + window.scrollY,
+                left: rect.left + window.scrollX,
+                width: rect.width
+            });
+        }
+    };
+
+    /**
+     * Handles search input changes and triggers suggestion fetching
+     */
+    const handleSearchInputChange = (e) => {
+        const value = e.target.value;
+        setSearchValue(value);
+        
+        // Update dropdown position
+        updateInputPosition();
+        
+        // Debounce the API calls
+        const timeoutId = setTimeout(() => {
+            fetchSuggestions(value);
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    };
+
+    /**
+     * Handles selection of a suggestion from the dropdown
+     */
+    const handleSuggestionSelect = (placeId, description) => {
+        setSearchValue(description);
+        setShowSuggestions(false);
+        
+        // Use PlacesService to get place details and location
+        const service = new window.google.maps.places.PlacesService(map);
+        
+        service.getDetails({
+            placeId: placeId,
+            fields: ['geometry', 'formatted_address']
+        }, (place, status) => {
+            if (status === window.google.maps.places.PlacesServiceStatus.OK && place.geometry) {
+                const location = place.geometry.location;
+                const lat = location.lat();
+                const lng = location.lng();
+                
+                // Center the map on the selected location
+                if (map) {
+                    map.setCenter({ lat, lng });
+                    map.setZoom(15);
+                }
+                
+                console.log(`Location selected: ${place.formatted_address} at ${lat}, ${lng}`);
+            }
+        });
+    };
+
+    /**
+     * Handles keyboard navigation in the search input and suggestions
+     */
+    const handleSearchKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedSuggestionIndex >= 0 && suggestions[selectedSuggestionIndex]) {
+                // Select the highlighted suggestion
+                const suggestion = suggestions[selectedSuggestionIndex];
+                handleSuggestionSelect(suggestion.place_id, suggestion.description);
+            } else if (searchValue.trim()) {
+                // If no suggestion selected, hide suggestions and keep current input
+                setShowSuggestions(false);
+            }
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSelectedSuggestionIndex(prev => 
+                prev < suggestions.length - 1 ? prev + 1 : prev
+            );
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSelectedSuggestionIndex(prev => prev > 0 ? prev - 1 : -1);
+        } else if (e.key === 'Escape') {
+            setShowSuggestions(false);
+            setSelectedSuggestionIndex(-1);
+        }
+    };
+
+    /**
+     * Handles clicking outside the search to close suggestions
+     */
+    const handleSearchBlur = () => {
+        // Delay hiding suggestions to allow click events on suggestions
+        setTimeout(() => {
+            setShowSuggestions(false);
+            setSelectedSuggestionIndex(-1);
+        }, 150);
+    };
+
+    /**
+     * Clears the search input and hides suggestions
+     */
+    const handleClearSearch = () => {
+        setSearchValue('');
+        setSuggestions([]);
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        // Focus back to input after clearing
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    };
+
+    /**
      * Initiates the item creation workflow
      * 
      * Opens the item creation modal and resets the creation state
@@ -385,6 +599,7 @@ function Admin({ mapId }) {
                 defaultZoom={12}
                 defaultCenter={{ lat: 52.7061, lng: -2.7533 }} // Centered on UK
                 clickableIcons={false} // Disable default map icons to prevent interference
+                mapTypeId="terrain" // Default Map view with Terrain enabled
             >
                 {/* Live drawing preview - shows path as user draws */}
                 {isDrawing && livePath.length > 1 && (
@@ -408,11 +623,76 @@ function Admin({ mapId }) {
                         Create Exploration/Adventure
                     </button>
                 ) : hasCreatedItemInfo ? (
-                    !isDrawing ? (
-                        <button onClick={() => setIsDrawing(true)}>Start Drawing</button>
-                    ) : (
-                        <button onClick={handleStopDrawing}>Stop Drawing</button>
-                    )
+                    <>
+                        {!isDrawing ? (
+                            <button onClick={() => setIsDrawing(true)}>Start Drawing</button>
+                        ) : (
+                            <button onClick={handleStopDrawing}>Stop Drawing</button>
+                        )}
+                        
+                        {/* Location search bar with autocomplete */}
+                        <div className="search-container" style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'flex-start', 
+                            marginLeft: '10px',
+                            position: 'relative'
+                        }}>
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                placeholder="Search location..."
+                                value={searchValue}
+                                onChange={handleSearchInputChange}
+                                onKeyDown={handleSearchKeyPress}
+                                onBlur={handleSearchBlur}
+                                onFocus={() => {
+                                    updateInputPosition();
+                                    if (searchValue) setShowSuggestions(true);
+                                }}
+                                style={{
+                                    padding: '8px 35px 8px 12px', // Add right padding for clear button
+                                    borderRadius: '4px',
+                                    border: '1px solid #ccc',
+                                    minWidth: '250px',
+                                    fontSize: '14px',
+                                    height: '38px',
+                                    color: '#333'
+                                }}
+                            />
+                            
+                            {/* Clear button - only show when there's text */}
+                            {searchValue && (
+                                <button
+                                    onClick={handleClearSearch}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '8px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        fontSize: '16px',
+                                        color: '#666',
+                                        cursor: 'pointer',
+                                        padding: '2px 4px',
+                                        borderRadius: '50%',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: '20px',
+                                        height: '20px',
+                                        zIndex: 1
+                                    }}
+                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                    type="button" // Prevent form submission
+                                    tabIndex={-1} // Keep focus on input
+                                >
+                                    ×
+                                </button>
+                            )}
+                        </div>
+                    </>
                 ) : null}
             </div>
             
@@ -446,6 +726,9 @@ function Admin({ mapId }) {
                     }}
                 />
             </Modal>
+            
+            {/* Portal for suggestions dropdown - renders outside modal */}
+            <SuggestionsPortal />
         </div>
     );
 }

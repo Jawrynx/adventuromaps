@@ -8,7 +8,7 @@
   justify-content: flex-end;
   align-items: flex-start;
   pointer-events: none;
-  z-index: 1000;
+  z-index: 888;
 }
 
 .modal-content {
@@ -24,7 +24,7 @@
   overflow-y: auto;
   width: 400px;
   height: 700px;
-  z-index: 1001;
+  z-index: 888;
   outline: none;
   pointer-events: auto;
 }

@@ -38,7 +38,7 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
 
     // ========== COMPONENT STATE ==========
     const [path, setPath] = useState(null);             // Current route path data
-    const [showBoundaries, setShowBoundaries] = useState(true); // Toggle for boundary overlays
+    const [showBoundaries, setShowBoundaries] = useState(false); // Toggle for boundary overlays
 
     // ========== SMOOTH PANNING CONFIGURATION ==========
     let panPath = [];      // Array storing smooth pan animation steps
