@@ -15,6 +15,7 @@ import { Map, useMap } from '@vis.gl/react-google-maps';
 // UI Components
 import Modal from '../ui/Modal';
 import AdmTools from './AdmTools';
+import SuggestionsPortal from './SuggestionsPortal';
 
 // Map Components
 import MapRoutes from '../map/MapRoutes';
@@ -386,54 +387,7 @@ function Admin({ mapId }) {
         ? [...tempPath, mousePosition]
         : tempPath;
 
-    /**
-     * Portal component for suggestions dropdown
-     * Renders outside modal to avoid z-index issues
-     */
-    const SuggestionsPortal = () => {
-        if (!showSuggestions || suggestions.length === 0) return null;
 
-        return ReactDOM.createPortal(
-            <div style={{
-                position: 'absolute',
-                top: `${inputPosition.top}px`,
-                left: `${inputPosition.left}px`,
-                width: `${inputPosition.width}px`,
-                backgroundColor: 'white',
-                border: '1px solid #ccc',
-                borderRadius: '0 0 4px 4px',
-                maxHeight: '200px',
-                overflowY: 'auto',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                zIndex: 9999 // Higher than modal z-index
-            }}>
-                {suggestions.map((suggestion, index) => (
-                    <div
-                        key={suggestion.place_id}
-                        style={{
-                            padding: '8px 12px',
-                            cursor: 'pointer',
-                            backgroundColor: selectedSuggestionIndex === index ? '#f0f0f0' : 'white',
-                            borderBottom: index < suggestions.length - 1 ? '1px solid #eee' : 'none',
-                            fontSize: '14px'
-                        }}
-                        onMouseDown={() => handleSuggestionSelect(suggestion.place_id, suggestion.description)}
-                        onMouseEnter={() => setSelectedSuggestionIndex(index)}
-                    >
-                        <div style={{ fontWeight: '500', color: '#333' }}>
-                            {suggestion.structured_formatting?.main_text || suggestion.description}
-                        </div>
-                        {suggestion.structured_formatting?.secondary_text && (
-                            <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
-                                {suggestion.structured_formatting.secondary_text}
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </div>,
-            document.body
-        );
-    };
 
     /**
      * Fetches place suggestions from Google Places AutocompleteService
@@ -449,7 +403,7 @@ function Admin({ mapId }) {
 
         const request = {
             input: input,
-            componentRestrictions: { country: 'gb' }, // Restrict to UK, remove if you want global search
+            // No country restrictions - global search enabled
         };
 
         autocompleteServiceRef.current.getPlacePredictions(request, (predictions, status) => {
@@ -497,6 +451,35 @@ function Admin({ mapId }) {
     };
 
     /**
+     * Determines appropriate zoom level based on place types
+     * 
+     * @param {Array} types - Array of Google Places types
+     * @returns {number} Appropriate zoom level
+     */
+    const getZoomLevelForPlaceType = (types) => {
+        if (!types || types.length === 0) return 10;
+        
+        // Country level
+        if (types.includes('country')) return 6;
+        
+        // State/Province level
+        if (types.includes('administrative_area_level_1')) return 7;
+        
+        // City level
+        if (types.includes('locality') || types.includes('administrative_area_level_2')) return 10;
+        
+        // Neighborhood/suburb level
+        if (types.includes('sublocality') || types.includes('neighborhood')) return 14;
+        
+        // Street/establishment level
+        if (types.includes('establishment') || types.includes('point_of_interest') || 
+            types.includes('street_address') || types.includes('premise')) return 16;
+        
+        // Default for other types
+        return 10;
+    };
+
+    /**
      * Handles selection of a suggestion from the dropdown
      */
     const handleSuggestionSelect = (placeId, description) => {
@@ -508,20 +491,24 @@ function Admin({ mapId }) {
         
         service.getDetails({
             placeId: placeId,
-            fields: ['geometry', 'formatted_address']
+            fields: ['geometry', 'formatted_address', 'types']
         }, (place, status) => {
             if (status === window.google.maps.places.PlacesServiceStatus.OK && place.geometry) {
                 const location = place.geometry.location;
                 const lat = location.lat();
                 const lng = location.lng();
                 
-                // Center the map on the selected location
+                // Determine appropriate zoom level based on place type
+                const zoomLevel = getZoomLevelForPlaceType(place.types);
+                
+                // Center the map on the selected location with adaptive zoom
                 if (map) {
                     map.setCenter({ lat, lng });
-                    map.setZoom(15);
+                    map.setZoom(zoomLevel);
                 }
                 
-                console.log(`Location selected: ${place.formatted_address} at ${lat}, ${lng}`);
+                console.log(`Location selected: ${place.formatted_address} at ${lat}, ${lng}`, 
+                           `Types: ${place.types?.join(', ')}`, `Zoom: ${zoomLevel}`);
             }
         });
     };
@@ -728,7 +715,14 @@ function Admin({ mapId }) {
             </Modal>
             
             {/* Portal for suggestions dropdown - renders outside modal */}
-            <SuggestionsPortal />
+            <SuggestionsPortal
+                isVisible={showSuggestions}
+                suggestions={suggestions}
+                position={inputPosition}
+                selectedIndex={selectedSuggestionIndex}
+                onSuggestionSelect={handleSuggestionSelect}
+                onSuggestionHover={setSelectedSuggestionIndex}
+            />
         </div>
     );
 }

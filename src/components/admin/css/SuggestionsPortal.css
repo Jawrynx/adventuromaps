@@ -1,0 +1,95 @@
+/**
+ * SuggestionsPortal.css - Styles for autocomplete suggestions dropdown
+ * 
+ * Provides clean, accessible styling for the Google Places autocomplete
+ * suggestions portal with hover states and proper visual hierarchy.
+ */
+
+.suggestions-portal {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 0 0 4px 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 9999;
+}
+
+.suggestion-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    background-color: white;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-item.selected {
+    background-color: #f0f0f0;
+}
+
+.suggestion-main-text {
+    font-weight: 500;
+    color: #333;
+    line-height: 1.3;
+}
+
+.suggestion-secondary-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 2px;
+    line-height: 1.2;
+}
+
+/* Scrollbar styling for WebKit browsers */
+.suggestions-portal::-webkit-scrollbar {
+    width: 6px;
+}
+
+.suggestions-portal::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 0 0 4px 0;
+}
+
+.suggestions-portal::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.suggestions-portal::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* Firefox scrollbar styling */
+.suggestions-portal {
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Focus and accessibility */
+.suggestion-item:focus {
+    outline: 2px solid #4285f4;
+    outline-offset: -2px;
+}
+
+/* Animation for smooth appearance */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.suggestions-portal {
+    animation: fadeIn 0.15s ease-out;
+}
