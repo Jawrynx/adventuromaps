@@ -166,7 +166,10 @@ function Settings() {
                             </label>
                             <label className="setting-item">
                                 <span>Map theme</span>
-                                <select defaultValue="adventuro-earth">
+                                <select 
+                                    value={getCurrentSettingValue('mapTheme')}
+                                    onChange={(e) => handleSettingChange('mapTheme', e.target.value)}
+                                >
                                     <option value="adventuro-earth">Adventuro Earth</option>
                                     <option value="gm-light">Google Maps Light</option>
                                     <option value="gm-dark">Google Maps Dark</option>

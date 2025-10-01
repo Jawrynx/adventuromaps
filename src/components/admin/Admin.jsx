@@ -587,16 +587,32 @@ function Admin({ mapId }) {
     const mapType = settings.defaultMapType || 'terrain';
     console.log('🗺️ Admin using mapType:', mapType);
 
+    // Determine mapId and colorScheme based on theme setting
+    const mapTheme = settings.mapTheme || 'adventuro-earth';
+    let effectiveMapId = mapId; // Default Adventuro Earth theme
+    let colorScheme = 'LIGHT';
+
+    if (mapTheme === 'gm-light') {
+        effectiveMapId = '8a2ac04064bf383366ad6b1e';
+        colorScheme = 'LIGHT';
+    } else if (mapTheme === 'gm-dark') {
+        effectiveMapId = '8a2ac04064bf383366ad6b1e';
+        colorScheme = 'DARK';
+    }
+
+    console.log('🎨 Admin using theme:', mapTheme, 'mapId:', effectiveMapId, 'colorScheme:', colorScheme);
+
     // ========== COMPONENT RENDER ==========
     return (
         <div style={{ height: '100%', width: '100%' }} id='admin-tools'>
             {/* Interactive map with route drawing capabilities */}
             <Map
-                mapId={mapId}
+                mapId={effectiveMapId}
                 defaultZoom={3}
                 defaultCenter={{ lat: 30, lng: 0 }} // Centered on UK
                 clickableIcons={false} // Disable default map icons to prevent interference
                 mapTypeId={mapType} // Map type from settings
+                colorScheme={colorScheme}
             >
                 {/* Live drawing preview - shows path as user draws */}
                 {isDrawing && livePath.length > 1 && (

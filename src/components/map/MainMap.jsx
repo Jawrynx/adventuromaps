@@ -69,13 +69,29 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
     const mapType = settings.defaultMapType || 'terrain';
     console.log('🗺️ MainMap using mapType:', mapType);
 
+    // Determine mapId and colorScheme based on theme setting
+    const mapTheme = settings.mapTheme || 'adventuro-earth';
+    let effectiveMapId = mapId; // Default Adventuro Earth theme
+    let colorScheme = 'LIGHT';
+
+    if (mapTheme === 'gm-light') {
+        effectiveMapId = '8a2ac04064bf383366ad6b1e';
+        colorScheme = 'LIGHT';
+    } else if (mapTheme === 'gm-dark') {
+        effectiveMapId = '8a2ac04064bf383366ad6b1e';
+        colorScheme = 'DARK';
+    }
+
+    console.log('🎨 MainMap using theme:', mapTheme, 'mapId:', effectiveMapId, 'colorScheme:', colorScheme);
+
     return (
         <div style={{ width: '100%', height: '100%' }}>
             <Map
                 defaultZoom={zoomLevel}
                 defaultCenter={{ lat: 30, lng: 0 }}
                 mapTypeId={mapType}
-                mapId={mapId}
+                mapId={effectiveMapId}
+                colorScheme={colorScheme}
             >
                 <MapContent 
                     activeRoute={activeRoute} 
