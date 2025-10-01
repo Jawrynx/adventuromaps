@@ -1,8 +1,19 @@
 /**
  * MainMap.jsx - Primary interactive map component
  * 
- * This component serves as the main map interface for AdventuroMaps, providing
- * the Google Maps integration and coordinating map-related functionality including
+ * This component serves as the main map interface for AdventuroMaps, providin                <Map
+                defaultZoom={zoomLevel}
+                defaultCenter={{ lat: 30, lng: 0 }}
+                mapTypeId={mapType}
+                mapId={effectiveMapId}
+                colorScheme={colorScheme}
+                options={{
+                    scaleControl: showScaleBar,
+                    rotateControl: showCompass
+                }}
+            >
+                <ScaleControlManager showScale={showScaleBar} />
+                <CompassControlManager showCompass={showCompass} />oogle Maps integration and coordinating map-related functionality including
  * route display, waypoint navigation, and demo mode visualization.
  */
 
@@ -30,6 +41,33 @@ function ScaleControlManager({ showScale }) {
         });
         
     }, [map, showScale]);
+
+    return null; // This component doesn't render anything
+}
+
+/**
+ * CompassControlManager Component
+ * 
+ * Manages the Google Maps rotate control (compass) dynamically based on settings
+ */
+function CompassControlManager({ showCompass }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!map) return;
+
+        console.log('🧭 CompassControlManager: Setting rotate control to', showCompass);
+        
+        // Set the rotate control option on the map
+        map.setOptions({ 
+            rotateControl: showCompass,
+            gestureHandling: 'greedy', // Allow all gestures including tilt
+            rotateControlOptions: {
+                position: window.google?.maps?.ControlPosition?.RIGHT_BOTTOM
+            }
+        });
+        
+    }, [map, showCompass]);
 
     return null; // This component doesn't render anything
 }
@@ -105,10 +143,12 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
         colorScheme = 'DARK';
     }
 
-    // Get scale bar setting
+    // Get scale bar and compass settings
     const showScaleBar = settings.showScaleBar !== undefined ? settings.showScaleBar : true;
+    const showCompass = settings.showCompass !== undefined ? settings.showCompass : true;
     console.log('🎨 MainMap using theme:', mapTheme, 'mapId:', effectiveMapId, 'colorScheme:', colorScheme);
     console.log('📏 MainMap showScaleBar:', showScaleBar);
+    console.log('🧭 MainMap showCompass:', showCompass);
     console.log('🔍 Settings object:', settings);
 
     return (
@@ -120,7 +160,8 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
                 mapId={effectiveMapId}
                 colorScheme={colorScheme}
                 options={{
-                    scaleControl: showScaleBar
+                    scaleControl: showScaleBar,
+                    rotateControl: showCompass
                 }}
             >
                 <ScaleControlManager showScale={showScaleBar} />

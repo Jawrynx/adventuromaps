@@ -185,7 +185,11 @@ function Settings() {
                             </label>
                             <label className="setting-item">
                                 <span>Show compass</span>
-                                <input type="checkbox" defaultChecked />
+                                <input 
+                                    type="checkbox" 
+                                    checked={getCurrentSettingValue('showCompass')}
+                                    onChange={(e) => handleSettingChange('showCompass', e.target.checked)}
+                                />
                             </label>
                         </div>
 

@@ -384,7 +384,7 @@ div[draggable="false"] {
 }
 
 /* Hide specific unwanted gm-style-cc elements but keep map controls */
-.gm-style-cc:not([aria-label*="scale"]):not([title*="scale"]) {
+.gm-style-cc:not([aria-label*="scale"]):not([title*="scale"]):not([aria-label*="rotate"]):not([title*="rotate"]):not([aria-label*="compass"]):not([title*="compass"]) {
   display: none !important;
 }
 
@@ -392,9 +392,19 @@ div[draggable="false"] {
 .gm-style-mtc,
 button[aria-label*="Zoom"],
 button[aria-label*="Pan"],
+button[aria-label*="Rotate"],
+button[aria-label*="Compass"],
 div[aria-label*="Zoom"],
 div[aria-label*="Pan"],
-.gm-control-active {
+div[aria-label*="Rotate"],
+div[aria-label*="Compass"],
+.gm-control-active,
+[class*="rotate"],
+[class*="compass"],
+button[title*="rotate"],
+button[title*="compass"],
+div[data-control-width],
+.gmnoprint[style*="right"][style*="top"]:not(:has(.gm-style-cc)) {
   display: block !important;
   visibility: visible !important;
 }
@@ -448,6 +458,34 @@ div[aria-label*="Pan"],
 .gm-style-cc[aria-label*="scale"] div[style*="background-color: rgb(0, 0, 0)"],
 .gm-style-cc[title*="scale"] div[style*="background-color: rgb(0, 0, 0)"] {
   background-color: #fff !important;
+}
+
+/* Ensure compass/rotate controls are visible and positioned correctly */
+div[style*="background-color: rgb(255, 255, 255)"][style*="width: 40px; height: 40px"] {
+  position: relative !important;
+  right: 50px !important;
+  bottom: 13px !important;
+  margin-right: 10px !important;
+}
+
+/* Temporarily removed CSS overrides to test tilt functionality */
+
+/* Force rotate buttons to be visible */
+button[aria-label*="Rotate map clockwise"] {
+  margin-bottom: 5px !important;
+}
+
+/* Position the entire rotate control container */
+.gmnoprint[style*="right"][style*="bottom"]:has(button[aria-label*="Rotate"]),
+.gmnoprint[style*="right"][style*="bottom"]:has(div[style*="width: 40px; height: 40px"]) {
+  right: 50px !important;
+}
+
+/* Remove white background from compass control containers */
+div[style*="background-color: rgb(255, 255, 255)"][style*="width: 40px; height: 40px"],
+.gm-bundled-control div[style*="background-color: rgb(255, 255, 255)"] {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
 .gm-iv-profile-link {

@@ -18,7 +18,7 @@ const DEFAULT_SETTINGS = {
     defaultMapType: 'terrain',
     mapTheme: 'adventuro-earth',
     showScaleBar: true,
-    showCompass: true,
+    showCompass: false,
     mouseWheelZoom: true,
     touchGestures: true,
     keyboardShortcuts: true,

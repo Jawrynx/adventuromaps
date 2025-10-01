@@ -35,6 +35,33 @@ function ScaleControlManager({ showScale }) {
     return null; // This component doesn't render anything
 }
 
+/**
+ * CompassControlManager Component for Admin
+ * 
+ * Manages the Google Maps rotate control (compass) dynamically based on settings
+ */
+function CompassControlManager({ showCompass }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!map) return;
+
+        console.log('🧭 Admin CompassControlManager: Setting rotate control to', showCompass);
+        
+        // Set the rotate control option on the map
+        map.setOptions({ 
+            rotateControl: showCompass,
+            gestureHandling: 'greedy', // Allow all gestures including tilt
+            rotateControlOptions: {
+                position: window.google?.maps?.ControlPosition?.RIGHT_BOTTOM
+            }
+        });
+        
+    }, [map, showCompass]);
+
+    return null; // This component doesn't render anything
+}
+
 // UI Components
 import Modal from '../ui/Modal';
 import AdmTools from './AdmTools';
@@ -623,10 +650,12 @@ function Admin({ mapId }) {
         colorScheme = 'DARK';
     }
 
-    // Get scale bar setting
+    // Get scale bar and compass settings
     const showScaleBar = settings.showScaleBar !== undefined ? settings.showScaleBar : true;
+    const showCompass = settings.showCompass !== undefined ? settings.showCompass : true;
     console.log('🎨 Admin using theme:', mapTheme, 'mapId:', effectiveMapId, 'colorScheme:', colorScheme);
     console.log('📏 Admin showScaleBar:', showScaleBar);
+    console.log('🧭 Admin showCompass:', showCompass);
 
     // ========== COMPONENT RENDER ==========
     return (
@@ -640,7 +669,8 @@ function Admin({ mapId }) {
                 mapTypeId={mapType} // Map type from settings
                 colorScheme={colorScheme}
                 options={{
-                    scaleControl: showScaleBar
+                    scaleControl: showScaleBar,
+                    rotateControl: showCompass
                 }}
             >
                 {/* Live drawing preview - shows path as user draws */}
@@ -657,6 +687,7 @@ function Admin({ mapId }) {
                 {/* Display all completed routes */}
                 <MapRoutes routes={routes} />
                 <ScaleControlManager showScale={showScaleBar} />
+                <CompassControlManager showCompass={showCompass} />
             </Map>
             
             {/* Drawing control buttons */}
