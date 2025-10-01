@@ -275,7 +275,7 @@ function Settings() {
                                 </div>
                             </div>
 
-                            <div className="links-section">
+                            <div className="links-section" style={{ display: 'none' }}>
                                 <h4>Resources</h4>
                                 <button className="link-button">View Documentation</button>
                                 <button className="link-button">Report an Issue</button>
