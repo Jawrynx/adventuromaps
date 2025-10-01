@@ -7,7 +7,7 @@
  * accessibility options, and application information.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faCog, 
@@ -17,6 +17,8 @@ import {
     faUniversalAccess, 
     faInfoCircle 
 } from '@fortawesome/free-solid-svg-icons';
+import { settingsService, getSetting, setSetting } from '../../services/settingsService';
+import { useSettings } from '../../services/SettingsContext.jsx';
 import './css/Settings.css';
 
 /**
@@ -34,6 +36,74 @@ import './css/Settings.css';
  */
 function Settings() {
     const [activeTab, setActiveTab] = useState('general');
+    const [settings, setSettings] = useState(settingsService.getAll());
+    const [pendingSettings, setPendingSettings] = useState({});
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const { refreshSettings } = useSettings();
+
+    // Load settings on component mount
+    useEffect(() => {
+        const currentSettings = settingsService.getAll();
+        setSettings(currentSettings);
+        setPendingSettings({}); // Clear any pending changes
+        setHasUnsavedChanges(false);
+    }, []);
+
+    // Handle setting changes (buffer changes, don't save immediately)
+    const handleSettingChange = (key, value) => {
+        setPendingSettings(prev => ({ ...prev, [key]: value }));
+        setHasUnsavedChanges(true);
+    };
+
+    // Get current value for a setting (pending value if exists, otherwise saved value)
+    const getCurrentSettingValue = (key) => {
+        return pendingSettings.hasOwnProperty(key) ? pendingSettings[key] : settings[key];
+    };
+
+    // Handle saving changes
+    const handleSaveChanges = () => {
+        // Apply all pending changes to the settings service
+        Object.entries(pendingSettings).forEach(([key, value]) => {
+            setSetting(key, value);
+        });
+        
+        // Update local state to reflect saved changes
+        const updatedSettings = { ...settings, ...pendingSettings };
+        setSettings(updatedSettings);
+        
+        // Clear pending changes
+        setPendingSettings({});
+        setHasUnsavedChanges(false);
+        
+        // Notify other components that settings have changed
+        refreshSettings();
+        
+        // Show confirmation (optional)
+        alert('Settings saved successfully!');
+    };
+
+    // Handle settings reset
+    const handleResetSettings = () => {
+        if (hasUnsavedChanges) {
+            const confirmReset = window.confirm('You have unsaved changes. Are you sure you want to reset to defaults?');
+            if (!confirmReset) return;
+        }
+        
+        settingsService.resetToDefaults();
+        const defaultSettings = settingsService.getAll();
+        setSettings(defaultSettings);
+        setPendingSettings({});
+        setHasUnsavedChanges(false);
+    };
+
+    // Handle discarding changes
+    const handleDiscardChanges = () => {
+        const confirmDiscard = window.confirm('Are you sure you want to discard your changes?');
+        if (confirmDiscard) {
+            setPendingSettings({});
+            setHasUnsavedChanges(false);
+        }
+    };
 
     // Settings tab configuration
     const tabs = [
@@ -57,15 +127,27 @@ function Settings() {
                         <div className="setting-group">
                             <label className="setting-item">
                                 <span>Default narration on demo start</span>
-                                <input type="checkbox" defaultChecked />
+                                <input 
+                                    type="checkbox" 
+                                    checked={getCurrentSettingValue('defaultNarrationEnabled')}
+                                    onChange={(e) => handleSettingChange('defaultNarrationEnabled', e.target.checked)}
+                                />
                             </label>
                             <label className="setting-item">
                                 <span>Auto-save preferences</span>
-                                <input type="checkbox" defaultChecked />
+                                <input 
+                                    type="checkbox" 
+                                    checked={getCurrentSettingValue('autoSavePreferences')}
+                                    onChange={(e) => handleSettingChange('autoSavePreferences', e.target.checked)}
+                                />
                             </label>
                             <label className="setting-item">
                                 <span>Remember last viewed route</span>
-                                <input type="checkbox" />
+                                <input 
+                                    type="checkbox" 
+                                    checked={getCurrentSettingValue('rememberLastRoute')}
+                                    onChange={(e) => handleSettingChange('rememberLastRoute', e.target.checked)}
+                                />
                             </label>
                         </div>
 
@@ -73,7 +155,10 @@ function Settings() {
                             <h4>Default Demo Settings</h4>
                             <label className="setting-item">
                                 <span>Transition duration</span>
-                                <select defaultValue="2000">
+                                <select 
+                                    value={getCurrentSettingValue('transitionDuration')}
+                                    onChange={(e) => handleSettingChange('transitionDuration', parseInt(e.target.value))}
+                                >
                                     <option value="1000">Fast (1s)</option>
                                     <option value="2000">Normal (2s)</option>
                                     <option value="3000">Slow (3s)</option>
@@ -81,7 +166,11 @@ function Settings() {
                             </label>
                             <label className="setting-item">
                                 <span>Auto-advance waypoints</span>
-                                <input type="checkbox" />
+                                <input 
+                                    type="checkbox" 
+                                    checked={getCurrentSettingValue('autoAdvanceWaypoints')}
+                                    onChange={(e) => handleSettingChange('autoAdvanceWaypoints', e.target.checked)}
+                                />
                             </label>
                         </div>
                     </div>
@@ -340,8 +429,24 @@ function Settings() {
 
                 {/* Action Buttons */}
                 <div className="settings-actions">
-                    <button className="btn-secondary">Reset to Defaults</button>
-                    <button className="btn-primary">Save Changes</button>
+                    {hasUnsavedChanges && (
+                        <div className="unsaved-changes-indicator">
+                            <span style={{ color: '#f39c12', marginRight: '15px' }}>
+                                ⚠️ You have unsaved changes
+                            </span>
+                        </div>
+                    )}
+                    <button className="btn-secondary" onClick={handleResetSettings}>Reset to Defaults</button>
+                    {hasUnsavedChanges && (
+                        <button className="btn-secondary" onClick={handleDiscardChanges}>Discard Changes</button>
+                    )}
+                    <button 
+                        className={`btn-primary ${hasUnsavedChanges ? 'btn-primary-active' : 'btn-primary-disabled'}`}
+                        onClick={handleSaveChanges}
+                        disabled={!hasUnsavedChanges}
+                    >
+                        Save Changes {hasUnsavedChanges && '●'}
+                    </button>
                 </div>
             </div>
         </div>

@@ -11,6 +11,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import LoadingSpinner from '../ui/LoadingSpinner';
+import { getSetting } from '../../services/settingsService';
 import './css/DemoView.css';
 
 /**
@@ -268,9 +269,10 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             onWaypointChange(nextIndex);
             
             // Wait for transition to complete before showing content
+            const transitionDuration = getSetting('transitionDuration') || 2000;
             setTimeout(() => {
                 setIsTransitioning(false);
-            }, 2000); // 2 seconds for cinematic transition
+            }, transitionDuration);
         } else {
             onClose();
         }
@@ -293,9 +295,10 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             onWaypointChange(prevIndex);
             
             // Wait for transition to complete before showing content
+            const transitionDuration = getSetting('transitionDuration') || 2000;
             setTimeout(() => {
                 setIsTransitioning(false);
-            }, 2000); // 2 seconds for cinematic transition
+            }, transitionDuration);
         }
     };
 

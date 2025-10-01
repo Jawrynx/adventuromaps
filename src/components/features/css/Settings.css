@@ -247,10 +247,22 @@
 .settings-actions {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 15px;
     padding: 25px 0;
     border-top: 1px solid #555;
     margin-top: auto;
+    flex-wrap: wrap;
+    
+    .unsaved-changes-indicator {
+        display: flex;
+        align-items: center;
+        
+        span {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+    }
     
     .btn-primary, .btn-secondary {
         padding: 12px 25px;
@@ -267,8 +279,33 @@
         background-color: #3498db;
         color: #fff;
         
-        &:hover {
+        &:hover:not(:disabled) {
             background-color: #2980b9;
+        }
+        
+        &.btn-primary-active {
+            background-color: #27ae60;
+            box-shadow: 0 0 10px rgba(39, 174, 96, 0.3);
+            
+            &:hover {
+                background-color: #229954;
+            }
+        }
+        
+        &.btn-primary-disabled {
+            background-color: #666;
+            color: #999;
+            cursor: not-allowed;
+            
+            &:hover {
+                background-color: #666;
+            }
+        }
+        
+        &:disabled {
+            background-color: #666;
+            color: #999;
+            cursor: not-allowed;
         }
     }
     

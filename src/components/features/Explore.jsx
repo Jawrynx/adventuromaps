@@ -13,6 +13,10 @@ import { faPlay, faChevronDown, faEllipsisV, faChevronUp } from '@fortawesome/fr
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../../services/firebase";
 
+// Settings service
+import { getSetting } from "../../services/settingsService";
+import { useSettings } from "../../services/SettingsContext.jsx";
+
 /**
  * Explore Component
  * 
@@ -33,6 +37,7 @@ function Explore({ onSelectRoute, onStartDemo }) {
     const [loading, setLoading] = useState(true);        // Loading state for data fetching
     const [showOptions, setShowOptions] = useState({}); // Tracks which option menus are open
     const [includeNarration, setIncludeNarration] = useState({}); // Tracks narration preference for each item
+    const { settingsVersion } = useSettings(); // Listen for settings changes
 
     /**
      * Fetches published explorations from Firestore on component mount
@@ -55,6 +60,15 @@ function Explore({ onSelectRoute, onStartDemo }) {
                 }));
 
                 setExplorations(fetchedExplorations);
+
+                // Initialize narration preferences based on default setting
+                const defaultNarration = getSetting('defaultNarrationEnabled');
+                const initialNarrationState = {};
+                fetchedExplorations.forEach(exploration => {
+                    initialNarrationState[exploration.id] = defaultNarration;
+                });
+                setIncludeNarration(initialNarrationState);
+
             } catch (error) {
                 console.error("Error fetching explorations:", error);
             } finally {
@@ -64,6 +78,26 @@ function Explore({ onSelectRoute, onStartDemo }) {
 
         getExplorations();
     }, []);
+
+    /**
+     * Updates narration preferences when settings change
+     * 
+     * Listens for settings changes and updates the narration checkboxes
+     * to reflect the current default narration setting.
+     */
+    useEffect(() => {
+        if (explorations.length > 0) {
+            const defaultNarration = getSetting('defaultNarrationEnabled');
+            const updatedNarrationState = {};
+            explorations.forEach(exploration => {
+                // Only update if not already set by user preference
+                updatedNarrationState[exploration.id] = includeNarration[exploration.id] !== undefined 
+                    ? includeNarration[exploration.id] 
+                    : defaultNarration;
+            });
+            setIncludeNarration(updatedNarrationState);
+        }
+    }, [settingsVersion, explorations]);
 
     /**
      * Toggles the expanded/collapsed state for an exploration card
