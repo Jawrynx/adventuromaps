@@ -28,6 +28,9 @@ import { db } from "../../services/firebase";
 // Styles
 import './css/Admin.css';
 
+// Settings
+import { useSettings } from '../../services/SettingsContext.jsx';
+
 /**
  * Admin Component
  * 
@@ -40,6 +43,9 @@ import './css/Admin.css';
 function Admin({ mapId }) {
     // Google Maps instance hook
     const map = useMap();
+    
+    // Get settings for reactive updates
+    const { settings } = useSettings();
     
     // ========== ROUTE & DRAWING STATE ==========
     const [routes, setRoutes] = useState([]);               // Array of completed routes with waypoints
@@ -577,6 +583,10 @@ function Admin({ mapId }) {
         setHasCreatedItemInfo(false);
     };
 
+    // Get map type from settings (reactive to changes)
+    const mapType = settings.defaultMapType || 'terrain';
+    console.log('🗺️ Admin using mapType:', mapType);
+
     // ========== COMPONENT RENDER ==========
     return (
         <div style={{ height: '100%', width: '100%' }} id='admin-tools'>
@@ -586,7 +596,7 @@ function Admin({ mapId }) {
                 defaultZoom={3}
                 defaultCenter={{ lat: 30, lng: 0 }} // Centered on UK
                 clickableIcons={false} // Disable default map icons to prevent interference
-                mapTypeId="terrain" // Default Map view with Terrain enabled
+                mapTypeId={mapType} // Map type from settings
             >
                 {/* Live drawing preview - shows path as user draws */}
                 {isDrawing && livePath.length > 1 && (

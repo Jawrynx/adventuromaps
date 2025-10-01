@@ -9,6 +9,7 @@
 import React, { useEffect } from 'react';
 import { Map } from '@vis.gl/react-google-maps';
 import MapContent from './MapContent';
+import { useSettings } from '../../services/SettingsContext.jsx';
 
 /**
  * MainMap Component
@@ -31,6 +32,8 @@ import MapContent from './MapContent';
  * @returns {JSX.Element} Interactive Google Maps component with route visualization
  */
 function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, mapId, zoomLevel, isZooming, onSmoothPanReady }) {
+    // Get settings for reactive updates
+    const { settings } = useSettings();
 
     /**
      * Disables Street View links to prevent unwanted navigation
@@ -62,12 +65,16 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
 
     }, []); 
 
+    // Get map type from settings (reactive to changes)
+    const mapType = settings.defaultMapType || 'terrain';
+    console.log('🗺️ MainMap using mapType:', mapType);
+
     return (
         <div style={{ width: '100%', height: '100%' }}>
             <Map
                 defaultZoom={zoomLevel}
                 defaultCenter={{ lat: 30, lng: 0 }}
-                mapTypeId={'terrain'}
+                mapTypeId={mapType}
                 mapId={mapId}
             >
                 <MapContent 

@@ -108,7 +108,6 @@ function Settings() {
     // Settings tab configuration
     const tabs = [
         { id: 'general', label: 'General', icon: faCog },
-        { id: 'ui', label: 'UI & Theme', icon: faPalette },
         { id: 'map', label: 'Map', icon: faMap },
         { id: 'audio', label: 'Audio', icon: faVolumeUp },
         { id: 'accessibility', label: 'Accessibility', icon: faUniversalAccess },
@@ -149,59 +148,28 @@ function Settings() {
                     </div>
                 );
 
-            case 'ui':
-                return (
-                    <div className="settings-content">
-                        <h3>UI & Theme Settings</h3>
-                        <div className="setting-group">
-                            <label className="setting-item">
-                                <span>Theme</span>
-                                <select defaultValue="auto">
-                                    <option value="light">Light</option>
-                                    <option value="dark">Dark</option>
-                                    <option value="auto">Auto (System)</option>
-                                </select>
-                            </label>
-                            <label className="setting-item">
-                                <span>Font size</span>
-                                <select defaultValue="medium">
-                                    <option value="small">Small</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="large">Large</option>
-                                </select>
-                            </label>
-                            <label className="setting-item">
-                                <span>Compact mode</span>
-                                <input type="checkbox" />
-                            </label>
-                        </div>
-
-                        <div className="setting-group">
-                            <h4>Animation Preferences</h4>
-                            <label className="setting-item">
-                                <span>Reduced motion</span>
-                                <input type="checkbox" />
-                            </label>
-                            <label className="setting-item">
-                                <span>Smooth transitions</span>
-                                <input type="checkbox" defaultChecked />
-                            </label>
-                        </div>
-                    </div>
-                );
-
             case 'map':
                 return (
                     <div className="settings-content">
                         <h3>Map Settings</h3>
                         <div className="setting-group">
                             <label className="setting-item">
-                                <span>Default map style</span>
-                                <select defaultValue="streets">
-                                    <option value="streets">Streets</option>
-                                    <option value="satellite">Satellite</option>
+                                <span>Default map type</span>
+                                <select 
+                                    value={getCurrentSettingValue('defaultMapType')}
+                                    onChange={(e) => handleSettingChange('defaultMapType', e.target.value)}
+                                >
                                     <option value="terrain">Terrain</option>
-                                    <option value="outdoors">Outdoors</option>
+                                    <option value="roadmap">Streets</option>
+                                    <option value="hybrid">Satellite</option>
+                                </select>
+                            </label>
+                            <label className="setting-item">
+                                <span>Map theme</span>
+                                <select defaultValue="adventuro-earth">
+                                    <option value="adventuro-earth">Adventuro Earth</option>
+                                    <option value="gm-light">Google Maps Light</option>
+                                    <option value="gm-dark">Google Maps Dark</option>
                                 </select>
                             </label>
                             <label className="setting-item">

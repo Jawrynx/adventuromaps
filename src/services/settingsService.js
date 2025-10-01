@@ -14,15 +14,9 @@ const DEFAULT_SETTINGS = {
     // Demo Settings  
     autoAdvanceWaypoints: false,
     
-    // UI & Theme Settings
-    theme: 'auto',
-    fontSize: 'medium',
-    compactMode: false,
-    reducedMotion: false,
-    smoothTransitions: true,
-    
     // Map Settings
-    defaultMapStyle: 'streets',
+    defaultMapType: 'terrain',
+    mapTheme: 'adventuro-earth',
     showScaleBar: true,
     showCompass: true,
     mouseWheelZoom: true,
