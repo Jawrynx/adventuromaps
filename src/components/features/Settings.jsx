@@ -110,7 +110,6 @@ function Settings() {
         { id: 'general', label: 'General', icon: faCog },
         { id: 'map', label: 'Map', icon: faMap },
         { id: 'audio', label: 'Audio', icon: faVolumeUp },
-        { id: 'accessibility', label: 'Accessibility', icon: faUniversalAccess },
         { id: 'about', label: 'About', icon: faInfoCircle }
     ];
 
@@ -192,22 +191,6 @@ function Settings() {
                                 />
                             </label>
                         </div>
-
-                        <div className="setting-group">
-                            <h4>Navigation</h4>
-                            <label className="setting-item">
-                                <span>Mouse wheel zoom</span>
-                                <input type="checkbox" defaultChecked />
-                            </label>
-                            <label className="setting-item">
-                                <span>Touch gestures</span>
-                                <input type="checkbox" defaultChecked />
-                            </label>
-                            <label className="setting-item">
-                                <span>Keyboard shortcuts</span>
-                                <input type="checkbox" defaultChecked />
-                            </label>
-                        </div>
                     </div>
                 );
 
@@ -217,82 +200,38 @@ function Settings() {
                         <h3>Audio Settings</h3>
                         <div className="setting-group">
                             <label className="setting-item">
-                                <span>Master volume</span>
-                                <input type="range" min="0" max="100" defaultValue="80" />
+                                <p className='volume-label'>Master volume</p>
+                                <div className="volume-control">
+                                    <input 
+                                        type="range" 
+                                        min="0" 
+                                        max="100" 
+                                        value={getCurrentSettingValue('masterVolume')}
+                                        onChange={(e) => handleSettingChange('masterVolume', parseInt(e.target.value))}
+                                    />
+                                    <span className="volume-display">{getCurrentSettingValue('masterVolume')}%</span>
+                                </div>
                             </label>
                             <label className="setting-item">
-                                <span>Narration volume</span>
-                                <input type="range" min="0" max="100" defaultValue="90" />
+                                <p className='volume-label'>Narration volume</p>
+                                <div className="volume-control">
+                                    <input 
+                                        type="range" 
+                                        min="0" 
+                                        max="100" 
+                                        value={getCurrentSettingValue('narrationVolume')}
+                                        onChange={(e) => handleSettingChange('narrationVolume', parseInt(e.target.value))}
+                                    />
+                                    <span className="volume-display">{getCurrentSettingValue('narrationVolume')}%</span>
+                                </div>
                             </label>
                             <label className="setting-item">
                                 <span>Sound effects</span>
-                                <input type="checkbox" defaultChecked />
-                            </label>
-                        </div>
-
-                        <div className="setting-group">
-                            <h4>Narration Preferences</h4>
-                            <label className="setting-item">
-                                <span>Auto-play narration</span>
-                                <input type="checkbox" defaultChecked />
-                            </label>
-                            <label className="setting-item">
-                                <span>Text highlighting sync</span>
-                                <input type="checkbox" defaultChecked />
-                            </label>
-                            <label className="setting-item">
-                                <span>Playback speed</span>
-                                <select defaultValue="1.0">
-                                    <option value="0.75">0.75x</option>
-                                    <option value="1.0">1.0x</option>
-                                    <option value="1.25">1.25x</option>
-                                    <option value="1.5">1.5x</option>
-                                </select>
-                            </label>
-                        </div>
-                    </div>
-                );
-
-            case 'accessibility':
-                return (
-                    <div className="settings-content">
-                        <h3>Accessibility Settings</h3>
-                        <div className="setting-group">
-                            <label className="setting-item">
-                                <span>High contrast mode</span>
-                                <input type="checkbox" />
-                            </label>
-                            <label className="setting-item">
-                                <span>Large cursor</span>
-                                <input type="checkbox" />
-                            </label>
-                            <label className="setting-item">
-                                <span>Focus indicators</span>
-                                <input type="checkbox" defaultChecked />
-                            </label>
-                        </div>
-
-                        <div className="setting-group">
-                            <h4>Screen Reader Support</h4>
-                            <label className="setting-item">
-                                <span>Enhanced descriptions</span>
-                                <input type="checkbox" />
-                            </label>
-                            <label className="setting-item">
-                                <span>Landmark navigation</span>
-                                <input type="checkbox" defaultChecked />
-                            </label>
-                        </div>
-
-                        <div className="setting-group">
-                            <h4>Motor Accessibility</h4>
-                            <label className="setting-item">
-                                <span>Sticky keys support</span>
-                                <input type="checkbox" />
-                            </label>
-                            <label className="setting-item">
-                                <span>Extended timeouts</span>
-                                <input type="checkbox" />
+                                <input 
+                                    type="checkbox" 
+                                    checked={getCurrentSettingValue('soundEffects')}
+                                    onChange={(e) => handleSettingChange('soundEffects', e.target.checked)}
+                                />
                             </label>
                         </div>
                     </div>

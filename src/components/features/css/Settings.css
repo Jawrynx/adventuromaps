@@ -359,3 +359,62 @@
         }
     }
 }
+
+/* Volume Control Styling */
+.volume-label {
+    width: 200px;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    
+    input[type="range"] {
+        flex: 1;
+        height: 6px;
+        background: #555;
+        border-radius: 3px;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
+        
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #007bff;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            
+            &:hover {
+                background: #0056b3;
+            }
+        }
+        
+        &::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: #007bff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s ease;
+            
+            &:hover {
+                background: #0056b3;
+            }
+        }
+    }
+    
+    .volume-display {
+        max-width: 45px;
+        text-align: right;
+        font-weight: bold;
+        color: #007bff;
+        font-size: 0.9rem;
+    }
+}

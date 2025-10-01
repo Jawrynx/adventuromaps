@@ -19,26 +19,11 @@ const DEFAULT_SETTINGS = {
     mapTheme: 'adventuro-earth',
     showScaleBar: true,
     showCompass: false,
-    mouseWheelZoom: true,
-    touchGestures: true,
-    keyboardShortcuts: true,
     
     // Audio Settings
     masterVolume: 80,
     narrationVolume: 90,
-    soundEffects: true,
-    autoPlayNarration: true,
-    textHighlightingSync: true,
-    playbackSpeed: 1.0,
-    
-    // Accessibility Settings
-    highContrastMode: false,
-    largeCursor: false,
-    focusIndicators: true,
-    enhancedDescriptions: false,
-    landmarkNavigation: true,
-    stickyKeysSupport: false,
-    extendedTimeouts: false
+    soundEffects: false,
 };
 
 /**
