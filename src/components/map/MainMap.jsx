@@ -7,9 +7,32 @@
  */
 
 import React, { useEffect } from 'react';
-import { Map } from '@vis.gl/react-google-maps';
+import { Map, ControlPosition, useMap } from '@vis.gl/react-google-maps';
 import MapContent from './MapContent';
 import { useSettings } from '../../services/SettingsContext.jsx';
+
+/**
+ * ScaleControlManager Component
+ * 
+ * Manages the Google Maps scale control dynamically based on settings
+ */
+function ScaleControlManager({ showScale }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!map) return;
+
+        console.log('🔧 ScaleControlManager: Setting scale control to', showScale);
+        
+        // Set the scale control option on the map
+        map.setOptions({ 
+            scaleControl: showScale 
+        });
+        
+    }, [map, showScale]);
+
+    return null; // This component doesn't render anything
+}
 
 /**
  * MainMap Component
@@ -82,7 +105,11 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
         colorScheme = 'DARK';
     }
 
+    // Get scale bar setting
+    const showScaleBar = settings.showScaleBar !== undefined ? settings.showScaleBar : true;
     console.log('🎨 MainMap using theme:', mapTheme, 'mapId:', effectiveMapId, 'colorScheme:', colorScheme);
+    console.log('📏 MainMap showScaleBar:', showScaleBar);
+    console.log('🔍 Settings object:', settings);
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
@@ -92,7 +119,11 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
                 mapTypeId={mapType}
                 mapId={effectiveMapId}
                 colorScheme={colorScheme}
+                options={{
+                    scaleControl: showScaleBar
+                }}
             >
+                <ScaleControlManager showScale={showScaleBar} />
                 <MapContent 
                     activeRoute={activeRoute} 
                     activePathForDemo={activePathForDemo}

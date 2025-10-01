@@ -360,8 +360,94 @@ div[draggable="false"] {
   }
 }
 
-.gm-style-cc {
+/* Hide Google Maps unwanted elements while preserving scale control */
+
+/* Hide keyboard shortcuts button */
+.gm-style-cc button[aria-label="Keyboard shortcuts"] {
   display: none !important;
+}
+
+/* Hide copyright and terms links */
+.gm-style-cc a[href*="terms_maps.html"],
+.gm-style-cc a[href*="maps/@"] {
+  display: none !important;
+}
+
+/* Hide specific copyright text but preserve scale bar text */
+.gm-style-cc span[style=""]:not(:has(+ div)) {
+  display: none !important;
+}
+
+/* Hide copyright containers that contain "Map data" but keep scale button */
+.gm-style-cc:has(span:not([id])):not([aria-label*="scale"]):not([title*="scale"]) {
+  display: none !important;
+}
+
+/* Hide specific unwanted gm-style-cc elements but keep map controls */
+.gm-style-cc:not([aria-label*="scale"]):not([title*="scale"]) {
+  display: none !important;
+}
+
+/* Ensure map controls remain visible */
+.gm-style-mtc,
+button[aria-label*="Zoom"],
+button[aria-label*="Pan"],
+div[aria-label*="Zoom"],
+div[aria-label*="Pan"],
+.gm-control-active {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Hide gmnoscreen containers */
+.gmnoscreen {
+  display: none !important;
+}
+
+/* Ensure scale bar text is visible */
+.gm-style-cc[aria-label*="scale"] span,
+.gm-style-cc[title*="scale"] span {
+  visibility: visible !important;
+  display: inline !important;
+}
+
+/* Custom styling for Google Maps scale control */
+.gm-style-cc[aria-label*="scale"],
+.gm-style-cc[title*="scale"] {
+  background-color: #333 !important;
+  color: #fff !important;
+  border-radius: 25px !important;
+  padding: 10px 10px 17px 10px !important;
+  margin-bottom: 5px !important;
+  margin-right: 5px !important;
+  transition: 0.3s ease-in-out !important;
+
+  &:hover {
+    background-color: #444 !important;
+  }
+}
+
+/* Override all internal background styling */
+.gm-style-cc[aria-label*="scale"] > div[style*="opacity"],
+.gm-style-cc[title*="scale"] > div[style*="opacity"],
+.gm-style-cc[aria-label*="scale"] > div > div[style*="background-color"],
+.gm-style-cc[title*="scale"] > div > div[style*="background-color"] {
+  background-color: transparent !important;
+  opacity: 1 !important;
+}
+
+/* Force white text color on all scale elements */
+.gm-style-cc[aria-label*="scale"] span[style*="color"],
+.gm-style-cc[title*="scale"] span[style*="color"],
+.gm-style-cc[aria-label*="scale"] div[style*="color"],
+.gm-style-cc[title*="scale"] div[style*="color"] {
+  color: #fff !important;
+}
+
+/* Override the scale bar line colors */
+.gm-style-cc[aria-label*="scale"] div[style*="background-color: rgb(0, 0, 0)"],
+.gm-style-cc[title*="scale"] div[style*="background-color: rgb(0, 0, 0)"] {
+  background-color: #fff !important;
 }
 
 .gm-iv-profile-link {

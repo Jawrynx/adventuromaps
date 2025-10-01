@@ -12,6 +12,29 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { Map, useMap } from '@vis.gl/react-google-maps';
 
+/**
+ * ScaleControlManager Component for Admin
+ * 
+ * Manages the Google Maps scale control dynamically based on settings
+ */
+function ScaleControlManager({ showScale }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!map) return;
+
+        console.log('🔧 Admin ScaleControlManager: Setting scale control to', showScale);
+        
+        // Set the scale control option on the map
+        map.setOptions({ 
+            scaleControl: showScale 
+        });
+        
+    }, [map, showScale]);
+
+    return null; // This component doesn't render anything
+}
+
 // UI Components
 import Modal from '../ui/Modal';
 import AdmTools from './AdmTools';
@@ -600,7 +623,10 @@ function Admin({ mapId }) {
         colorScheme = 'DARK';
     }
 
+    // Get scale bar setting
+    const showScaleBar = settings.showScaleBar !== undefined ? settings.showScaleBar : true;
     console.log('🎨 Admin using theme:', mapTheme, 'mapId:', effectiveMapId, 'colorScheme:', colorScheme);
+    console.log('📏 Admin showScaleBar:', showScaleBar);
 
     // ========== COMPONENT RENDER ==========
     return (
@@ -613,6 +639,9 @@ function Admin({ mapId }) {
                 clickableIcons={false} // Disable default map icons to prevent interference
                 mapTypeId={mapType} // Map type from settings
                 colorScheme={colorScheme}
+                options={{
+                    scaleControl: showScaleBar
+                }}
             >
                 {/* Live drawing preview - shows path as user draws */}
                 {isDrawing && livePath.length > 1 && (
@@ -627,6 +656,7 @@ function Admin({ mapId }) {
                 
                 {/* Display all completed routes */}
                 <MapRoutes routes={routes} />
+                <ScaleControlManager showScale={showScaleBar} />
             </Map>
             
             {/* Drawing control buttons */}
