@@ -213,7 +213,7 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
                 });
                 setTimeout(() => {
                     map.setZoom(currentZoom + 1);
-                }, 280); // Slightly slower timing for zoom in
+                }, 300); // Slightly slower timing for zoom in
             }
         }
     };

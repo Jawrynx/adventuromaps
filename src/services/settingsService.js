@@ -10,11 +10,8 @@
 const DEFAULT_SETTINGS = {
     // General Settings
     defaultNarrationEnabled: true,
-    autoSavePreferences: true,
-    rememberLastRoute: false,
     
     // Demo Settings  
-    transitionDuration: 2000,
     autoAdvanceWaypoints: false,
     
     // UI & Theme Settings

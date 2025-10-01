@@ -133,37 +133,10 @@ function Settings() {
                                     onChange={(e) => handleSettingChange('defaultNarrationEnabled', e.target.checked)}
                                 />
                             </label>
-                            <label className="setting-item">
-                                <span>Auto-save preferences</span>
-                                <input 
-                                    type="checkbox" 
-                                    checked={getCurrentSettingValue('autoSavePreferences')}
-                                    onChange={(e) => handleSettingChange('autoSavePreferences', e.target.checked)}
-                                />
-                            </label>
-                            <label className="setting-item">
-                                <span>Remember last viewed route</span>
-                                <input 
-                                    type="checkbox" 
-                                    checked={getCurrentSettingValue('rememberLastRoute')}
-                                    onChange={(e) => handleSettingChange('rememberLastRoute', e.target.checked)}
-                                />
-                            </label>
                         </div>
 
                         <div className="setting-group">
                             <h4>Default Demo Settings</h4>
-                            <label className="setting-item">
-                                <span>Transition duration</span>
-                                <select 
-                                    value={getCurrentSettingValue('transitionDuration')}
-                                    onChange={(e) => handleSettingChange('transitionDuration', parseInt(e.target.value))}
-                                >
-                                    <option value="1000">Fast (1s)</option>
-                                    <option value="2000">Normal (2s)</option>
-                                    <option value="3000">Slow (3s)</option>
-                                </select>
-                            </label>
                             <label className="setting-item">
                                 <span>Auto-advance waypoints</span>
                                 <input 

@@ -33,6 +33,9 @@ import Help from '../../components/features/Help';
 // Admin Components
 import Admin from '../../components/admin/Admin';
 
+// Settings
+import { getSetting } from '../../services/settingsService';
+
 /**
  * MainContent Component
  * 
@@ -262,8 +265,16 @@ const MainContent = () => {
             
             // Only trigger smooth pan if we're past the initial setup phase
             if (smoothPanFunction && timeSinceDemoStart > 5000) {
-                console.log('✨ MainContent calling CINEMATIC PAN with waypoint:', currentWaypoint.name, 'coords:', coords.lat, coords.lng);
-                smoothPanFunction(coords.lat, coords.lng, currentZoom, true);
+                const autoAdvance = getSetting('autoAdvanceWaypoints');
+                if (autoAdvance) {
+                    // Auto-advance enabled: Just set map position instantly, no animation
+                    console.log('⚡ MainContent auto-advance: instant map update for waypoint:', currentWaypoint.name);
+                    smoothPanFunction(coords.lat, coords.lng, currentZoom, false); // false = no cinematic
+                } else {
+                    // Normal cinematic panning
+                    console.log('✨ MainContent calling CINEMATIC PAN with waypoint:', currentWaypoint.name, 'coords:', coords.lat, coords.lng);
+                    smoothPanFunction(coords.lat, coords.lng, currentZoom, true); // true = cinematic
+                }
             } else if (timeSinceDemoStart <= 5000) {
                 console.log('🚫 Skipping cinematic pan during initial demo period');
             }

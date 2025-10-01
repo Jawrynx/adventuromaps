@@ -268,8 +268,11 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             // Trigger map transition immediately
             onWaypointChange(nextIndex);
             
-            // Wait for transition to complete before showing content
-            const transitionDuration = getSetting('transitionDuration') || 2000;
+            // Check if auto-advance is enabled to skip transition animations
+            const autoAdvance = getSetting('autoAdvanceWaypoints');
+            const transitionDuration = autoAdvance ? 100 : 3500; // Skip animation or normal duration
+            console.log('🚀 DemoView handleNext - autoAdvance:', autoAdvance, 'duration:', transitionDuration + 'ms');
+            
             setTimeout(() => {
                 setIsTransitioning(false);
             }, transitionDuration);
@@ -294,8 +297,11 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             // Trigger map transition immediately
             onWaypointChange(prevIndex);
             
-            // Wait for transition to complete before showing content
-            const transitionDuration = getSetting('transitionDuration') || 2000;
+            // Check if auto-advance is enabled to skip transition animations
+            const autoAdvance = getSetting('autoAdvanceWaypoints');
+            const transitionDuration = autoAdvance ? 100 : 3500; // Skip animation or normal duration
+            console.log('🚀 DemoView handlePrevious - autoAdvance:', autoAdvance, 'duration:', transitionDuration + 'ms');
+            
             setTimeout(() => {
                 setIsTransitioning(false);
             }, transitionDuration);
