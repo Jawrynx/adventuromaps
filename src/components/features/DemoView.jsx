@@ -40,6 +40,17 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     const [keyframes, setKeyframes] = useState([]);             // Parsed keyframes for text highlighting
     const [currentKeyframeIndex, setCurrentKeyframeIndex] = useState(-1); // Currently active keyframe
     const [textSegments, setTextSegments] = useState([]);       // Text split into segments for highlighting
+    const [isNarrationEnabled, setIsNarrationEnabled] = useState(includeNarration); // Local narration toggle state
+
+    /**
+     * Synchronizes local narration state with prop changes
+     * 
+     * Updates the local narration toggle state when the parent component
+     * changes the includeNarration prop to ensure consistency.
+     */
+    useEffect(() => {
+        setIsNarrationEnabled(includeNarration);
+    }, [includeNarration]);
 
     /**
      * Updates map focus when waypoint changes
@@ -71,7 +82,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
      * that has narration audio available and narration is enabled.
      */
     useEffect(() => {
-        if (includeNarration && audioRef.current && waypoints[currentWaypointIndex]?.narration_url) {
+        if (isNarrationEnabled && audioRef.current && waypoints[currentWaypointIndex]?.narration_url) {
             // Small delay to ensure audio element is ready
             const timer = setTimeout(() => {
                 audioRef.current.play().catch(error => {
@@ -82,7 +93,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
 
             return () => clearTimeout(timer);
         }
-    }, [currentWaypointIndex, includeNarration, waypoints]);
+    }, [currentWaypointIndex, isNarrationEnabled, waypoints]);
 
     /**
      * Fetches and parses keyframes for text highlighting
@@ -93,7 +104,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     useEffect(() => {
         const loadKeyframes = async () => {
             const currentWaypoint = waypoints[currentWaypointIndex];
-            if (!currentWaypoint?.keyframes_url || !includeNarration) {
+            if (!currentWaypoint?.keyframes_url || !isNarrationEnabled) {
                 setKeyframes([]);
                 setTextSegments([{text: currentWaypoint?.description || "", isKeyframe: false}]);
                 setCurrentKeyframeIndex(-1);
@@ -192,7 +203,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
         };
 
         loadKeyframes();
-    }, [currentWaypointIndex, includeNarration, waypoints]);
+    }, [currentWaypointIndex, isNarrationEnabled, waypoints]);
 
     /**
      * Updates text highlighting based on audio playback time
@@ -342,6 +353,32 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
         }
     };
 
+    /**
+     * Toggles narration on/off during demo playback
+     * 
+     * Allows users to enable or disable narration functionality
+     * during the demo experience. When disabled, audio will pause
+     * and text highlighting will stop.
+     */
+    const toggleNarration = () => {
+        setIsNarrationEnabled(prev => {
+            const newState = !prev;
+            
+            // If turning off narration, pause any playing audio
+            if (!newState && audioRef.current) {
+                audioRef.current.pause();
+            }
+            // If turning on narration and audio exists, play it
+            else if (newState && audioRef.current && waypoints[currentWaypointIndex]?.narration_url) {
+                audioRef.current.play().catch(error => {
+                    console.log('Auto-play prevented by browser:', error);
+                });
+            }
+            
+            return newState;
+        });
+    };
+
     const currentWaypoint = waypoints[currentWaypointIndex];
 
     if (!currentWaypoint) {
@@ -352,11 +389,14 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
         <div className="demo-container">
             <div className="demo-header">
                 <h2>Waypoint Demo</h2>
-                {includeNarration && (
-                    <div className="narration-indicator">
-                        <span>🔊 Narration Enabled</span>
-                    </div>
-                )}
+                <div 
+                    className={`narration-indicator ${isNarrationEnabled ? 'enabled' : 'disabled'}`}
+                    onClick={toggleNarration}
+                >
+                    <span>
+                        {isNarrationEnabled ? '🔊 Narration Enabled' : '🔇 Narration Disabled'}
+                    </span>
+                </div>
             </div>
             <div className="waypoint-card">
                 <h3>{currentWaypoint.name}</h3>
@@ -410,7 +450,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                 </div>
                 
                 {/* Audio Narration Section - Only displayed when narration is enabled */}
-                {includeNarration && currentWaypoint.narration_url && (
+                {isNarrationEnabled && currentWaypoint.narration_url && (
                     <div className="waypoint-audio" style={{ display: 'none' }}>
                         <audio 
                             ref={audioRef}

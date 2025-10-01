@@ -168,15 +168,40 @@
     .narration-indicator {
         margin-top: 5px;
         padding: 5px 10px;
-        background-color: rgba(0, 150, 0, 0.2);
-        border: 1px solid #009600;
         border-radius: 15px;
         display: inline-block;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
 
-        span {
-            color: #00cc00;
-            font-size: 0.9rem;
-            font-weight: 500;
+        &:hover {
+            transform: scale(1.05);
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+
+        &.enabled {
+            background-color: rgba(0, 150, 0, 0.2);
+            border: 1px solid #009600;
+
+            span {
+                color: #00cc00;
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+        }
+
+        &.disabled {
+            background-color: rgba(150, 0, 0, 0.2);
+            border: 1px solid #960000;
+
+            span {
+                color: #cc0000;
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
         }
     }
 
