@@ -3,6 +3,322 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 10px;
+    color: #fff;
+    overflow-y: auto;
+}
+
+/* Settings Header */
+.settings-header {
+    text-align: center;
+    padding: 20px;
+    border-bottom: 1px solid #555;
+    
+    h1 {
+        margin: 0 0 10px 0;
+        font-size: 2.5rem;
+        color: #fff;
+    }
+    
+    p {
+        margin: 0;
+        color: #ccc;
+        font-size: 1.1rem;
+    }
+}
+
+/* Settings Container */
+.settings-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 20px;
+}
+
+/* Horizontal Tab Navigation */
+.settings-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 20px 0;
+    border-bottom: 2px solid #444;
+    overflow-x: auto;
+    
+    .tab-button {
+        background: none;
+        border: none;
+        color: #ccc;
+        padding: 12px 20px;
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        border-bottom: 3px solid transparent;
+        
+        &:hover {
+            background-color: #444;
+            color: #fff;
+        }
+        
+        &.active {
+            background-color: #555;
+            color: #fff;
+            border-bottom-color: #3498db;
+        }
+        
+        svg {
+            font-size: 1.1rem;
+        }
+    }
+}
+
+/* Tab Content Panel */
+.settings-panel {
+    flex: 1;
+    padding: 30px 0;
+    
+    .settings-content {
+        max-width: 800px;
+        margin: 0 auto;
+        
+        h3 {
+            margin: 0 0 25px 0;
+            font-size: 1.8rem;
+            color: #fff;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        h4 {
+            margin: 25px 0 15px 0;
+            font-size: 1.3rem;
+            color: #ddd;
+        }
+        
+        h5 {
+            margin: 15px 0 10px 0;
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+    }
+}
+
+/* Setting Groups */
+.setting-group {
+    margin-bottom: 30px;
+    
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        margin-bottom: 10px;
+        background-color: #444;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        
+        &:hover {
+            background-color: #4a4a4a;
+        }
+        
+        span {
+            font-size: 1rem;
+            color: #fff;
+            flex: 1;
+        }
+        
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #3498db;
+        }
+        
+        input[type="range"] {
+            width: 150px;
+            cursor: pointer;
+            accent-color: #3498db;
+        }
+        
+        select {
+            background-color: #555;
+            border: 1px solid #666;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            min-width: 120px;
+            cursor: pointer;
+            
+            &:focus {
+                outline: none;
+                border-color: #3498db;
+            }
+        }
+    }
+}
+
+/* About Section Specific Styles */
+.about-section {
+    .app-info {
+        background-color: #444;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #555;
+            
+            &:last-child {
+                border-bottom: none;
+            }
+            
+            span:first-child {
+                font-weight: 500;
+                color: #ccc;
+            }
+            
+            span:last-child {
+                color: #3498db;
+                font-weight: 500;
+            }
+        }
+    }
+    
+    .credits-section {
+        background-color: #444;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        
+        p {
+            margin-bottom: 15px;
+            color: #ddd;
+            line-height: 1.6;
+        }
+        
+        .tech-stack ul {
+            list-style: none;
+            padding: 0;
+            
+            li {
+                padding: 8px 0;
+                color: #ccc;
+                border-bottom: 1px solid #555;
+                
+                &:last-child {
+                    border-bottom: none;
+                }
+            }
+        }
+    }
+    
+    .links-section {
+        .link-button {
+            background-color: #555;
+            border: 1px solid #666;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px 10px 5px 0;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            
+            &:hover {
+                background-color: #3498db;
+                border-color: #3498db;
+            }
+        }
+    }
+}
+
+/* Action Buttons */
+.settings-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    padding: 25px 0;
+    border-top: 1px solid #555;
+    margin-top: auto;
+    
+    .btn-primary, .btn-secondary {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 140px;
+    }
+    
+    .btn-primary {
+        background-color: #3498db;
+        color: #fff;
+        
+        &:hover {
+            background-color: #2980b9;
+        }
+    }
+    
+    .btn-secondary {
+        background-color: #555;
+        color: #fff;
+        border: 1px solid #666;
+        
+        &:hover {
+            background-color: #666;
+        }
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .settings-container {
+        padding: 0 15px;
+    }
+    
+    .settings-tabs {
+        .tab-button {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            
+            span {
+                display: none;
+            }
+            
+            svg {
+                font-size: 1.2rem;
+            }
+        }
+    }
+    
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        
+        span {
+            margin-bottom: 5px;
+        }
+    }
+    
+    .settings-actions {
+        flex-direction: column;
+        
+        .btn-primary, .btn-secondary {
+            width: 100%;
+        }
+    }
 }
