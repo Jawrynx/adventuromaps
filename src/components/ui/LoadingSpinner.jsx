@@ -9,13 +9,14 @@ import React from 'react'
  * 
  * Features:
  * - CSS animated spinning circle
- * - Centered layout with loading text
+ * - Centered layout with customizable loading text
  * - Inline styling for portability
  * - Consistent loading experience across the app
  * 
+ * @param {string} text - Optional custom text to display (defaults to "Loading...")
  * @returns {JSX.Element} Animated loading spinner with text
  */
-function LoadingSpinner() {
+function LoadingSpinner({ text = "Loading..." }) {
   return (
         <div style={{
             display: 'flex',
@@ -44,7 +45,7 @@ function LoadingSpinner() {
                 `}
             </style>
             
-            <p style={{ marginTop: '10px' }}>Loading...</p>
+            <p style={{ marginTop: '10px' }}>{text}</p>
         </div>
     );
 }

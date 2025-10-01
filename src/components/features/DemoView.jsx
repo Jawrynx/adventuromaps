@@ -10,6 +10,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import LoadingSpinner from '../ui/LoadingSpinner';
 import './css/DemoView.css';
 
 /**
@@ -41,6 +42,8 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     const [currentKeyframeIndex, setCurrentKeyframeIndex] = useState(-1); // Currently active keyframe
     const [textSegments, setTextSegments] = useState([]);       // Text split into segments for highlighting
     const [isNarrationEnabled, setIsNarrationEnabled] = useState(includeNarration); // Local narration toggle state
+    const [isTransitioning, setIsTransitioning] = useState(false); // Loading state during waypoint transitions
+    const [targetWaypointIndex, setTargetWaypointIndex] = useState(currentWaypointIndex); // Target waypoint during transition
 
     /**
      * Synchronizes local narration state with prop changes
@@ -69,20 +72,23 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
      * 
      * Ensures that when navigating to a new waypoint, the image
      * gallery starts from the first image rather than maintaining
-     * the previous waypoint's image index.
+     * the previous waypoint's image index. Only resets when not transitioning.
      */
     useEffect(() => {
-        setCurrentImageIndex(0);
-    }, [currentWaypointIndex]);
+        if (!isTransitioning) {
+            setCurrentImageIndex(0);
+        }
+    }, [currentWaypointIndex, isTransitioning]);
 
     /**
      * Auto-plays audio when waypoint changes (if narration is enabled)
      * 
      * Automatically starts audio playback when navigating to a new waypoint
      * that has narration audio available and narration is enabled.
+     * Only triggers when not transitioning to avoid audio during map panning.
      */
     useEffect(() => {
-        if (isNarrationEnabled && audioRef.current && waypoints[currentWaypointIndex]?.narration_url) {
+        if (!isTransitioning && isNarrationEnabled && audioRef.current && waypoints[currentWaypointIndex]?.narration_url) {
             // Small delay to ensure audio element is ready
             const timer = setTimeout(() => {
                 audioRef.current.play().catch(error => {
@@ -93,21 +99,24 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
 
             return () => clearTimeout(timer);
         }
-    }, [currentWaypointIndex, isNarrationEnabled, waypoints]);
+    }, [currentWaypointIndex, isNarrationEnabled, waypoints, isTransitioning]);
 
     /**
      * Fetches and parses keyframes for text highlighting
      * 
      * Downloads the keyframes file and processes it to create text segments
      * that can be highlighted in sync with audio narration.
+     * Only loads when not transitioning to avoid content loading during map panning.
      */
     useEffect(() => {
         const loadKeyframes = async () => {
             const currentWaypoint = waypoints[currentWaypointIndex];
-            if (!currentWaypoint?.keyframes_url || !isNarrationEnabled) {
-                setKeyframes([]);
-                setTextSegments([{text: currentWaypoint?.description || "", isKeyframe: false}]);
-                setCurrentKeyframeIndex(-1);
+            if (isTransitioning || !currentWaypoint?.keyframes_url || !isNarrationEnabled) {
+                if (!isTransitioning) {
+                    setKeyframes([]);
+                    setTextSegments([{text: currentWaypoint?.description || "", isKeyframe: false}]);
+                    setCurrentKeyframeIndex(-1);
+                }
                 return;
             }
 
@@ -203,7 +212,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
         };
 
         loadKeyframes();
-    }, [currentWaypointIndex, isNarrationEnabled, waypoints]);
+    }, [currentWaypointIndex, isNarrationEnabled, waypoints, isTransitioning]);
 
     /**
      * Updates text highlighting based on audio playback time
@@ -245,12 +254,23 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     /**
      * Navigates to the next waypoint or exits demo
      * 
-     * Advances to the next waypoint in the sequence. If already at
+     * Shows loading state, triggers map transition, then loads waypoint content
+     * after a delay to allow the cinematic pan to complete. If already at
      * the last waypoint, automatically closes the demo experience.
      */
     const handleNext = () => {
         if (currentWaypointIndex < totalWaypoints - 1) {
-            onWaypointChange(currentWaypointIndex + 1);
+            const nextIndex = currentWaypointIndex + 1;
+            setIsTransitioning(true);
+            setTargetWaypointIndex(nextIndex);
+            
+            // Trigger map transition immediately
+            onWaypointChange(nextIndex);
+            
+            // Wait for transition to complete before showing content
+            setTimeout(() => {
+                setIsTransitioning(false);
+            }, 2000); // 2 seconds for cinematic transition
         } else {
             onClose();
         }
@@ -259,12 +279,23 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     /**
      * Navigates to the previous waypoint
      * 
-     * Moves back to the previous waypoint in the sequence.
-     * Does nothing if already at the first waypoint.
+     * Shows loading state, triggers map transition, then loads waypoint content
+     * after a delay to allow the cinematic pan to complete. Does nothing if
+     * already at the first waypoint.
      */
     const handlePrevious = () => {
         if (currentWaypointIndex > 0) {
-            onWaypointChange(currentWaypointIndex - 1);
+            const prevIndex = currentWaypointIndex - 1;
+            setIsTransitioning(true);
+            setTargetWaypointIndex(prevIndex);
+            
+            // Trigger map transition immediately
+            onWaypointChange(prevIndex);
+            
+            // Wait for transition to complete before showing content
+            setTimeout(() => {
+                setIsTransitioning(false);
+            }, 2000); // 2 seconds for cinematic transition
         }
     };
 
@@ -358,9 +389,11 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
      * 
      * Allows users to enable or disable narration functionality
      * during the demo experience. When disabled, audio will pause
-     * and text highlighting will stop.
+     * and text highlighting will stop. Disabled during transitions.
      */
     const toggleNarration = () => {
+        if (isTransitioning) return; // Don't allow toggling during transitions
+        
         setIsNarrationEnabled(prev => {
             const newState = !prev;
             
@@ -390,112 +423,129 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             <div className="demo-header">
                 <h2>Waypoint Demo</h2>
                 <div 
-                    className={`narration-indicator ${isNarrationEnabled ? 'enabled' : 'disabled'}`}
+                    className={`narration-indicator ${isNarrationEnabled ? 'enabled' : 'disabled'} ${isTransitioning ? 'transitioning' : ''}`}
                     onClick={toggleNarration}
+                    style={{ cursor: isTransitioning ? 'not-allowed' : 'pointer' }}
                 >
                     <span>
-                        {isNarrationEnabled ? '🔊 Narration Enabled' : '🔇 Narration Disabled'}
+                        {isTransitioning ? '🚶 Travelling...' : 
+                         isNarrationEnabled ? '🔊 Narration Enabled' : '🔇 Narration Disabled'}
                     </span>
                 </div>
             </div>
             <div className="waypoint-card">
-                <h3>{currentWaypoint.name}</h3>
-                <div className="waypoint-media">
-                    {currentWaypoint.image_urls && currentWaypoint.image_urls.length > 0 && (
-                        <>
-                            <div 
-                                className="carousel-container"
-                                style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
-                                onTouchStart={onTouchStart}
-                                onTouchMove={onTouchMove}
-                                onTouchEnd={onTouchEnd}
-                            >
-                                {currentWaypoint.image_urls.map((imageUrl, index) => (
-                                    <div key={index} className="carousel-slide">
-                                        <img src={imageUrl} alt={`${currentWaypoint.name} - Image ${index + 1}`} />
-                                    </div>
-                                ))}
-                            </div>
-                            
-                            {currentWaypoint.image_urls.length > 1 && (
+                {isTransitioning ? (
+                    <div className="waypoint-transition">
+                        <h3>Travelling to {waypoints[targetWaypointIndex]?.name}...</h3>
+                        <LoadingSpinner text="Travelling..." />
+                    </div>
+                ) : (
+                    <>
+                        <h3>{currentWaypoint.name}</h3>
+                        <div className="waypoint-media">
+                            {currentWaypoint.image_urls && currentWaypoint.image_urls.length > 0 && (
                                 <>
-                                    <button 
-                                        className="carousel-nav prev"
-                                        onClick={handleImagePrevious}
-                                        disabled={currentImageIndex === 0}
+                                    <div 
+                                        className="carousel-container"
+                                        style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+                                        onTouchStart={onTouchStart}
+                                        onTouchMove={onTouchMove}
+                                        onTouchEnd={onTouchEnd}
                                     >
-                                        <FontAwesomeIcon icon={faChevronLeft} />
-                                    </button>
-                                    <button 
-                                        className="carousel-nav next"
-                                        onClick={handleImageNext}
-                                        disabled={currentImageIndex === currentWaypoint.image_urls.length - 1}
-                                    >
-                                        <FontAwesomeIcon icon={faChevronRight} />
-                                    </button>
-                                    
-                                    <div className="carousel-indicators">
-                                        {currentWaypoint.image_urls.map((_, index) => (
-                                            <button
-                                                key={index}
-                                                className={`indicator ${index === currentImageIndex ? 'active' : ''}`}
-                                                onClick={() => goToImage(index)}
-                                            />
+                                        {currentWaypoint.image_urls.map((imageUrl, index) => (
+                                            <div key={index} className="carousel-slide">
+                                                <img src={imageUrl} alt={`${currentWaypoint.name} - Image ${index + 1}`} />
+                                            </div>
                                         ))}
                                     </div>
+                                    
+                                    {currentWaypoint.image_urls.length > 1 && (
+                                        <>
+                                            <button 
+                                                className="carousel-nav prev"
+                                                onClick={handleImagePrevious}
+                                                disabled={currentImageIndex === 0}
+                                            >
+                                                <FontAwesomeIcon icon={faChevronLeft} />
+                                            </button>
+                                            <button 
+                                                className="carousel-nav next"
+                                                onClick={handleImageNext}
+                                                disabled={currentImageIndex === currentWaypoint.image_urls.length - 1}
+                                            >
+                                                <FontAwesomeIcon icon={faChevronRight} />
+                                            </button>
+                                            
+                                            <div className="carousel-indicators">
+                                                {currentWaypoint.image_urls.map((_, index) => (
+                                                    <button
+                                                        key={index}
+                                                        className={`indicator ${index === currentImageIndex ? 'active' : ''}`}
+                                                        onClick={() => goToImage(index)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
                                 </>
                             )}
-                        </>
-                    )}
-                </div>
-                
-                {/* Audio Narration Section - Only displayed when narration is enabled */}
-                {isNarrationEnabled && currentWaypoint.narration_url && (
-                    <div className="waypoint-audio" style={{ display: 'none' }}>
-                        <audio 
-                            ref={audioRef}
-                            controls 
-                            autoPlay
-                            style={{ width: '100%', marginTop: '10px', display: 'none' }}
-                        >
-                            <source src={currentWaypoint.narration_url} type="audio/mpeg" />
-                            <source src={currentWaypoint.narration_url} type="audio/wav" />
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                )}
-                
-                <div className="waypoint-info">
-                    <p>
-                        {textSegments.map((segment, index) => {
-                            // Handle both string and object formats
-                            if (typeof segment === 'string') {
-                                return <span key={index}>{segment}</span>;
-                            }
-                            
-                            // Render text segment with conditional highlighting
-                            const isHighlighted = segment.isKeyframe && segment.keyframeIndex === currentKeyframeIndex;
-                            
-                            return (
-                                <span
-                                    key={index}
-                                    className={isHighlighted ? 'text-highlight' : ''}
+                        </div>
+                        
+                        {/* Audio Narration Section - Only displayed when narration is enabled */}
+                        {isNarrationEnabled && currentWaypoint.narration_url && (
+                            <div className="waypoint-audio" style={{ display: 'none' }}>
+                                <audio 
+                                    ref={audioRef}
+                                    controls 
+                                    autoPlay
+                                    style={{ width: '100%', marginTop: '10px', display: 'none' }}
                                 >
-                                    {segment.text}
-                                </span>
-                            );
-                        })}
-                    </p>
-                </div>
+                                    <source src={currentWaypoint.narration_url} type="audio/mpeg" />
+                                    <source src={currentWaypoint.narration_url} type="audio/wav" />
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        )}
+                        
+                        <div className="waypoint-info">
+                            <p>
+                                {textSegments.map((segment, index) => {
+                                    // Handle both string and object formats
+                                    if (typeof segment === 'string') {
+                                        return <span key={index}>{segment}</span>;
+                                    }
+                                    
+                                    // Render text segment with conditional highlighting
+                                    const isHighlighted = segment.isKeyframe && segment.keyframeIndex === currentKeyframeIndex;
+                                    
+                                    return (
+                                        <span
+                                            key={index}
+                                            className={isHighlighted ? 'text-highlight' : ''}
+                                        >
+                                            {segment.text}
+                                        </span>
+                                    );
+                                })}
+                            </p>
+                        </div>
+                    </>
+                )}
             </div>
             <div className="demo-controls">
-                <button onClick={handlePrevious} disabled={currentWaypointIndex === 0}>
+                <button 
+                    onClick={handlePrevious} 
+                    disabled={isTransitioning || currentWaypointIndex === 0}
+                >
                     <FontAwesomeIcon icon={faChevronLeft} />
                 </button>
                 <div className="waypoint-counter">
-                    {currentWaypointIndex + 1} / {waypoints.length}
+                    {isTransitioning ? `Travelling to ${targetWaypointIndex + 1}` : `${currentWaypointIndex + 1}`} / {waypoints.length}
                 </div>
-                <button onClick={handleNext} disabled={currentWaypointIndex === waypoints.length - 1}>
+                <button 
+                    onClick={handleNext} 
+                    disabled={isTransitioning || currentWaypointIndex === waypoints.length - 1}
+                >
                     <FontAwesomeIcon icon={faChevronRight} />
                 </button>
             </div>
