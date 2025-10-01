@@ -91,9 +91,8 @@ function Settings() {
         
         settingsService.resetToDefaults();
         const defaultSettings = settingsService.getAll();
-        setSettings(defaultSettings);
-        setPendingSettings({});
-        setHasUnsavedChanges(false);
+        setPendingSettings(defaultSettings);
+        setHasUnsavedChanges(true);
     };
 
     // Handle discarding changes
