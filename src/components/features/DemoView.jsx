@@ -93,7 +93,6 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             // Small delay to ensure audio element is ready
             const timer = setTimeout(() => {
                 audioRef.current.play().catch(error => {
-                    console.log('Auto-play prevented by browser:', error);
                     // Auto-play was prevented (browser policy), user needs to interact first
                 });
             }, 100);
@@ -148,8 +147,6 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
 
                 // Split description into segments based on keyframe text
                 const description = currentWaypoint.description || "";
-                console.log('Description:', description);
-                console.log('Keyframes:', parsedKeyframes);
                 
                 // Create segments by finding each keyframe text in the description
                 let segments = [];
@@ -165,7 +162,6 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                     .filter(kf => kf.position !== -1)
                     .sort((a, b) => a.position - b.position);
 
-                console.log('Keyframes with positions:', keyframesWithPositions);
 
                 keyframesWithPositions.forEach((keyframe) => {
                     // Add text before this keyframe (including spaces and punctuation)
@@ -200,7 +196,6 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                     }
                 }
 
-                console.log('Generated segments:', segments);
                 setTextSegments(segments.length > 0 ? segments : [{text: description, isKeyframe: false}]);
                 setCurrentKeyframeIndex(-1);
 
@@ -271,7 +266,6 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             // Check if auto-advance is enabled to skip transition animations
             const autoAdvance = getSetting('autoAdvanceWaypoints');
             const transitionDuration = autoAdvance ? 100 : 3500; // Skip animation or normal duration
-            console.log('🚀 DemoView handleNext - autoAdvance:', autoAdvance, 'duration:', transitionDuration + 'ms');
             
             setTimeout(() => {
                 setIsTransitioning(false);
@@ -300,7 +294,6 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             // Check if auto-advance is enabled to skip transition animations
             const autoAdvance = getSetting('autoAdvanceWaypoints');
             const transitionDuration = autoAdvance ? 100 : 3500; // Skip animation or normal duration
-            console.log('🚀 DemoView handlePrevious - autoAdvance:', autoAdvance, 'duration:', transitionDuration + 'ms');
             
             setTimeout(() => {
                 setIsTransitioning(false);
@@ -413,7 +406,6 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             // If turning on narration and audio exists, play it
             else if (newState && audioRef.current && waypoints[currentWaypointIndex]?.narration_url) {
                 audioRef.current.play().catch(error => {
-                    console.log('Auto-play prevented by browser:', error);
                 });
             }
             

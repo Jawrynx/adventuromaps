@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, HashRouter } from 'react-router-dom';
 import { APIProvider } from '@vis.gl/react-google-maps';
 import { SettingsProvider } from '../../services/SettingsContext.jsx';
 import MainContent from './MainContent';
@@ -20,11 +20,17 @@ import '../../components/ui/css/Buttons.css';
  * The root component that wraps the entire application with necessary providers:
  * - Settings Provider: Provides global settings state management across the app
  * - Google Maps API Provider: Enables all map functionality throughout the app
- * - Browser Router: Enables client-side routing for navigation between different views
+ * - Router: Uses HashRouter for Electron builds or BrowserRouter for web builds
  * 
  * @returns {JSX.Element} The complete application wrapped in providers
  */
 const App = () => {
+    // Detect if running in Electron environment
+    const isElectron = typeof window !== 'undefined' && window.electron;
+    
+    // Choose appropriate router based on environment
+    const RouterComponent = isElectron ? HashRouter : BrowserRouter;
+    
     return (
         // Settings Provider - provides global settings state management
         <SettingsProvider>
@@ -35,10 +41,10 @@ const App = () => {
                 libraries={['geometry', 'places', 'marker']}       // Required Google Maps libraries
                 version='beta'                                      // Use beta version for latest features
             >
-                {/* Browser Router - enables client-side routing throughout the app */}
-                <BrowserRouter>
+                {/* Router - uses HashRouter for Electron or BrowserRouter for web */}
+                <RouterComponent>
                     <MainContent />
-                </BrowserRouter>
+                </RouterComponent>
             </APIProvider>
         </SettingsProvider>
     );

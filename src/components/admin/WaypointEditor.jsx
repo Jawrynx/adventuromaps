@@ -52,14 +52,10 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
      * when a new waypoint is selected for editing.
      */
     useEffect(() => {
-        console.log("WaypointEditor: Loading waypoint data:", waypointData.waypoint);
         
         // Load existing text content
         const newDescription = waypointData.waypoint.description || '';
         const newInstructions = waypointData.waypoint.instructions || '';
-        
-        console.log("WaypointEditor: Setting description:", newDescription);
-        console.log("WaypointEditor: Setting instructions:", newInstructions);
         
         setDescription(newDescription);
         setInstructions(newInstructions);
@@ -157,19 +153,6 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 narration_url: narration ? undefined : waypointData.waypoint.narration_url,
                 keyframes_url: keyframes ? undefined : waypointData.waypoint.keyframes_url
             };
-            
-            // Debug logging
-            console.log("WaypointEditor: Saving waypoint data:", {
-                description: description,
-                instructions: instructions,
-                existingImageUrls,
-                newImages: images.length,
-                newNarration: narration?.name || 'none',
-                newKeyframes: keyframes?.name || 'none',
-                preservingNarrationUrl: waypointData.waypoint.narration_url && !narration,
-                preservingKeyframesUrl: waypointData.waypoint.keyframes_url && !keyframes,
-                fullDataToSave: waypointDataToSave
-            });
 
             // Call parent save handler with compiled data
             await onSave(waypointData.routeId, waypointData.waypointIndex, waypointDataToSave);

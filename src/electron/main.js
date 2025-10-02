@@ -34,12 +34,13 @@ if (started) {
 const createWindow = () => {
   // Create the browser window with secure configuration
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: true,
+      nodeIntegration: false, // Security: Disable node integration in renderer
       contextIsolation: true, // Security: Isolate context between main and renderer
+      webSecurity: true, // Enable web security
     },
   });
 
@@ -64,13 +65,12 @@ const createWindow = () => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     // Development: Load from Vite dev server
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    // Open DevTools in development
+    mainWindow.webContents.openDevTools();
   } else {
     // Production: Load from built files
     mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
-
-  // Open DevTools for development (should be removed for production)
-  mainWindow.webContents.openDevTools();
 };
 
 /**

@@ -174,7 +174,6 @@ const MainContent = () => {
             
             // Transition from setup to active demo mode after initial zoom completes
             setTimeout(() => {
-                console.log('🔄 Clearing initial demo setup flag - cinematic pan now enabled');
                 setIsZooming(false);
                 setIsInitialDemoSetup(false);
                 setIsDemoMode(true);        // Activate full demo mode
@@ -268,15 +267,13 @@ const MainContent = () => {
                 const autoAdvance = getSetting('autoAdvanceWaypoints');
                 if (autoAdvance) {
                     // Auto-advance enabled: Just set map position instantly, no animation
-                    console.log('⚡ MainContent auto-advance: instant map update for waypoint:', currentWaypoint.name);
                     smoothPanFunction(coords.lat, coords.lng, currentZoom, false); // false = no cinematic
                 } else {
                     // Normal cinematic panning
-                    console.log('✨ MainContent calling CINEMATIC PAN with waypoint:', currentWaypoint.name, 'coords:', coords.lat, coords.lng);
                     smoothPanFunction(coords.lat, coords.lng, currentZoom, true); // true = cinematic
                 }
             } else if (timeSinceDemoStart <= 5000) {
-                console.log('🚫 Skipping cinematic pan during initial demo period');
+                // Skipping cinematic pan during initial demo period
             }
             
             // Update the demo path to show the current route's path

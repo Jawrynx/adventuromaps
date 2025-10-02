@@ -98,7 +98,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                 createdAt: new Date(),
                 status: 'draft'  // All new items start as drafts
             });
-            console.log("Document successfully written with ID:", docRef.id, "to collection:", collectionName);
             return docRef.id;
         } catch (e) {
             console.error("Error adding document:", e);
@@ -120,7 +119,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         setItemId(id);
         setItemData(data);
         onHasCreatedItemInfoChange(true); // Enable route creation phase
-        console.log("Initial item data created with ID:", id);
     };
 
     /**
@@ -141,27 +139,17 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         let imageUrls = [];
 
         try {
-            // Debug logging
-            console.log("AdmTools: Processing waypoint data:", {
-                existingImageUrls: updatedWaypointData.existingImageUrls,
-                newImages: updatedWaypointData.images?.length || 0,
-                originalImageUrls: updatedWaypointData.image_urls
-            });
-
             // Handle existing image URLs (preserve previously uploaded images)
             if (updatedWaypointData.existingImageUrls && updatedWaypointData.existingImageUrls.length >= 0) {
                 // Use the existingImageUrls array which may have been modified (items removed)
                 imageUrls = [...updatedWaypointData.existingImageUrls];
-                console.log("AdmTools: Using existingImageUrls:", imageUrls);
             } else if (updatedWaypointData.image_urls) {
                 // Fallback to existing image_urls if existingImageUrls is not provided
                 imageUrls = [...updatedWaypointData.image_urls];
-                console.log("AdmTools: Falling back to original image_urls:", imageUrls);
             }
 
             // Upload new image files if provided
             if (updatedWaypointData.images && updatedWaypointData.images.length > 0) {
-                console.log("AdmTools: Uploading new images:", updatedWaypointData.images.length);
                 for (const file of updatedWaypointData.images) {
                     const imagePath = `images/${routeId}_waypoint_${waypointIndex}_image_${Date.now()}_${file.name}`;
                     const imageUrl = await uploadFile(file, imagePath);
@@ -174,16 +162,13 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             delete updatedWaypointData.images;          // Remove file objects
             delete updatedWaypointData.existingImageUrls; // Remove temporary array
             
-            console.log("AdmTools: Final image_urls:", updatedWaypointData.image_urls);
 
             // Handle narration audio file upload
             if (updatedWaypointData.narration && updatedWaypointData.narration instanceof File) {
-                console.log("AdmTools: Uploading narration file:", updatedWaypointData.narration.name);
                 const narrationPath = `audio/${routeId}_waypoint_${waypointIndex}_narration_${Date.now()}.mp3`;
                 const narrationUrl = await uploadFile(updatedWaypointData.narration, narrationPath);
                 updatedWaypointData.narration_url = narrationUrl;
                 delete updatedWaypointData.narration; // Remove file object
-                console.log("AdmTools: Narration uploaded to:", narrationUrl);
             } else {
                 // Remove file object if it exists but preserve existing URL
                 delete updatedWaypointData.narration;
@@ -191,12 +176,10 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
             // Handle keyframes text file upload for animations
             if (updatedWaypointData.keyframes && updatedWaypointData.keyframes instanceof File) {
-                console.log("AdmTools: Uploading keyframes file:", updatedWaypointData.keyframes.name);
                 const keyframesPath = `keyframes/${routeId}_waypoint_${waypointIndex}_keyframes_${Date.now()}.txt`;
                 const keyframesUrl = await uploadFile(updatedWaypointData.keyframes, keyframesPath);
                 updatedWaypointData.keyframes_url = keyframesUrl;
                 delete updatedWaypointData.keyframes; // Remove file object
-                console.log("AdmTools: Keyframes uploaded to:", keyframesUrl);
             } else {
                 // Remove file object if it exists but preserve existing URL
                 delete updatedWaypointData.keyframes;
@@ -213,28 +196,16 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                 const newWaypoints = [...route.waypoints];
                 const originalWaypoint = newWaypoints[waypointIndex];
                 
-                console.log("AdmTools: Updating waypoint data:", {
-                    routeId,
-                    waypointIndex,
-                    originalWaypoint: originalWaypoint,
-                    updatedWaypointData: updatedWaypointData,
-                    originalDescription: originalWaypoint?.description,
-                    newDescription: updatedWaypointData.description
-                });
-                
                 newWaypoints[waypointIndex] = {
                     ...originalWaypoint,
                     ...updatedWaypointData
                 };
-                
-                console.log("AdmTools: Final merged waypoint:", newWaypoints[waypointIndex]);
-                
+                                
                 return { ...route, waypoints: newWaypoints };
             }
             return route;
         });
         
-        console.log("AdmTools: Setting updated routes:", updatedRoutes);
         setRoutes(updatedRoutes);
     };
 
@@ -251,9 +222,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
      */
     const fetchDraftItems = async (itemType) => {
         setLoadingItems(true);
-        try {
-            console.log('Fetching draft items of type:', itemType);
-            
+        try {            
             // Query for draft items of the specified type
             const q = query(collection(db, itemType), where("type", "==", itemType), where("status", "==", "draft"));
             const querySnapshot = await getDocs(q);
@@ -264,7 +233,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             for (const doc of querySnapshot.docs) {
                 try {
                     const data = doc.data();
-                    console.log(`Processing item ${doc.id}:`, data);
 
                     // Fetch all routes for this item
                     const routesCollection = collection(db, itemType, doc.id, 'routes');
@@ -307,14 +275,12 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                         ...data,
                         routes: sortedRoutes || []
                     };
-                    console.log('Processed item with routes:', itemWithRoutes);
                     fetchedItems.push(itemWithRoutes);
                 } catch (itemError) {
                     console.error(`Error processing item ${doc.id}:`, itemError);
                 }
             }
 
-            console.log('All fetched items:', fetchedItems);
             setItemsToLoad(fetchedItems);
         } catch (error) {
             console.error('Error in fetchDraftItems:', error);
@@ -348,9 +314,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
      * @param {Object} item - The item object containing routes and waypoints
      */
     const handleSelectItemToLoad = (item) => {
-        console.log('Loading item:', item);
-        console.log('Routes in loaded item:', item.routes);
-
         if (!item.routes || item.routes.length === 0) {
             console.warn('No routes found in loaded item');
         }
@@ -361,7 +324,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             waypoints: route.waypoints || []
         }));
 
-        console.log('Structured routes being set:', routesToSet);
 
         // Load item data into current session
         setItemId(item.id);
@@ -382,7 +344,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
     };
 
     const handleEditItem = (item) => {
-        console.log('Editing item:', item);
         setItemId(item.id);
         setItemData(item);
         
@@ -456,7 +417,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             ...itemData,
             routes: routes
         };
-        console.log('Saving draft with data:', updatedItemData);
         onSaveDraft(updatedItemData, itemId);
     };
 

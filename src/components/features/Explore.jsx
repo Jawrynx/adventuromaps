@@ -190,7 +190,6 @@ function Explore({ onSelectRoute, onStartDemo }) {
                 });
             }
 
-            console.log('Structured Routes', structuredRoutes);
 
             // Validate that we have sufficient data for demo mode
             const hasWaypoints = structuredRoutes.some(route => route.waypoints.length > 0);

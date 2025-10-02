@@ -23,7 +23,6 @@ function ScaleControlManager({ showScale }) {
     useEffect(() => {
         if (!map) return;
 
-        console.log('🔧 Admin ScaleControlManager: Setting scale control to', showScale);
         
         // Set the scale control option on the map
         map.setOptions({ 
@@ -46,8 +45,6 @@ function CompassControlManager({ showCompass }) {
     useEffect(() => {
         if (!map) return;
 
-        console.log('🧭 Admin CompassControlManager: Setting rotate control to', showCompass);
-        
         // Set the rotate control option on the map
         map.setOptions({ 
             rotateControl: showCompass,
@@ -303,14 +300,12 @@ function Admin({ mapId }) {
                         coordinates: route.coordinates,
                         order: routeOrder
                     });
-                    console.log("Route document successfully updated with ID:", route.firestoreId);
                 } else {
                     const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
                     routeDocRef = await addDoc(routesCollectionRef, {
                         coordinates: route.coordinates,
                         order: routeOrder 
                     });
-                    console.log("New route document successfully written with ID:", routeDocRef.id);
                 }
 
                 // Process waypoints for this route
@@ -356,21 +351,17 @@ function Admin({ mapId }) {
                         });
                         
                         // Debug: Log the data being saved
-                        console.log("Saving waypoint data:", waypointDataToSave);
                         
                         if (waypoint.firestoreId) {
                             // Try to update existing waypoint
                             try {
                                 const waypointDocRef = doc(waypointsCollectionRef, waypoint.firestoreId);
                                 await updateDoc(waypointDocRef, waypointDataToSave);
-                                console.log("Waypoint updated:", waypoint.firestoreId);
                                 newWaypointsWithIds.push(waypoint);
                             } catch (error) {
                                 // If document doesn't exist, create a new one
-                                console.log("Waypoint document not found, creating new one:", waypoint.firestoreId, "Error:", error.message);
                                 try {
                                     const docRef = await addDoc(waypointsCollectionRef, waypointDataToSave);
-                                    console.log("New waypoint created with ID:", docRef.id);
                                     newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
                                 } catch (createError) {
                                     console.error("Failed to create waypoint:", createError.message, "Data:", waypointDataToSave);
@@ -381,7 +372,6 @@ function Admin({ mapId }) {
                             // Create new waypoint
                             try {
                                 const docRef = await addDoc(waypointsCollectionRef, waypointDataToSave);
-                                console.log("New waypoint added with ID:", docRef.id);
                                 newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
                             } catch (createError) {
                                 console.error("Failed to create new waypoint:", createError.message, "Data:", waypointDataToSave);
@@ -404,7 +394,6 @@ function Admin({ mapId }) {
         setRoutes(newRoutesWithIds);
 
         alert("Routes and waypoints saved to Firestore successfully! 🎉");
-        console.log("All routes and waypoints have been saved.");
     };
 
     /**
@@ -429,7 +418,6 @@ function Admin({ mapId }) {
                 status: 'published',
                 publishedAt: new Date(),
             });
-            console.log(`Item: ${itemId} has been published.`);
             alert(`Item: ${itemId} has been published.`);
         } catch (error) {
             console.error("Error publishing item:", error);
@@ -562,9 +550,6 @@ function Admin({ mapId }) {
                     map.setCenter({ lat, lng });
                     map.setZoom(zoomLevel);
                 }
-                
-                console.log(`Location selected: ${place.formatted_address} at ${lat}, ${lng}`, 
-                           `Types: ${place.types?.join(', ')}`, `Zoom: ${zoomLevel}`);
             }
         });
     };
@@ -635,7 +620,6 @@ function Admin({ mapId }) {
 
     // Get map type from settings (reactive to changes)
     const mapType = settings.defaultMapType || 'terrain';
-    console.log('🗺️ Admin using mapType:', mapType);
 
     // Determine mapId and colorScheme based on theme setting
     const mapTheme = settings.mapTheme || 'adventuro-earth';
@@ -653,9 +637,6 @@ function Admin({ mapId }) {
     // Get scale bar and compass settings
     const showScaleBar = settings.showScaleBar !== undefined ? settings.showScaleBar : true;
     const showCompass = settings.showCompass !== undefined ? settings.showCompass : true;
-    console.log('🎨 Admin using theme:', mapTheme, 'mapId:', effectiveMapId, 'colorScheme:', colorScheme);
-    console.log('📏 Admin showScaleBar:', showScaleBar);
-    console.log('🧭 Admin showCompass:', showCompass);
 
     // ========== COMPONENT RENDER ==========
     return (
@@ -795,7 +776,6 @@ function Admin({ mapId }) {
                     onPublish={handlePublish}
                     hasCreatedItemInfo={hasCreatedItemInfo}
                     onHasCreatedItemInfoChange={(value) => {
-                        console.log('Setting hasCreatedItemInfo to:', value);
                         setHasCreatedItemInfo(value);
                     }}
                 />

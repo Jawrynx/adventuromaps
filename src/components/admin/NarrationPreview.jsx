@@ -69,9 +69,7 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
                     })
                     .sort((a, b) => a.time - b.time); // Sort by timestamp
 
-                setKeyframes(parsedKeyframes);
-                console.log('Loaded keyframes:', parsedKeyframes);
-                
+                setKeyframes(parsedKeyframes);                
                 // Set initial text (first keyframe or description)
                 if (parsedKeyframes.length > 0) {
                     setAnimatedText(parsedKeyframes[0].text);

@@ -119,10 +119,29 @@ To get the app up and running on your local machine from this repository, follow
 7. **Test the setup:**
    Try creating an Adventure/Exploration item through the admin interface!
 
+7. **Environment Variables Setup:**
+   Create a `.env.local` file in the root directory with your API keys:
+   ```
+   # Google Maps API Key (required for map functionality)
+   VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+   
+   # Firebase Configuration (replace with your actual values)
+   VITE_FIREBASE_API_KEY=your_firebase_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   VITE_FIREBASE_MEASUREMENT_ID=G-your_measurement_id
+   ```
+   
+   **Important:** Make sure to replace all placeholder values with your actual API keys and configuration values.
+
 ### Development Commands
 
 - **Development mode:** `npm start` - Opens the Electron app with hot reload
-- **Build for production:** `npm run build` - Creates production build
+- **Build for production:** `npm run make` - Creates production build and installer
+- **Package only:** `npm run package` - Creates packaged app without installer
 - **Preview build:** `npm run preview` - Preview production build locally
 
 ### Keyframes Format for Narration 🎵

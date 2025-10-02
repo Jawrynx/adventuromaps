@@ -33,8 +33,6 @@ function ScaleControlManager({ showScale }) {
     useEffect(() => {
         if (!map) return;
 
-        console.log('🔧 ScaleControlManager: Setting scale control to', showScale);
-        
         // Set the scale control option on the map
         map.setOptions({ 
             scaleControl: showScale 
@@ -56,8 +54,6 @@ function CompassControlManager({ showCompass }) {
     useEffect(() => {
         if (!map) return;
 
-        console.log('🧭 CompassControlManager: Setting rotate control to', showCompass);
-        
         // Set the rotate control option on the map
         map.setOptions({ 
             rotateControl: showCompass,
@@ -128,7 +124,6 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
 
     // Get map type from settings (reactive to changes)
     const mapType = settings.defaultMapType || 'terrain';
-    console.log('🗺️ MainMap using mapType:', mapType);
 
     // Determine mapId and colorScheme based on theme setting
     const mapTheme = settings.mapTheme || 'adventuro-earth';
@@ -146,10 +141,6 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
     // Get scale bar and compass settings
     const showScaleBar = settings.showScaleBar !== undefined ? settings.showScaleBar : true;
     const showCompass = settings.showCompass !== undefined ? settings.showCompass : true;
-    console.log('🎨 MainMap using theme:', mapTheme, 'mapId:', effectiveMapId, 'colorScheme:', colorScheme);
-    console.log('📏 MainMap showScaleBar:', showScaleBar);
-    console.log('🧭 MainMap showCompass:', showCompass);
-    console.log('🔍 Settings object:', settings);
 
     return (
         <div style={{ width: '100%', height: '100%' }}>
