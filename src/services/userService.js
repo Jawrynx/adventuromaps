@@ -30,10 +30,10 @@ export const createUserDocument = async (user, additionalData = {}) => {
             displayName: user.displayName || additionalData.displayName || '',
             email: user.email,
             photoURL: user.photoURL || null,
+            userType: additionalData.userType || 'user', // 'user' or 'admin'
             createdAt: serverTimestamp(),
             lastLoginAt: serverTimestamp(),
             preferences: {
-                theme: 'light',
                 emailNotifications: true,
                 pushNotifications: true,
             },

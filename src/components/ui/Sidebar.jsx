@@ -25,10 +25,11 @@ import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTool
  * @param {Function} props.onSidebarClick - Callback when navigation item is clicked
  * @param {Function} props.onSidebarToggle - Callback when sidebar open/close state changes
  * @param {Object} props.user - Current authenticated user (null if not logged in)
+ * @param {Object} props.userDocument - Full user document from Firestore (includes userType)
  * @param {Function} props.onLogout - Callback to handle user logout
  * @returns {JSX.Element} Collapsible navigation sidebar
  */
-function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, onLogout }) {
+function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, userDocument, onLogout }) {
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -102,13 +103,16 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, onLogout }
                     <FontAwesomeIcon icon={faBook} />
                     {isOpen && <p>Guides/Safety</p>}
                 </div>
-                <div
-                    className={`sidebar-link ${location.pathname === '/admin' ? 'active' : ''}`}
-                    onClick={() => handleSidebarClick('admin', '/admin')}
-                >
-                    <FontAwesomeIcon icon={faTools} />
-                    {isOpen && <p>Admin Tools</p>}
-                </div>
+                {/* Admin Tools - only show for admin users */}
+                {userDocument?.userType === 'admin' && (
+                    <div
+                        className={`sidebar-link ${location.pathname === '/admin' ? 'active' : ''}`}
+                        onClick={() => handleSidebarClick('admin', '/admin')}
+                    >
+                        <FontAwesomeIcon icon={faTools} />
+                        {isOpen && <p>Admin Tools</p>}
+                    </div>
+                )}
             </div>
             <div className='sidebar-footer'>
                 {user ? (

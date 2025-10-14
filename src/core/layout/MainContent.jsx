@@ -16,7 +16,7 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../../services/firebase';
-import { createUserDocument } from '../../services/userService';
+import { createUserDocument, getUserDocument } from '../../services/userService';
 
 // UI Components
 import Sidebar from '../../components/ui/Sidebar';
@@ -105,6 +105,7 @@ const MainContent = () => {
     
     // ========== AUTHENTICATION STATE ==========
     const [user, setUser] = useState(null);                        // Current authenticated user
+    const [userDocument, setUserDocument] = useState(null);        // Full user document from Firestore
     const [isAuthLoading, setIsAuthLoading] = useState(true);      // Whether auth state is being determined
     
     // Use ref to track previous waypoint for distance calculation
@@ -368,8 +369,12 @@ const MainContent = () => {
         
         try {
             // Create or update user document in Firestore
-            const userDocument = await createUserDocument(user);
-            console.log('User document created/updated:', userDocument);
+            await createUserDocument(user);
+            
+            // Fetch complete user document with userType
+            const userDoc = await getUserDocument(user.uid);
+            setUserDocument(userDoc);
+            console.log('User document created/updated:', userDoc);
             
             setUser(user);
             setActiveItem('map'); // Close the auth modal and return to map view
@@ -390,6 +395,7 @@ const MainContent = () => {
         try {
             await signOut(auth);
             setUser(null);
+            setUserDocument(null);
             console.log('User logged out successfully');
         } catch (error) {
             console.error('Error signing out:', error);
@@ -413,11 +419,16 @@ const MainContent = () => {
                 try {
                     // Ensure user document exists (for existing users or page refresh)
                     await createUserDocument(user);
+                    
+                    // Fetch complete user document with userType
+                    const userDoc = await getUserDocument(user.uid);
+                    setUserDocument(userDoc);
                 } catch (error) {
                     console.error('Error ensuring user document exists:', error);
                 }
             } else {
                 console.log('User is signed out');
+                setUserDocument(null);
             }
         });
         
@@ -491,6 +502,7 @@ const MainContent = () => {
                 onSidebarClick={handleSidebarClick}
                 onSidebarToggle={handleSidebarToggle}
                 user={user}
+                userDocument={userDocument}
                 onLogout={handleLogout}
             />
             

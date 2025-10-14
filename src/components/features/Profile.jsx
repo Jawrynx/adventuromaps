@@ -7,7 +7,7 @@
  * 
  * Features:
  * - Profile information editing (name, bio, location, photo)
- * - Account preferences (theme, notifications)
+ * - Account preferences (notifications)
  * - Activity statistics (routes completed, distance traveled)
  * - Account management (email, password, delete account)
  * - Real-time data synchronization with Firestore
@@ -18,7 +18,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faUser, faEnvelope, faMapMarkerAlt, faEdit, faSave, faTimes, 
     faCamera, faBell, faPalette, faRoute, faRuler, faClock,
-    faKey, faTrash, faEye, faEyeSlash 
+    faKey, faTrash, faEye, faEyeSlash, faTools 
 } from '@fortawesome/free-solid-svg-icons';
 import { updatePassword, updateEmail, deleteUser } from 'firebase/auth';
 import { auth } from '../../services/firebase';
@@ -53,7 +53,6 @@ function Profile({ user }) {
         bio: '',
         location: '',
         preferences: {
-            theme: 'light',
             emailNotifications: true,
             pushNotifications: true,
         }
@@ -87,7 +86,6 @@ function Profile({ user }) {
                     bio: doc.profile?.bio || '',
                     location: doc.profile?.location || '',
                     preferences: {
-                        theme: doc.preferences?.theme || 'light',
                         emailNotifications: doc.preferences?.emailNotifications !== false,
                         pushNotifications: doc.preferences?.pushNotifications !== false,
                     }
@@ -171,7 +169,6 @@ function Profile({ user }) {
                 bio: userDocument.profile?.bio || '',
                 location: userDocument.profile?.location || '',
                 preferences: {
-                    theme: userDocument.preferences?.theme || 'light',
                     emailNotifications: userDocument.preferences?.emailNotifications !== false,
                     pushNotifications: userDocument.preferences?.pushNotifications !== false,
                 }
@@ -226,7 +223,15 @@ function Profile({ user }) {
                     </button>
                 </div>
                 <div className="profile-basic-info">
-                    <h1>{userDocument?.displayName || user.displayName || 'User'}</h1>
+                    <div className="profile-name-container">
+                        <h1>{userDocument?.displayName || user.displayName || 'User'}</h1>
+                        {userDocument?.userType === 'admin' && (
+                            <span className="admin-badge">
+                                <FontAwesomeIcon icon={faTools} />
+                                Admin
+                            </span>
+                        )}
+                    </div>
                     <p className="profile-email">
                         <FontAwesomeIcon icon={faEnvelope} />
                         {user.email}
@@ -303,6 +308,16 @@ function Profile({ user }) {
                     <FontAwesomeIcon icon={faKey} />
                     Account
                 </button>
+                {/* Admin tab - only show for admin users */}
+                {userDocument?.userType === 'admin' && (
+                    <button 
+                        className={`tab ${activeTab === 'admin' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('admin')}
+                    >
+                        <FontAwesomeIcon icon={faTools} />
+                        Admin
+                    </button>
+                )}
             </div>
 
             {/* Tab Content */}
@@ -515,6 +530,80 @@ function Profile({ user }) {
                                 <FontAwesomeIcon icon={faTrash} />
                                 Delete Account
                             </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Admin Tab Content - only for admin users */}
+                {activeTab === 'admin' && userDocument?.userType === 'admin' && (
+                    <div className="tab-content">
+                        <h2>Admin Panel</h2>
+                        <p className="admin-welcome">
+                            Welcome to the admin panel. You have administrative privileges on this platform.
+                        </p>
+
+                        <div className="admin-info-section">
+                            <h3>Admin Information</h3>
+                            <div className="admin-info-grid">
+                                <div className="admin-info-card">
+                                    <h4>User Type</h4>
+                                    <p>{userDocument.userType}</p>
+                                </div>
+                                <div className="admin-info-card">
+                                    <h4>Admin Since</h4>
+                                    <p>{formatDate(userDocument.createdAt)}</p>
+                                </div>
+                                <div className="admin-info-card">
+                                    <h4>Admin Level</h4>
+                                    <p>Full Access</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="admin-actions-section">
+                            <h3>Admin Actions</h3>
+                            <div className="admin-actions-grid">
+                                <div className="admin-action-card">
+                                    <FontAwesomeIcon icon={faTools} className="admin-action-icon" />
+                                    <h4>Admin Tools</h4>
+                                    <p>Access the full admin dashboard with advanced tools and settings.</p>
+                                    <button 
+                                        className="btn-primary"
+                                        onClick={() => window.location.href = '/admin'}
+                                    >
+                                        Open Admin Tools
+                                    </button>
+                                </div>
+                                <div className="admin-action-card">
+                                    <FontAwesomeIcon icon={faUser} className="admin-action-icon" />
+                                    <h4>User Management</h4>
+                                    <p>Manage user accounts, permissions, and access levels.</p>
+                                    <button className="btn-secondary" disabled>
+                                        Coming Soon
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="admin-stats-section">
+                            <h3>System Overview</h3>
+                            <div className="admin-stats-grid">
+                                <div className="admin-stat-card">
+                                    <h4>Total Users</h4>
+                                    <p className="admin-stat-number">-</p>
+                                    <span className="admin-stat-label">Registered</span>
+                                </div>
+                                <div className="admin-stat-card">
+                                    <h4>Active Routes</h4>
+                                    <p className="admin-stat-number">-</p>
+                                    <span className="admin-stat-label">Available</span>
+                                </div>
+                                <div className="admin-stat-card">
+                                    <h4>Admin Users</h4>
+                                    <p className="admin-stat-number">-</p>
+                                    <span className="admin-stat-label">Active</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
