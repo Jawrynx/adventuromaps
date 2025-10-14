@@ -124,13 +124,15 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, userDocume
                             <FontAwesomeIcon icon={faUser} />
                             {isOpen && <p>My Profile</p>}
                         </div>
-                        <div
-                            className="sidebar-link"
-                            onClick={onLogout}
-                        >
-                            <FontAwesomeIcon icon={faSignOutAlt} />
-                            {isOpen && <p>Logout</p>}
-                        </div>
+                        {isOpen && (
+                            <div
+                                className="sidebar-link"
+                                onClick={onLogout}
+                            >
+                                <FontAwesomeIcon icon={faSignOutAlt} />
+                                <p>Logout</p>
+                            </div>
+                        )}
                     </>
                 ) : (
                     <div
@@ -155,12 +157,10 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, userDocume
                     <FontAwesomeIcon icon={faQuestionCircle} />
                     {isOpen && <p>Help</p>}
                 </div>
-                {isOpen &&
-                    <span className='sidebar-logo'>
-                        <img src="/assets/adventuro-logo-min.png" alt="" width="32px" />
-                        AdventuroMaps v0.1.0
-                    </span>
-                }
+                <div className='sidebar-logo'>
+                    <img src="/assets/adventuro-logo-min.png" alt="AdventuroMaps" width="32px" />
+                    {isOpen && <span>AdventuroMaps v0.1.0</span>}
+                </div>
             </div>
         </div>
     );
