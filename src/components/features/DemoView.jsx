@@ -260,13 +260,27 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             setIsTransitioning(true);
             setTargetWaypointIndex(nextIndex);
             
+            // Default transition duration for cinematic panning
+            let transitionDuration = 3500;
+            
+            // Callback to handle when panning is skipped
+            const handlePanningSkipped = () => {
+                transitionDuration = 100; // Much shorter duration when panning is skipped
+                setTimeout(() => {
+                    setIsTransitioning(false);
+                }, transitionDuration);
+            };
+            
             // Trigger map transition immediately
-            onWaypointChange(nextIndex);
+            onWaypointChange(nextIndex, handlePanningSkipped);
             
             // Check if auto-advance is enabled to skip transition animations
             const autoAdvance = getSetting('autoAdvanceWaypoints');
-            const transitionDuration = autoAdvance ? 100 : 3500; // Skip animation or normal duration
+            if (autoAdvance) {
+                transitionDuration = 100;
+            }
             
+            // Set timeout for normal cinematic panning (will be overridden if panning is skipped)
             setTimeout(() => {
                 setIsTransitioning(false);
             }, transitionDuration);
@@ -288,13 +302,27 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             setIsTransitioning(true);
             setTargetWaypointIndex(prevIndex);
             
+            // Default transition duration for cinematic panning
+            let transitionDuration = 3500;
+            
+            // Callback to handle when panning is skipped
+            const handlePanningSkipped = () => {
+                transitionDuration = 100; // Much shorter duration when panning is skipped
+                setTimeout(() => {
+                    setIsTransitioning(false);
+                }, transitionDuration);
+            };
+            
             // Trigger map transition immediately
-            onWaypointChange(prevIndex);
+            onWaypointChange(prevIndex, handlePanningSkipped);
             
             // Check if auto-advance is enabled to skip transition animations
             const autoAdvance = getSetting('autoAdvanceWaypoints');
-            const transitionDuration = autoAdvance ? 100 : 3500; // Skip animation or normal duration
+            if (autoAdvance) {
+                transitionDuration = 100;
+            }
             
+            // Set timeout for normal cinematic panning (will be overridden if panning is skipped)
             setTimeout(() => {
                 setIsTransitioning(false);
             }, transitionDuration);

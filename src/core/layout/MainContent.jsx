@@ -12,7 +12,7 @@
  * different features like map viewing, route exploration, demo mode, and administrative functions.
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 
 // UI Components
@@ -35,6 +35,28 @@ import Admin from '../../components/admin/Admin';
 
 // Settings
 import { getSetting } from '../../services/settingsService';
+
+/**
+ * Calculates the distance between two coordinates using Haversine formula
+ * 
+ * @param {Object} coord1 - First coordinate {lat, lng}
+ * @param {Object} coord2 - Second coordinate {lat, lng}
+ * @returns {number} Distance in meters
+ */
+const calculateDistance = (coord1, coord2) => {
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = coord1.lat * Math.PI/180; // φ, λ in radians
+    const φ2 = coord2.lat * Math.PI/180;
+    const Δφ = (coord2.lat-coord1.lat) * Math.PI/180;
+    const Δλ = (coord2.lng-coord1.lng) * Math.PI/180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c; // Distance in meters
+};
 
 /**
  * MainContent Component
@@ -74,6 +96,9 @@ const MainContent = () => {
     const [isInitialDemoSetup, setIsInitialDemoSetup] = useState(false); // Flag for initial demo setup phase
     const [demoStartTime, setDemoStartTime] = useState(null);       // Timestamp when demo started
     const [includeNarration, setIncludeNarration] = useState(false); // Whether narration is enabled for current demo
+    
+    // Use ref to track previous waypoint for distance calculation
+    const prevWaypointRef = useRef(null);
     
     /**
      * Handles sidebar navigation clicks
@@ -157,6 +182,9 @@ const MainContent = () => {
         setIncludeNarration(narrationEnabled); // Store narration preference
         setCurrentWaypointIndex(0);         // Start at first waypoint
         setCurrentDemoPath([]);             // Clear any existing demo path
+        
+        // Reset the previous waypoint ref for distance calculations
+        prevWaypointRef.current = null;
 
         // Validate that we have route data to work with
         if (structuredData.length > 0 && structuredData[0].waypoints.length > 0) {
@@ -164,6 +192,9 @@ const MainContent = () => {
             // Handle different coordinate formats
             const coords = firstWaypoint.coordinates || { lat: firstWaypoint.lat, lng: firstWaypoint.lng };
             setActiveWaypoint(coords);
+            
+            // Initialize the previous waypoint ref with the first waypoint
+            prevWaypointRef.current = coords;
             
             // Set initial demo path if available
             if (structuredData[0].path && structuredData[0].path.length > 0) {
@@ -200,6 +231,9 @@ const MainContent = () => {
         setCurrentWaypointIndex(0);         // Reset waypoint index
         setActiveRoute(null);               // Clear any route display
         setIncludeNarration(false);         // Reset narration preference
+        
+        // Reset the previous waypoint ref
+        prevWaypointRef.current = null;
     }, []);
 
     /**
@@ -226,6 +260,8 @@ const MainContent = () => {
         setIsSidebarOpen(isOpen);
     }, []);
 
+
+
     /**
      * Handles waypoint navigation during demo mode
      * 
@@ -233,10 +269,12 @@ const MainContent = () => {
      * - Calculates which route and waypoint corresponds to the given index
      * - Updates the active waypoint and triggers smooth map panning
      * - Respects timing constraints to avoid conflicts during initial setup
+     * - Skips cinematic panning when waypoints are very close together
      * 
      * @param {number} index - Global waypoint index across all routes
+     * @param {Function} onPanningSkipped - Optional callback to notify when panning is skipped
      */
-    const handleWaypointChange = useCallback((index) => {
+    const handleWaypointChange = useCallback((index, onPanningSkipped) => {
         let cumulativeWaypointCount = 0;
         let currentWaypoint = null;
         let currentRoute = null;
@@ -256,24 +294,44 @@ const MainContent = () => {
         if (currentWaypoint && currentRoute) {
             // Handle different coordinate formats from different data sources
             const coords = currentWaypoint.coordinates || { lat: currentWaypoint.lat, lng: currentWaypoint.lng };
+            
+            // Check distance from previous waypoint to determine if we should skip panning entirely
+            let shouldSkipPanning = false;
+            const PROXIMITY_THRESHOLD = 10; // meters - skip panning entirely for very close waypoints
+            
+            if (prevWaypointRef.current) {
+                const distance = calculateDistance(prevWaypointRef.current, coords);
+                if (distance < PROXIMITY_THRESHOLD) {
+                    shouldSkipPanning = true;
+                }
+            }
+            
+            // Update the ref with the current waypoint for the next comparison
+            prevWaypointRef.current = coords;
+            
             setActiveWaypoint(coords);
             setCurrentWaypointIndex(index);
             
             // Check if enough time has passed since demo start to enable cinematic panning
             const timeSinceDemoStart = demoStartTime ? Date.now() - demoStartTime : Infinity;
             
-            // Only trigger smooth pan if we're past the initial setup phase
-            if (smoothPanFunction && timeSinceDemoStart > 5000) {
+            // Only trigger smooth pan if we're past the initial setup phase AND waypoints are not too close
+            if (smoothPanFunction && timeSinceDemoStart > 5000 && !shouldSkipPanning) {
                 const autoAdvance = getSetting('autoAdvanceWaypoints');
                 if (autoAdvance) {
                     // Auto-advance enabled: Just set map position instantly, no animation
                     smoothPanFunction(coords.lat, coords.lng, currentZoom, false); // false = no cinematic
+                    // Notify that panning was skipped (auto-advance mode)
+                    if (onPanningSkipped) onPanningSkipped();
                 } else {
-                    // Normal cinematic panning
+                    // Normal cinematic panning (back to original behavior)
                     smoothPanFunction(coords.lat, coords.lng, currentZoom, true); // true = cinematic
                 }
             } else if (timeSinceDemoStart <= 5000) {
                 // Skipping cinematic pan during initial demo period
+            } else if (shouldSkipPanning) {
+                // Waypoints are too close - skip panning entirely
+                if (onPanningSkipped) onPanningSkipped();
             }
             
             // Update the demo path to show the current route's path
@@ -284,7 +342,7 @@ const MainContent = () => {
             console.error('Invalid waypoint index:', index);
             setActiveWaypoint(null);
         }
-    }, [structuredRouteData, isInitialDemoSetup]);
+    }, [structuredRouteData, isInitialDemoSetup, smoothPanFunction, demoStartTime, currentZoom]);
 
     // ========== MEMOIZED VALUES FOR PERFORMANCE ==========
     
