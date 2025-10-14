@@ -533,3 +533,26 @@ div[style*="background-color: rgb(255, 255, 255)"][style*="width: 40px; height: 
 #adventure ul::-webkit-scrollbar-thumb:hover {
   background: #666;
 }
+
+/* Global scrollbar styling for main page */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333 #222;
+}
+
+*::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+*::-webkit-scrollbar-track {
+  background: #222 !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #333 !important;
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #555 !important;
+}

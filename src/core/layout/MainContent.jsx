@@ -16,6 +16,7 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../../services/firebase';
+import { createUserDocument } from '../../services/userService';
 
 // UI Components
 import Sidebar from '../../components/ui/Sidebar';
@@ -33,6 +34,7 @@ import Guides from '../../components/features/Guides';
 import Settings from '../../components/features/Settings';
 import Help from '../../components/features/Help';
 import Auth from '../../components/features/Auth';
+import Profile from '../../components/features/Profile';
 
 // Admin Components
 import Admin from '../../components/admin/Admin';
@@ -357,14 +359,26 @@ const MainContent = () => {
     /**
      * Handle successful authentication
      * 
-     * Closes the auth modal and updates the UI to reflect the logged-in state
+     * Closes the auth modal, creates/updates user document, and updates the UI
      * 
      * @param {Object} user - The authenticated user object from Firebase
      */
-    const handleAuthSuccess = useCallback((user) => {
+    const handleAuthSuccess = useCallback(async (user) => {
         console.log('Authentication successful:', user);
-        setUser(user);
-        setActiveItem('map'); // Close the auth modal and return to map view
+        
+        try {
+            // Create or update user document in Firestore
+            const userDocument = await createUserDocument(user);
+            console.log('User document created/updated:', userDocument);
+            
+            setUser(user);
+            setActiveItem('map'); // Close the auth modal and return to map view
+        } catch (error) {
+            console.error('Error creating user document:', error);
+            // Still set user state even if document creation fails
+            setUser(user);
+            setActiveItem('map');
+        }
     }, []);
     
     /**
@@ -385,14 +399,23 @@ const MainContent = () => {
     /**
      * Listen for authentication state changes
      * 
-     * Monitors Firebase auth state and updates the user state accordingly
+     * Monitors Firebase auth state and updates the user state accordingly.
+     * Creates user documents for existing users on sign-in.
      */
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setUser(user);
             setIsAuthLoading(false);
+            
             if (user) {
                 console.log('User is signed in:', user);
+                
+                try {
+                    // Ensure user document exists (for existing users or page refresh)
+                    await createUserDocument(user);
+                } catch (error) {
+                    console.error('Error ensuring user document exists:', error);
+                }
             } else {
                 console.log('User is signed out');
             }
@@ -477,6 +500,7 @@ const MainContent = () => {
                 <Routes>
                     <Route path="/" element={<MainMap {...mapProps} onSmoothPanReady={handleSmoothPanReady} />} />
                     <Route path="/guides" element={<Guides />} />
+                    <Route path="/profile" element={user ? <Profile user={user} /> : <div>Please log in to view your profile.</div>} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/admin" element={<Admin mapId="8a2ac04064bf3833742b72c4" />} />

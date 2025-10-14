@@ -112,13 +112,22 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, onLogout }
             </div>
             <div className='sidebar-footer'>
                 {user ? (
-                    <div
-                        className="sidebar-link"
-                        onClick={onLogout}
-                    >
-                        <FontAwesomeIcon icon={faSignOutAlt} />
-                        {isOpen && <p>Logout</p>}
-                    </div>
+                    <>
+                        <div
+                            className={`sidebar-link ${location.pathname === '/profile' ? 'active' : ''}`}
+                            onClick={() => handleSidebarClick('profile', '/profile')}
+                        >
+                            <FontAwesomeIcon icon={faUser} />
+                            {isOpen && <p>My Profile</p>}
+                        </div>
+                        <div
+                            className="sidebar-link"
+                            onClick={onLogout}
+                        >
+                            <FontAwesomeIcon icon={faSignOutAlt} />
+                            {isOpen && <p>Logout</p>}
+                        </div>
+                    </>
                 ) : (
                     <div
                         className={`sidebar-link ${activeItem === 'auth' ? 'active' : ''}`}

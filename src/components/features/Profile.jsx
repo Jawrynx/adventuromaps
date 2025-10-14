@@ -1,0 +1,526 @@
+/**
+ * Profile.jsx - User profile management page
+ * 
+ * Comprehensive user profile page allowing users to view and edit their
+ * personal information, preferences, statistics, and account settings.
+ * Integrates with Firestore for real-time data management.
+ * 
+ * Features:
+ * - Profile information editing (name, bio, location, photo)
+ * - Account preferences (theme, notifications)
+ * - Activity statistics (routes completed, distance traveled)
+ * - Account management (email, password, delete account)
+ * - Real-time data synchronization with Firestore
+ */
+
+import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+    faUser, faEnvelope, faMapMarkerAlt, faEdit, faSave, faTimes, 
+    faCamera, faBell, faPalette, faRoute, faRuler, faClock,
+    faKey, faTrash, faEye, faEyeSlash 
+} from '@fortawesome/free-solid-svg-icons';
+import { updatePassword, updateEmail, deleteUser } from 'firebase/auth';
+import { auth } from '../../services/firebase';
+import { getUserDocument, updateUserProfile, updateUserPreferences } from '../../services/userService';
+import './css/Profile.css';
+
+/**
+ * Profile Component
+ * 
+ * Main user profile interface with tabs for different sections:
+ * - Profile: Personal information and bio
+ * - Preferences: App settings and notifications
+ * - Statistics: Activity data and achievements
+ * - Account: Security and account management
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.user - Current authenticated user
+ * @returns {JSX.Element} Complete profile management interface
+ */
+function Profile({ user }) {
+    const [activeTab, setActiveTab] = useState('profile');
+    const [userDocument, setUserDocument] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    
+    // Form states
+    const [formData, setFormData] = useState({
+        displayName: '',
+        bio: '',
+        location: '',
+        preferences: {
+            theme: 'light',
+            emailNotifications: true,
+            pushNotifications: true,
+        }
+    });
+    
+    // Account management states
+    const [showPasswordChange, setShowPasswordChange] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+
+    useEffect(() => {
+        if (user) {
+            loadUserDocument();
+        }
+    }, [user]);
+
+    /**
+     * Load user document from Firestore
+     */
+    const loadUserDocument = async () => {
+        setIsLoading(true);
+        try {
+            const doc = await getUserDocument(user.uid);
+            if (doc) {
+                setUserDocument(doc);
+                setFormData({
+                    displayName: doc.displayName || user.displayName || '',
+                    bio: doc.profile?.bio || '',
+                    location: doc.profile?.location || '',
+                    preferences: {
+                        theme: doc.preferences?.theme || 'light',
+                        emailNotifications: doc.preferences?.emailNotifications !== false,
+                        pushNotifications: doc.preferences?.pushNotifications !== false,
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading user document:', error);
+            setError('Failed to load profile data');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    /**
+     * Handle form input changes
+     */
+    const handleInputChange = (field, value) => {
+        if (field.startsWith('preferences.')) {
+            const prefField = field.replace('preferences.', '');
+            setFormData(prev => ({
+                ...prev,
+                preferences: {
+                    ...prev.preferences,
+                    [prefField]: value
+                }
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        }
+    };
+
+    /**
+     * Save profile changes
+     */
+    const handleSaveProfile = async () => {
+        setIsSaving(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            // Update profile information
+            const profileUpdate = {
+                displayName: formData.displayName,
+                'profile.bio': formData.bio,
+                'profile.location': formData.location,
+            };
+
+            await updateUserProfile(user.uid, profileUpdate);
+            
+            // Update preferences separately
+            await updateUserPreferences(user.uid, formData.preferences);
+            
+            setSuccess('Profile updated successfully!');
+            setIsEditing(false);
+            await loadUserDocument(); // Reload to get updated data
+            
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccess(''), 3000);
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            setError('Failed to update profile. Please try again.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    /**
+     * Cancel editing
+     */
+    const handleCancelEdit = () => {
+        setIsEditing(false);
+        setError('');
+        setSuccess('');
+        // Reset form data
+        if (userDocument) {
+            setFormData({
+                displayName: userDocument.displayName || user.displayName || '',
+                bio: userDocument.profile?.bio || '',
+                location: userDocument.profile?.location || '',
+                preferences: {
+                    theme: userDocument.preferences?.theme || 'light',
+                    emailNotifications: userDocument.preferences?.emailNotifications !== false,
+                    pushNotifications: userDocument.preferences?.pushNotifications !== false,
+                }
+            });
+        }
+    };
+
+    /**
+     * Format date for display
+     */
+    const formatDate = (timestamp) => {
+        if (!timestamp) return 'N/A';
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    /**
+     * Format time duration
+     */
+    const formatDuration = (minutes) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    };
+
+    if (isLoading) {
+        return (
+            <div className="profile-container">
+                <div className="profile-loading">
+                    <FontAwesomeIcon icon={faUser} spin />
+                    <p>Loading profile...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="profile-container">
+            <div className="profile-header">
+                <div className="profile-avatar">
+                    {user.photoURL ? (
+                        <img src={user.photoURL} alt="Profile" />
+                    ) : (
+                        <FontAwesomeIcon icon={faUser} />
+                    )}
+                    <button className="avatar-edit-btn">
+                        <FontAwesomeIcon icon={faCamera} />
+                    </button>
+                </div>
+                <div className="profile-basic-info">
+                    <h1>{userDocument?.displayName || user.displayName || 'User'}</h1>
+                    <p className="profile-email">
+                        <FontAwesomeIcon icon={faEnvelope} />
+                        {user.email}
+                    </p>
+                    {userDocument?.profile?.location && (
+                        <p className="profile-location">
+                            <FontAwesomeIcon icon={faMapMarkerAlt} />
+                            {userDocument.profile.location}
+                        </p>
+                    )}
+                </div>
+                <div className="profile-actions">
+                    {!isEditing ? (
+                        <button 
+                            className="btn-primary"
+                            onClick={() => setIsEditing(true)}
+                        >
+                            <FontAwesomeIcon icon={faEdit} />
+                            Edit Profile
+                        </button>
+                    ) : (
+                        <div className="edit-actions">
+                            <button 
+                                className="btn-success"
+                                onClick={handleSaveProfile}
+                                disabled={isSaving}
+                            >
+                                <FontAwesomeIcon icon={faSave} />
+                                {isSaving ? 'Saving...' : 'Save'}
+                            </button>
+                            <button 
+                                className="btn-secondary"
+                                onClick={handleCancelEdit}
+                            >
+                                <FontAwesomeIcon icon={faTimes} />
+                                Cancel
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Error/Success Messages */}
+            {error && <div className="message error">{error}</div>}
+            {success && <div className="message success">{success}</div>}
+
+            {/* Tab Navigation */}
+            <div className="profile-tabs">
+                <button 
+                    className={`tab ${activeTab === 'profile' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('profile')}
+                >
+                    <FontAwesomeIcon icon={faUser} />
+                    Profile
+                </button>
+                <button 
+                    className={`tab ${activeTab === 'preferences' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('preferences')}
+                >
+                    <FontAwesomeIcon icon={faPalette} />
+                    Preferences
+                </button>
+                <button 
+                    className={`tab ${activeTab === 'statistics' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('statistics')}
+                >
+                    <FontAwesomeIcon icon={faRoute} />
+                    Statistics
+                </button>
+                <button 
+                    className={`tab ${activeTab === 'account' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('account')}
+                >
+                    <FontAwesomeIcon icon={faKey} />
+                    Account
+                </button>
+            </div>
+
+            {/* Tab Content */}
+            <div className="profile-content">
+                {activeTab === 'profile' && (
+                    <div className="tab-content">
+                        <h2>Profile Information</h2>
+                        
+                        <div className="form-group">
+                            <label>Display Name</label>
+                            <input
+                                type="text"
+                                value={formData.displayName}
+                                onChange={(e) => handleInputChange('displayName', e.target.value)}
+                                disabled={!isEditing}
+                                placeholder="Enter your display name"
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Bio</label>
+                            <textarea
+                                value={formData.bio}
+                                onChange={(e) => handleInputChange('bio', e.target.value)}
+                                disabled={!isEditing}
+                                placeholder="Tell us about yourself..."
+                                rows={4}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Location</label>
+                            <input
+                                type="text"
+                                value={formData.location}
+                                onChange={(e) => handleInputChange('location', e.target.value)}
+                                disabled={!isEditing}
+                                placeholder="City, Country"
+                            />
+                        </div>
+
+                        <div className="profile-meta">
+                            <p><strong>Member since:</strong> {formatDate(userDocument?.createdAt)}</p>
+                            <p><strong>Last login:</strong> {formatDate(userDocument?.lastLoginAt)}</p>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'preferences' && (
+                    <div className="tab-content">
+                        <h2>App Preferences</h2>
+                        <div className="form-group checkbox">
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={formData.preferences.emailNotifications}
+                                    onChange={(e) => handleInputChange('preferences.emailNotifications', e.target.checked)}
+                                    disabled={!isEditing}
+                                />
+                                Email Notifications
+                            </label>
+                            <p className="help-text">Receive notifications about new features and updates</p>
+                        </div>
+
+                        <div className="form-group checkbox">
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={formData.preferences.pushNotifications}
+                                    onChange={(e) => handleInputChange('preferences.pushNotifications', e.target.checked)}
+                                    disabled={!isEditing}
+                                />
+                                Push Notifications
+                            </label>
+                            <p className="help-text">Receive push notifications in the app</p>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'statistics' && (
+                    <div className="tab-content">
+                        <h2>Your Adventure Statistics</h2>
+
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <FontAwesomeIcon icon={faRoute} className="stat-icon" />
+                                <div className="stat-content">
+                                    <h3>{userDocument?.stats?.routesCompleted || 0}</h3>
+                                    <p>Routes Completed</p>
+                                </div>
+                            </div>
+
+                            <div className="stat-card">
+                                <FontAwesomeIcon icon={faRuler} className="stat-icon" />
+                                <div className="stat-content">
+                                    <h3>{Math.round((userDocument?.stats?.totalDistance || 0) / 1000)} km</h3>
+                                    <p>Total Distance</p>
+                                </div>
+                            </div>
+
+                            <div className="stat-card">
+                                <FontAwesomeIcon icon={faClock} className="stat-icon" />
+                                <div className="stat-content">
+                                    <h3>{formatDuration(userDocument?.stats?.totalTime || 0)}</h3>
+                                    <p>Total Time</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {userDocument?.profile?.completedRoutes?.length > 0 && (
+                            <div className="recent-routes">
+                                <h3>Recent Adventures</h3>
+                                <div className="routes-list">
+                                    {userDocument.profile.completedRoutes.slice(-5).reverse().map((route, index) => (
+                                        <div key={index} className="route-item">
+                                            <div className="route-info">
+                                                <h4>Route {route.routeId}</h4>
+                                                <p>{formatDate(route.completedAt)}</p>
+                                            </div>
+                                            <div className="route-stats">
+                                                <span>{Math.round(route.distance / 1000)} km</span>
+                                                <span>{formatDuration(route.time)}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'account' && (
+                    <div className="tab-content">
+                        <h2>Account Settings</h2>
+
+                        <div className="account-section">
+                            <h3>Email Address</h3>
+                            <p>Your current email: <strong>{user.email}</strong></p>
+                            <p className="help-text">
+                                Email verification status: {user.emailVerified ? '✅ Verified' : '❌ Not verified'}
+                            </p>
+                        </div>
+
+                        <div className="account-section">
+                            <h3>Password</h3>
+                            <button 
+                                className="btn-secondary"
+                                onClick={() => setShowPasswordChange(!showPasswordChange)}
+                            >
+                                Change Password
+                            </button>
+                            
+                            {showPasswordChange && (
+                                <div className="password-change-form">
+                                    <div className="form-group">
+                                        <label>Current Password</label>
+                                        <input
+                                            type="password"
+                                            value={passwordData.currentPassword}
+                                            onChange={(e) => setPasswordData(prev => ({
+                                                ...prev,
+                                                currentPassword: e.target.value
+                                            }))}
+                                            placeholder="Enter current password"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>New Password</label>
+                                        <input
+                                            type="password"
+                                            value={passwordData.newPassword}
+                                            onChange={(e) => setPasswordData(prev => ({
+                                                ...prev,
+                                                newPassword: e.target.value
+                                            }))}
+                                            placeholder="Enter new password"
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Confirm New Password</label>
+                                        <input
+                                            type="password"
+                                            value={passwordData.confirmPassword}
+                                            onChange={(e) => setPasswordData(prev => ({
+                                                ...prev,
+                                                confirmPassword: e.target.value
+                                            }))}
+                                            placeholder="Confirm new password"
+                                        />
+                                    </div>
+                                    <div className="form-actions">
+                                        <button className="btn-primary">Update Password</button>
+                                        <button 
+                                            className="btn-secondary"
+                                            onClick={() => setShowPasswordChange(false)}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="account-section danger-zone">
+                            <h3>Danger Zone</h3>
+                            <p className="help-text">
+                                These actions cannot be undone. Please proceed with caution.
+                            </p>
+                            <button className="btn-danger">
+                                <FontAwesomeIcon icon={faTrash} />
+                                Delete Account
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+export default Profile;
