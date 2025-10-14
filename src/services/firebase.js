@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFunctions, httpsCallable } from "firebase/functions";
@@ -21,6 +22,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const storage = getStorage();
 const analytics = getAnalytics(app);
 const functions = getFunctions(app);
@@ -29,4 +31,4 @@ const functions = getFunctions(app);
 export const getMapDataSecurely = httpsCallable(functions, 'getMapDataSecurely');
 
 export const db = getFirestore(app);
-export { storage, ref, uploadBytes, getDownloadURL, functions };
+export { auth, storage, ref, uploadBytes, getDownloadURL, functions };

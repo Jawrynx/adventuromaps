@@ -12,12 +12,15 @@
  * different features like map viewing, route exploration, demo mode, and administrative functions.
  */
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '../../services/firebase';
 
 // UI Components
 import Sidebar from '../../components/ui/Sidebar';
 import Modal from '../../components/ui/Modal';
+import AuthModal from '../../components/ui/AuthModal';
 
 // Map Components
 import MainMap from '../../components/map/MainMap';
@@ -29,6 +32,7 @@ import DemoView from '../../components/features/DemoView';
 import Guides from '../../components/features/Guides';
 import Settings from '../../components/features/Settings';
 import Help from '../../components/features/Help';
+import Auth from '../../components/features/Auth';
 
 // Admin Components
 import Admin from '../../components/admin/Admin';
@@ -96,6 +100,10 @@ const MainContent = () => {
     const [isInitialDemoSetup, setIsInitialDemoSetup] = useState(false); // Flag for initial demo setup phase
     const [demoStartTime, setDemoStartTime] = useState(null);       // Timestamp when demo started
     const [includeNarration, setIncludeNarration] = useState(false); // Whether narration is enabled for current demo
+    
+    // ========== AUTHENTICATION STATE ==========
+    const [user, setUser] = useState(null);                        // Current authenticated user
+    const [isAuthLoading, setIsAuthLoading] = useState(true);      // Whether auth state is being determined
     
     // Use ref to track previous waypoint for distance calculation
     const prevWaypointRef = useRef(null);
@@ -344,6 +352,55 @@ const MainContent = () => {
         }
     }, [structuredRouteData, isInitialDemoSetup, smoothPanFunction, demoStartTime, currentZoom]);
 
+    // ========== AUTHENTICATION HANDLERS ==========
+    
+    /**
+     * Handle successful authentication
+     * 
+     * Closes the auth modal and updates the UI to reflect the logged-in state
+     * 
+     * @param {Object} user - The authenticated user object from Firebase
+     */
+    const handleAuthSuccess = useCallback((user) => {
+        console.log('Authentication successful:', user);
+        setUser(user);
+        setActiveItem('map'); // Close the auth modal and return to map view
+    }, []);
+    
+    /**
+     * Handle user logout
+     * 
+     * Signs out the user and updates the UI state
+     */
+    const handleLogout = useCallback(async () => {
+        try {
+            await signOut(auth);
+            setUser(null);
+            console.log('User logged out successfully');
+        } catch (error) {
+            console.error('Error signing out:', error);
+        }
+    }, []);
+    
+    /**
+     * Listen for authentication state changes
+     * 
+     * Monitors Firebase auth state and updates the user state accordingly
+     */
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+            setIsAuthLoading(false);
+            if (user) {
+                console.log('User is signed in:', user);
+            } else {
+                console.log('User is signed out');
+            }
+        });
+        
+        return () => unsubscribe();
+    }, []);
+
     // ========== MEMOIZED VALUES FOR PERFORMANCE ==========
     
     /**
@@ -410,6 +467,8 @@ const MainContent = () => {
                 activeItem={activeItem} 
                 onSidebarClick={handleSidebarClick}
                 onSidebarToggle={handleSidebarToggle}
+                user={user}
+                onLogout={handleLogout}
             />
             
             {/* Main content area that adjusts to sidebar width */}
@@ -448,6 +507,13 @@ const MainContent = () => {
                             includeNarration={includeNarration}
                         />
                     </Modal>
+                )}
+                
+                {/* Modal overlay for Authentication */}
+                {activeItem === 'auth' && (
+                    <AuthModal onClose={() => setActiveItem('map')}>
+                        <Auth onAuthSuccess={handleAuthSuccess} />
+                    </AuthModal>
                 )}
             </div>
         </div>

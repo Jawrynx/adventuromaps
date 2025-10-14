@@ -1,0 +1,99 @@
+/**
+ * AuthModal.css - Styles for authentication modal
+ * 
+ * Dedicated styling for the authentication modal overlay,
+ * optimized for the auth interface design and animations.
+ */
+
+/* Modal overlay backdrop */
+.auth-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+    animation: authModalFadeIn 0.3s ease-out;
+}
+
+@keyframes authModalFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Modal content container */
+.auth-modal-content {
+    position: relative;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow: visible;
+    animation: authModalSlideUp 0.4s ease-out;
+}
+
+@keyframes authModalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Responsive design for mobile */
+@media (max-width: 480px) {
+    .auth-modal-overlay {
+        padding: 12px;
+    }
+    
+    .auth-modal-content {
+        max-height: 95vh;
+    }
+}
+
+/* Ensure proper scrolling on mobile */
+@media (max-height: 600px) {
+    .auth-modal-content {
+        max-height: 95vh;
+    }
+}
+
+/* Custom scrollbar styling for auth modal */
+.auth-modal-content .auth-card {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 transparent;
+}
+
+/* Webkit scrollbar styling */
+.auth-modal-content .auth-card::-webkit-scrollbar {
+    width: 6px;
+}
+
+.auth-modal-content .auth-card::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 16px;
+    margin: 16px 0;
+}
+
+.auth-modal-content .auth-card::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 16px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+.auth-modal-content .auth-card::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+    background-clip: content-box;
+}

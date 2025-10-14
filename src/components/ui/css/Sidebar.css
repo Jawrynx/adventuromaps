@@ -29,9 +29,9 @@
 
 .sidebar-logo {
     img {
-        position: absolute;
-        left: 10px;
-        bottom: 13px;
+        position: relative;
+        top: 10px;
+        right: 10px;
     }
 }
 

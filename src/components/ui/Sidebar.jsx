@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import './css/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools, faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools, faBars, faTimes, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Sidebar Component
@@ -24,9 +24,11 @@ import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTool
  * @param {string} props.activeItem - Currently active navigation item
  * @param {Function} props.onSidebarClick - Callback when navigation item is clicked
  * @param {Function} props.onSidebarToggle - Callback when sidebar open/close state changes
+ * @param {Object} props.user - Current authenticated user (null if not logged in)
+ * @param {Function} props.onLogout - Callback to handle user logout
  * @returns {JSX.Element} Collapsible navigation sidebar
  */
-function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
+function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, onLogout }) {
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -101,13 +103,6 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
                     {isOpen && <p>Guides/Safety</p>}
                 </div>
                 <div
-                    className={`sidebar-link ${location.pathname === '/settings' ? 'active' : ''}`}
-                    onClick={() => handleSidebarClick('settings', '/settings')}
-                >
-                    <FontAwesomeIcon icon={faGear} />
-                    {isOpen && <p>Settings</p>}
-                </div>
-                <div
                     className={`sidebar-link ${location.pathname === '/admin' ? 'active' : ''}`}
                     onClick={() => handleSidebarClick('admin', '/admin')}
                 >
@@ -116,6 +111,30 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
                 </div>
             </div>
             <div className='sidebar-footer'>
+                {user ? (
+                    <div
+                        className="sidebar-link"
+                        onClick={onLogout}
+                    >
+                        <FontAwesomeIcon icon={faSignOutAlt} />
+                        {isOpen && <p>Logout</p>}
+                    </div>
+                ) : (
+                    <div
+                        className={`sidebar-link ${activeItem === 'auth' ? 'active' : ''}`}
+                        onClick={() => handleSidebarClick('auth', '/')}
+                    >
+                        <FontAwesomeIcon icon={faUser} />
+                        {isOpen && <p>Login / Register</p>}
+                    </div>
+                )}
+                <div
+                    className={`sidebar-link ${location.pathname === '/settings' ? 'active' : ''}`}
+                    onClick={() => handleSidebarClick('settings', '/settings')}
+                >
+                    <FontAwesomeIcon icon={faGear} />
+                    {isOpen && <p>Settings</p>}
+                </div>
                 <div
                     className={`sidebar-link ${location.pathname === '/help' ? 'active' : ''}`}
                     onClick={() => handleSidebarClick('help', '/help')}
