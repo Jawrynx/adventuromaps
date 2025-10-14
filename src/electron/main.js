@@ -36,6 +36,9 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: MAIN_WINDOW_VITE_DEV_SERVER_URL 
+      ? path.join(__dirname, '../../public/assets/adventuro-logo-min.png') // Development path
+      : path.join(__dirname, '../renderer/assets/adventuro-logo-min.png'), // Production path
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false, // Security: Disable node integration in renderer

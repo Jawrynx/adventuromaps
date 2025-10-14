@@ -55,7 +55,7 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
      */
     const handleSidebarClick = (item, path) => {
         onSidebarClick(item, path);
-        
+
         // Auto-close sidebar after selection for better mobile UX
         if (isOpen) {
             setIsOpen(false);
@@ -71,21 +71,21 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
                 <div className="menu-toggle" onClick={toggleSidebar}>
                     <FontAwesomeIcon icon={isOpen ? faTimes : faBars} />
                 </div>
-                <div 
+                <div
                     className={`sidebar-link ${location.pathname === '/' && activeItem === 'map' ? 'active' : ''}`}
                     onClick={() => handleSidebarClick('map', '/')}
                 >
                     <FontAwesomeIcon icon={faMap} />
                     {isOpen && <p>Map</p>}
                 </div>
-                <div 
+                <div
                     className={`sidebar-link ${activeItem === 'explore' ? 'active' : ''}`}
                     onClick={() => handleSidebarClick('explore', '/')}
                 >
                     <FontAwesomeIcon icon={faCompass} />
                     {isOpen && <p>Explore</p>}
                 </div>
-                <div 
+                <div
                     className={`sidebar-link ${activeItem === 'adventures' ? 'active' : ''}`}
                     onClick={() => handleSidebarClick('adventures', '/')}
                 >
@@ -93,21 +93,21 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
                     {isOpen && <p>Adventures</p>}
                 </div>
 
-                <div 
+                <div
                     className={`sidebar-link ${location.pathname === '/guides' ? 'active' : ''}`}
                     onClick={() => handleSidebarClick('guides', '/guides')}
                 >
                     <FontAwesomeIcon icon={faBook} />
                     {isOpen && <p>Guides/Safety</p>}
                 </div>
-                <div 
+                <div
                     className={`sidebar-link ${location.pathname === '/settings' ? 'active' : ''}`}
                     onClick={() => handleSidebarClick('settings', '/settings')}
                 >
                     <FontAwesomeIcon icon={faGear} />
                     {isOpen && <p>Settings</p>}
                 </div>
-                <div 
+                <div
                     className={`sidebar-link ${location.pathname === '/admin' ? 'active' : ''}`}
                     onClick={() => handleSidebarClick('admin', '/admin')}
                 >
@@ -116,14 +116,19 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle }) {
                 </div>
             </div>
             <div className='sidebar-footer'>
-                <div 
+                <div
                     className={`sidebar-link ${location.pathname === '/help' ? 'active' : ''}`}
                     onClick={() => handleSidebarClick('help', '/help')}
                 >
                     <FontAwesomeIcon icon={faQuestionCircle} />
                     {isOpen && <p>Help</p>}
                 </div>
-                {isOpen && <span>AdventuroMaps v0.1.0</span>}
+                {isOpen &&
+                    <span className='sidebar-logo'>
+                        <img src="/assets/adventuro-logo-min.png" alt="" width="32px" />
+                        AdventuroMaps v0.1.0
+                    </span>
+                }
             </div>
         </div>
     );

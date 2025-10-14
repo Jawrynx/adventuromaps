@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faChevronDown, faEllipsisV, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faChevronDown, faEllipsisV, faChevronUp, faHatCowboySide } from '@fortawesome/free-solid-svg-icons';
 
 // Firebase services
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
@@ -265,7 +265,7 @@ function Adventure({ onSelectRoute, onStartDemo }) {
   // ========== MAIN RENDER ==========
   return (
     <div id='adventure'>
-      <h1>Adventure</h1>
+      <h1>Adventure <FontAwesomeIcon icon={faHatCowboySide} /></h1>
       <ul>
         {adventures.map(item => (
           <li key={item.id} className='adventure-item' onClick={() => handleRouteClick(item)}>

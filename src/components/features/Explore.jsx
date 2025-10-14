@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faChevronDown, faEllipsisV, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faChevronDown, faEllipsisV, faChevronUp, faCompass } from '@fortawesome/free-solid-svg-icons';
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../../services/firebase";
 
@@ -259,7 +259,7 @@ function Explore({ onSelectRoute, onStartDemo }) {
 
     return (
         <div id='explore'>
-            <h1>Exploration</h1>
+            <h1>Exploration <FontAwesomeIcon icon={faCompass} /></h1>
             <ul>
                 {explorations.map(item => (
                     <li key={item.id} className='explore-item' onClick={() => handleRouteClick(item)}>

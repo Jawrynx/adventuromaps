@@ -20,6 +20,12 @@ body {
 
   h1 {
     margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+
+    svg {
+      margin-left: 5px;
+    }
   }
 
   ul {

@@ -27,6 +27,14 @@
     width: 70px; 
 }
 
+.sidebar-logo {
+    img {
+        position: absolute;
+        left: 10px;
+        bottom: 13px;
+    }
+}
+
 /* Sidebar Links */
 .sidebar-links {
     display: flex;
