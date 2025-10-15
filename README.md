@@ -14,6 +14,7 @@ Adventuro Maps is designed to create a more immersive and interactive travel exp
 - **Interactive Demo Mode:** Experience immersive waypoint navigation with synchronized audio narration and text highlighting.
 - **Factual Content:** Dive into rich historical and geographical information for each location.
 - **Fictional Content:** Read up on story games and role-playing quests to prepare for your immersive experience.
+- **Authentication:** Users have the ability to login, register and have profile pages where they can view stats about their previous explored adventures, and allows for expansion in the future to create a community hub and scores to score points and even levels/rankings.
 
 ### Demo Mode Features 🎧
 - **Waypoint Navigation:** Navigate through adventure routes with interactive waypoints and detailed information.
