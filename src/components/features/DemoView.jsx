@@ -263,9 +263,13 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             // Default transition duration for cinematic panning
             let transitionDuration = 3500;
             
-            // Callback to handle when panning is skipped
-            const handlePanningSkipped = () => {
-                transitionDuration = 100; // Much shorter duration when panning is skipped
+            // Callback to handle different panning types
+            const handlePanningSkipped = (panningType) => {
+                if (panningType === 'skipped') {
+                    transitionDuration = 100; // Very short duration when panning is skipped entirely
+                } else if (panningType === 'smooth') {
+                    transitionDuration = 400; // 400ms for smooth pan only (no zoom)
+                }
                 setTimeout(() => {
                     setIsTransitioning(false);
                 }, transitionDuration);
@@ -305,9 +309,13 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             // Default transition duration for cinematic panning
             let transitionDuration = 3500;
             
-            // Callback to handle when panning is skipped
-            const handlePanningSkipped = () => {
-                transitionDuration = 100; // Much shorter duration when panning is skipped
+            // Callback to handle different panning types
+            const handlePanningSkipped = (panningType) => {
+                if (panningType === 'skipped') {
+                    transitionDuration = 100; // Very short duration when panning is skipped entirely
+                } else if (panningType === 'smooth') {
+                    transitionDuration = 400; // 400ms for smooth pan only (no zoom)
+                }
                 setTimeout(() => {
                     setIsTransitioning(false);
                 }, transitionDuration);

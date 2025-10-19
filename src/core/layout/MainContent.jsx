@@ -306,14 +306,18 @@ const MainContent = () => {
             // Handle different coordinate formats from different data sources
             const coords = currentWaypoint.coordinates || { lat: currentWaypoint.lat, lng: currentWaypoint.lng };
             
-            // Check distance from previous waypoint to determine if we should skip panning entirely
+            // Check distance from previous waypoint to determine panning behavior
             let shouldSkipPanning = false;
+            let shouldSmoothPanOnly = false;
             const PROXIMITY_THRESHOLD = 10; // meters - skip panning entirely for very close waypoints
+            const SMOOTH_PAN_THRESHOLD = 400; // meters - smooth pan only (no zoom) for medium distances
             
             if (prevWaypointRef.current) {
                 const distance = calculateDistance(prevWaypointRef.current, coords);
                 if (distance < PROXIMITY_THRESHOLD) {
                     shouldSkipPanning = true;
+                } else if (distance >= PROXIMITY_THRESHOLD && distance <= SMOOTH_PAN_THRESHOLD) {
+                    shouldSmoothPanOnly = true;
                 }
             }
             
@@ -333,16 +337,21 @@ const MainContent = () => {
                     // Auto-advance enabled: Just set map position instantly, no animation
                     smoothPanFunction(coords.lat, coords.lng, currentZoom, false); // false = no cinematic
                     // Notify that panning was skipped (auto-advance mode)
-                    if (onPanningSkipped) onPanningSkipped();
+                    if (onPanningSkipped) onPanningSkipped('skipped');
+                } else if (shouldSmoothPanOnly) {
+                    // Medium distance (11-400m): Smooth pan without zoom/cinematic effects
+                    smoothPanFunction(coords.lat, coords.lng, currentZoom, false); // false = no cinematic zoom
+                    // Notify that smooth pan only was used
+                    if (onPanningSkipped) onPanningSkipped('smooth');
                 } else {
-                    // Normal cinematic panning (back to original behavior)
+                    // Long distance: Full cinematic panning with zoom effects
                     smoothPanFunction(coords.lat, coords.lng, currentZoom, true); // true = cinematic
                 }
             } else if (timeSinceDemoStart <= 5000) {
                 // Skipping cinematic pan during initial demo period
             } else if (shouldSkipPanning) {
                 // Waypoints are too close - skip panning entirely
-                if (onPanningSkipped) onPanningSkipped();
+                if (onPanningSkipped) onPanningSkipped('skipped');
             }
             
             // Update the demo path to show the current route's path
