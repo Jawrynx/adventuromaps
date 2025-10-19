@@ -93,3 +93,10 @@ typings/
 out/
 
 dist/
+
+# Firebase
+firebase-debug.log*
+firebase-debug.*.log
+.firebase/
+
+# Firebase config (keep .firebaserc and firebase.json - they're needed)
