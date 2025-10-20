@@ -398,18 +398,26 @@ const MainContent = () => {
     /**
      * Handle user logout
      * 
-     * Signs out the user and updates the UI state
+     * Signs out the user and updates the UI state.
+     * If the user is on their profile page, redirects them to the main map.
      */
     const handleLogout = useCallback(async () => {
         try {
             await signOut(auth);
             setUser(null);
             setUserDocument(null);
+            
+            // If user is on profile page when logging out, redirect to main map
+            if (activeItem === 'profile') {
+                setActiveItem('map');
+                navigate('/');
+            }
+            
             console.log('User logged out successfully');
         } catch (error) {
             console.error('Error signing out:', error);
         }
-    }, []);
+    }, [activeItem, navigate]);
     
     /**
      * Listen for authentication state changes
