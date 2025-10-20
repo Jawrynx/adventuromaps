@@ -268,7 +268,7 @@ function Adventure({ onSelectRoute, onStartDemo }) {
       <h1>Adventure <FontAwesomeIcon icon={faHatCowboySide} /></h1>
       <ul>
         {adventures.map(item => (
-          <li key={item.id} className='adventure-item' onClick={() => handleRouteClick(item)}>
+          <li key={item.id} className={`adventure-item ${showMore[item.id] ? 'item-expanded' : ''}`} onClick={() => handleRouteClick(item)}>
             {/* Adventure card image */}
             <img src={item.image_url} alt={item.name} width='100%' height='100px' className='adventure-image' />
             

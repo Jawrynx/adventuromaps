@@ -264,7 +264,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
             <h1>Exploration <FontAwesomeIcon icon={faCompass} /></h1>
             <ul>
                 {explorations.map(item => (
-                    <li key={item.id} className='explore-item' onClick={() => handleRouteClick(item)}>
+                    <li key={item.id} className={`explore-item ${showMore[item.id] ? 'item-expanded' : ''}`} onClick={() => handleRouteClick(item)}>
                         <img src={item.image_url} alt={item.name} width='100%' height='100px' className='explore-image' />
                         <h2>{item.name}</h2>
                         <p>{item.description}</p>

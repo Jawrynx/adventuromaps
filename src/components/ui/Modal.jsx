@@ -61,9 +61,16 @@ const Modal = ({ isOpen, onClose, children }) => {
 
   useEffect(() => {
     if (isOpen) {
+      // Reset position to default
       setPosition({ 
         x: Math.max(0, window.innerWidth - 410), 
         y: 60 
+      });
+      
+      // Reset size to default
+      setSize({ 
+        width: 400, 
+        height: 600 
       });
     }
   }, [isOpen]);

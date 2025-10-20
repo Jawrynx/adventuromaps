@@ -17,6 +17,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  container-type: inline-size; /* Enable container queries */
 
   h1 {
     margin-bottom: 10px;
@@ -32,7 +33,30 @@ body {
     list-style-type: none;
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden; /* Prevent horizontal overflow */
     padding-right: 10px;
+    
+    /* Responsive grid layout based on container width */
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    align-items: start; /* Use start alignment for better control */
+    
+    /* Container queries for responsive grid based on modal width */
+    @container (min-width: 500px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    @container (min-width: 750px) {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    
+    @container (min-width: 1000px) {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
   }
 
   .adventure-item,
@@ -40,11 +64,25 @@ body {
     background-color: #333;
     padding: 15px;
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin-bottom: 0; /* Removed margin since we use grid gap */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
     position: relative;
     width: 100%;
+    height: auto; /* Natural sizing for single column */
+    padding-bottom: 15px; /* Reduced padding since buttons are now relative */
+    display: flex;
+    flex-direction: column;
+    overflow: visible; /* Default to no overflow scrollbars */
+
+    /* Basic constraints for grid layouts - NO OVERFLOW BY DEFAULT */
+    @container (min-width: 500px) {
+      min-height: 400px; /* SAME HEIGHT FOR ALL CONTAINERS */
+      height: auto; /* Allow natural growth */
+      overflow: visible; /* NO SCROLLBARS BY DEFAULT */
+      padding-bottom: 15px; /* Consistent padding */
+      max-width: 100%; /* Ensure item doesn't exceed grid cell width */
+    }
 
     &:hover {
       background-color: #444;
@@ -55,25 +93,163 @@ body {
     }
   }
 
+  /* Apply height constraint and scrolling ONLY to expanded items */
+  .adventure-item.item-expanded,
+  .explore-item.item-expanded {
+    @container (min-width: 500px) {
+      max-height: 500px; /* Maximum height only when expanded */
+      overflow-x: hidden; /* Prevent horizontal overflow */
+      overflow-y: auto; /* Add vertical scrolling only when expanded */
+    }
+
+    &:hover {
+      background-color: #444;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  /* Ensure proper flex layout for buttons at bottom */
+  .adventure-item > *:not(.adventure-buttons):not(.options-menu),
+  .explore-item > *:not(.explore-buttons):not(.options-menu) {
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+
+  /* Create spacer element to push buttons down in grid mode */
+  @container (min-width: 500px) {
+    .adventure-item .adventure-more-container,
+    .explore-item .explore-more-container {
+      flex-grow: 1; /* This will expand to fill available space */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+  }
+
+  /* Expandable content styling */
+  .explore-more-container,
+  .adventure-more-container {
+    flex-shrink: 0; /* Prevent shrinking of expanded content */
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    max-height: 0;
+    width: 100%; /* Ensure it doesn't exceed parent width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    
+    &.expanded {
+      max-height: 1000px; /* Large enough for expanded content */
+      transition: max-height 0.5s ease-in;
+    }
+  }
+
+  .explore-more,
+  .adventure-more {
+    width: 100%; /* Ensure inner content respects container width */
+    max-width: 100%; /* Force maximum width constraint */
+    box-sizing: border-box;
+    padding: 0; /* Remove any extra padding */
+    margin: 0; /* Remove any extra margin */
+    overflow-wrap: break-word; /* Break long words to prevent overflow */
+    overflow-x: hidden; /* Only hide horizontal overflow */
+    overflow-y: visible; /* Allow vertical content to show naturally */
+  }
+
+  /* Ensure all nested content within expanded areas respects width */
+  .explore-more *,
+  .adventure-more * {
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+  }
+
+  .explore-more ul,
+  .adventure-more ul,
+  .explore-more .route-info,
+  .adventure-more .route-info,
+  .explore-more .route-locations,
+  .adventure-more .route-locations,
+  .explore-more .route-topics,
+  .adventure-more .route-topics {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
   .adventure-image,
   .explore-image {
     border-radius: 8px;
     object-fit: cover;
     margin-bottom: 10px;
+    width: 100%;
+    height: 120px; /* Fixed height for consistent grid appearance */
+    
+    /* Responsive image height adjustments based on container */
+    @container (min-width: 500px) {
+      height: 100px;
+    }
+    
+    @container (min-width: 750px) {
+      height: 90px;
+    }
+  }
+
+  /* Responsive typography for grid items based on container */
+  .adventure-item h2,
+  .explore-item h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    
+    @container (min-width: 500px) {
+      font-size: 1.1em;
+    }
+    
+    @container (min-width: 750px) {
+      font-size: 1em;
+    }
+  }
+
+  .adventure-item p,
+  .explore-item p {
+    font-size: 1rem;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    overflow-y: visible; /* Changed from auto to visible */
+    flex-shrink: 0; /* Prevent shrinking when expanded content appears */
+    
+    @container (min-width: 500px) {
+      font-size: 0.85em;
+    }
+    
+    @container (min-width: 750px) {
+      font-size: 0.8em;
+      line-height: 1.3;
+    }
   }
 
   .explore-buttons,
   .adventure-buttons {
-    position: relative;
-    margin-top: 5px;
+    position: relative; /* Changed from absolute to relative */
+    bottom: auto; /* Remove absolute bottom positioning */
+    right: auto; /* Remove absolute right positioning */
+    margin-top: auto; /* Push buttons to bottom using flexbox */
+    margin-bottom: 0;
+    margin-right: 0;
+    padding-top: 10px;
     width: 100%;
     text-align: right;
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+    z-index: 10000; /* Higher z-index to allow options menu to escape overflow */
   }
 
   /* Options Menu Styling */
   .options-menu {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 5px); /* Position below the button container */
     right: 0;
     background-color: #222;
     border: 1px solid #444;
@@ -82,8 +258,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 5px;
-    z-index: 1000;
+    margin-top: 0;
+    z-index: 9999; /* Higher z-index to appear above grid items */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     min-width: 200px;
     
