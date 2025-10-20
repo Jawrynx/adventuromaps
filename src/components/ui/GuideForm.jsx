@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../services/firebase';
 import { uploadFile } from '../../services/uploadService';
+import { getUserDocument } from '../../services/userService';
 import './css/GuideForm.css';
 
 /**
@@ -42,16 +43,37 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
     const [imagePreview, setImagePreview] = useState(existingGuide?.image_url || null);
     const [isUploading, setIsUploading] = useState(false);
 
-    // Automatically set author from current user
+    // Automatically set author from current user's Firestore document
     useEffect(() => {
-        const currentUser = auth.currentUser;
-        if (currentUser && !existingGuide) {
-            // Only set author automatically for new guides, not when editing
-            setFormData(prev => ({
-                ...prev,
-                author: currentUser.displayName || currentUser.email || 'Anonymous User'
-            }));
-        }
+        const fetchUserAndSetAuthor = async () => {
+            const currentUser = auth.currentUser;
+            if (currentUser && !existingGuide) {
+                try {
+                    // Get the most up-to-date user document from Firestore
+                    const userDocument = await getUserDocument(currentUser.uid);
+                    
+                    // Use displayName from Firestore, fallback to Auth displayName, then email
+                    const authorName = userDocument?.displayName || 
+                                     currentUser.displayName || 
+                                     currentUser.email || 
+                                     'Anonymous User';
+                    
+                    setFormData(prev => ({
+                        ...prev,
+                        author: authorName
+                    }));
+                } catch (error) {
+                    console.error('Error fetching user document:', error);
+                    // Fallback to Firebase Auth user data if Firestore fetch fails
+                    setFormData(prev => ({
+                        ...prev,
+                        author: currentUser.displayName || currentUser.email || 'Anonymous User'
+                    }));
+                }
+            }
+        };
+
+        fetchUserAndSetAuthor();
     }, [existingGuide]);
 
     const categories = [
