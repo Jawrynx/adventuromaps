@@ -82,3 +82,70 @@
   scrollbar-width: thin;
   scrollbar-color: #333 #222;
 }
+
+/* Draggable Modal Styles */
+.draggable-modal {
+  position: fixed !important;
+  z-index: 1000;
+  min-width: 300px;
+  min-height: 200px;
+}
+
+/* Prevent text selection when dragging */
+.draggable-modal.dragging {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Allow text selection on interactive elements even when dragging */
+.draggable-modal.dragging input,
+.draggable-modal.dragging textarea,
+.draggable-modal.dragging button {
+  user-select: auto;
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+}
+
+/* Resize Handles */
+.resize-handle {
+  position: absolute;
+  background-color: transparent;
+}
+
+.resize-right {
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.resize-bottom {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  cursor: ns-resize;
+}
+
+.resize-corner {
+  bottom: 0;
+  right: 0;
+  width: 15px;
+  height: 15px;
+  cursor: nw-resize;
+  background-color: #444;
+  border-radius: 0 0 8px 0;
+}
+
+.resize-corner:hover {
+  background-color: #555;
+}
+
+/* Ensure close button stays in correct position */
+.draggable-modal .modal-close {
+  z-index: 1002;
+}

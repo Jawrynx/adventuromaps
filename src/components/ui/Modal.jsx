@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import './css/Modal.css';
 
 /**
@@ -6,12 +6,12 @@ import './css/Modal.css';
  * 
  * Reusable modal overlay component that displays content above the main
  * application interface. Handles backdrop clicks, scroll prevention,
- * accessibility features, and Electron window focus management.
+ * accessibility features, and draggable functionality.
  * 
  * Features:
  * - Overlay with backdrop click to close
  * - Body scroll prevention when open
- * - Electron window focus simulation
+ * - Draggable by header area
  * - Accessibility attributes (ARIA)
  * - Optional close button
  * - Conditional rendering based on isOpen prop
@@ -22,7 +22,12 @@ import './css/Modal.css';
  * @param {boolean} props.isOpen - Whether modal is visible (default: true)
  * @returns {JSX.Element|null} Modal overlay or null if closed
  */
-const Modal = ({ children, onClose, isOpen = true }) => {
+const Modal = ({ isOpen, onClose, children }) => {
+  const modalRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
   /**
    * Handle modal open/close side effects
    * 
@@ -48,16 +53,109 @@ const Modal = ({ children, onClose, isOpen = true }) => {
     }
   }, [isOpen]);
 
+
+
+
+  useEffect(() => {
+    if (isOpen) {
+      setPosition({ 
+        x: Math.max(0, window.innerWidth - 410), 
+        y: 60 
+      });
+    }
+  }, [isOpen]);
+
+  /**
+   * Handle mouse down anywhere on modal to start dragging
+   */
+  const handleDragStart = (e) => {
+    // Don't start dragging if clicking on interactive elements including list items
+    if (e.target.tagName === 'BUTTON' || 
+        e.target.tagName === 'INPUT' ||
+        e.target.tagName === 'TEXTAREA' ||
+        e.target.tagName === 'SELECT' ||
+        e.target.tagName === 'A' ||
+        e.target.tagName === 'LI' ||
+        e.target.classList.contains('modal-close') ||
+        e.target.closest('button') ||
+        e.target.closest('input') ||
+        e.target.closest('textarea') ||
+        e.target.closest('select') ||
+        e.target.closest('a') ||
+        e.target.closest('li')) {
+      return;
+    }
+    
+    // Prevent text selection during drag
+    e.preventDefault();
+    
+    setIsDragging(true);
+    const rect = modalRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
+
+  /**
+   * Handle mouse move during dragging
+   */
+  const handleDragMove = useCallback((e) => {
+    if (!isDragging) return;
+    
+    // Calculate new position with viewport constraints
+    let newX = e.clientX - dragOffset.x;
+    let newY = e.clientY - dragOffset.y;
+    
+    // Prevent dragging outside viewport bounds
+    const modalWidth = modalRef.current ? modalRef.current.offsetWidth : 400;
+    const modalHeight = modalRef.current ? modalRef.current.offsetHeight : 500;
+    
+    newX = Math.max(0, Math.min(newX, window.innerWidth - modalWidth));
+    newY = Math.max(0, Math.min(newY, window.innerHeight - modalHeight));
+    
+    setPosition({ x: newX, y: newY });
+  }, [isDragging, dragOffset.x, dragOffset.y]);
+
+  /**
+   * Handle mouse up to stop dragging
+   */
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  /**
+   * Add global mouse event listeners for dragging
+   */
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleDragMove);
+      document.addEventListener('mouseup', handleDragEnd);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleDragMove);
+        document.removeEventListener('mouseup', handleDragEnd);
+      };
+    }
+  }, [isDragging, handleDragMove, handleDragEnd]);
+
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
       <div 
-        className="modal-content" 
+        ref={modalRef}
+        className={`modal-content draggable-modal ${isDragging ? 'dragging' : ''}`}
         id='modal'
         tabIndex="-1"
         role="dialog"
         aria-modal="true"
+        style={{
+          left: position.x,
+          top: position.y,
+          cursor: isDragging ? 'grabbing' : 'grab'
+        }}
+        onMouseDown={handleDragStart}
       >
         {/* Optional close button */}
         {onClose && (

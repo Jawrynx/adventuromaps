@@ -97,46 +97,40 @@ function GuidesBar({ onCategorySelect, user }) {
             ) : (null)}
 
             {/* Create Guide Modal */}
-            {showCreateForm && (
-                <Modal onClose={() => setShowCreateForm(false)}>
-                    <GuideForm
-                        onClose={() => setShowCreateForm(false)}
-                        onSuccess={() => {
-                            alert('Guide created successfully!');
-                            setShowCreateForm(false);
-                            // You might want to refresh the guides list here
-                        }}
-                    />
-                </Modal>
-            )}
+            <Modal isOpen={showCreateForm} onClose={() => setShowCreateForm(false)}>
+                <GuideForm
+                    onClose={() => setShowCreateForm(false)}
+                    onSuccess={() => {
+                        alert('Guide created successfully!');
+                        setShowCreateForm(false);
+                        // You might want to refresh the guides list here
+                    }}
+                />
+            </Modal>
 
             {/* Modify Guide Modal */}
-            {showModifySelector && !selectedGuide && (
-                <Modal onClose={() => setShowModifySelector(false)}>
-                    <GuideSelector
-                        onGuideSelect={(guide) => {
-                            setSelectedGuide(guide);
-                            setShowModifySelector(false);
-                        }}
-                        onClose={() => setShowModifySelector(false)}
-                    />
-                </Modal>
-            )}
+            <Modal isOpen={showModifySelector && !selectedGuide} onClose={() => setShowModifySelector(false)}>
+                <GuideSelector
+                    onGuideSelect={(guide) => {
+                        setSelectedGuide(guide);
+                        setShowModifySelector(false);
+                    }}
+                    onClose={() => setShowModifySelector(false)}
+                />
+            </Modal>
 
             {/* Edit Guide Modal */}
-            {selectedGuide && (
-                <Modal onClose={() => setSelectedGuide(null)}>
-                    <GuideForm
-                        existingGuide={selectedGuide}
-                        onClose={() => setSelectedGuide(null)}
-                        onSuccess={() => {
-                            alert('Guide updated successfully!');
-                            setSelectedGuide(null);
-                            // You might want to refresh the guides list here
-                        }}
-                    />
-                </Modal>
-            )}
+            <Modal isOpen={!!selectedGuide} onClose={() => setSelectedGuide(null)}>
+                <GuideForm
+                    existingGuide={selectedGuide}
+                    onClose={() => setSelectedGuide(null)}
+                    onSuccess={() => {
+                        alert('Guide updated successfully!');
+                        setSelectedGuide(null);
+                        // You might want to refresh the guides list here
+                    }}
+                />
+            </Modal>
         </div>
     );
 }

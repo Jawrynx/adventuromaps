@@ -536,41 +536,35 @@ const MainContent = () => {
                 </Routes>
                 
                 {/* Modal overlay for Explore feature */}
-                {activeItem === 'explore' && (
-                    <Modal onClose={() => setActiveItem('map')}>
-                        <Explore 
-                            onSelectRoute={handleRouteSelection} 
-                            onStartDemo={handleStartDemo} 
-                            user={user}
-                            isAuthLoading={isAuthLoading}
-                        />
-                    </Modal>
-                )}
+                <Modal isOpen={activeItem === 'explore'} onClose={() => setActiveItem('map')}>
+                    <Explore 
+                        onSelectRoute={handleRouteSelection} 
+                        onStartDemo={handleStartDemo} 
+                        user={user}
+                        isAuthLoading={isAuthLoading}
+                    />
+                </Modal>
                 
                 {/* Modal overlay for Adventures feature */}
-                {activeItem === 'adventures' && (
-                    <Modal onClose={() => setActiveItem('map')}>
-                        <Adventure 
-                            onSelectRoute={handleRouteSelection} 
-                            onStartDemo={handleStartDemo} 
-                            user={user}
-                            isAuthLoading={isAuthLoading}
-                        />
-                    </Modal>
-                )}
+                <Modal isOpen={activeItem === 'adventures'} onClose={() => setActiveItem('map')}>
+                    <Adventure 
+                        onSelectRoute={handleRouteSelection} 
+                        onStartDemo={handleStartDemo} 
+                        user={user}
+                        isAuthLoading={isAuthLoading}
+                    />
+                </Modal>
                 
                 {/* Modal overlay for Demo mode with waypoint navigation */}
-                {isDemoMode && (
-                    <Modal onClose={handleEndDemo}>
-                        <DemoView
-                            waypoints={memoizedWaypoints}
-                            onClose={handleEndDemo}
-                            onWaypointChange={handleWaypointChange}
-                            currentWaypointIndex={currentWaypointIndex}
-                            includeNarration={includeNarration}
-                        />
-                    </Modal>
-                )}
+                <Modal isOpen={isDemoMode} onClose={handleEndDemo}>
+                    <DemoView
+                        waypoints={memoizedWaypoints}
+                        onClose={handleEndDemo}
+                        onWaypointChange={handleWaypointChange}
+                        currentWaypointIndex={currentWaypointIndex}
+                        includeNarration={includeNarration}
+                    />
+                </Modal>
                 
                 {/* Modal overlay for Authentication */}
                 {activeItem === 'auth' && (

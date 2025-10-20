@@ -94,9 +94,6 @@
     .modal-content {
         position: absolute;
         overflow-y: hidden;
-        top: 60px;
-        right: 5px;
-        width: 500px;
         transition: height 0.3s ease, width 0.3s ease;
 
         .modal-close {
@@ -186,20 +183,34 @@
     .minimized {
         height: 60px !important;
         width: 130px !important;
+        min-height: 80px !important;
+        min-width: 130px !important;
+        max-height: 80px !important;
+        max-width: 130px !important;
         overflow: hidden !important;
         padding: 0 !important;
+        margin: 0 !important;
         border-radius: 8px !important;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
-        transition: height 0.3s ease, width 0.3s ease;
+        transition: height 0.3s ease, width 0.3s ease, min-height 0.3s ease, min-width 0.3s ease;
 
         h2 {
             margin-right: 50px;
+            margin-top: 15px !important;
+            margin-bottom: 0 !important;
+            pointer-events: none !important; /* Prevent h2 from interfering with drag */
         }
 
         .waypoints-list,
         .tools-container,
         .admin-info {
-            display: none;
+            display: none !important;
+        }
+
+        /* Ensure minimize button stays clickable */
+        #minimize-button {
+            pointer-events: auto !important;
+            z-index: 1003 !important;
         }
     }
 }
@@ -364,7 +375,7 @@
     height: 100%;
 
     h1 {
-        font-size: 5rem;
+        font-size: 4rem;
         line-height: 70px;
         text-align: center;
         font-family: 'Sigmar', sans-serif;
