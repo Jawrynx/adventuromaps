@@ -98,11 +98,12 @@ function GuidesBar({ onCategorySelect, user }) {
 
             {/* Create Guide Modal */}
             {showCreateForm && (
-                <Modal>
+                <Modal onClose={() => setShowCreateForm(false)}>
                     <GuideForm
                         onClose={() => setShowCreateForm(false)}
                         onSuccess={() => {
                             alert('Guide created successfully!');
+                            setShowCreateForm(false);
                             // You might want to refresh the guides list here
                         }}
                     />
@@ -111,7 +112,7 @@ function GuidesBar({ onCategorySelect, user }) {
 
             {/* Modify Guide Modal */}
             {showModifySelector && !selectedGuide && (
-                <Modal>
+                <Modal onClose={() => setShowModifySelector(false)}>
                     <GuideSelector
                         onGuideSelect={(guide) => {
                             setSelectedGuide(guide);
@@ -124,7 +125,7 @@ function GuidesBar({ onCategorySelect, user }) {
 
             {/* Edit Guide Modal */}
             {selectedGuide && (
-                <Modal>
+                <Modal onClose={() => setSelectedGuide(null)}>
                     <GuideForm
                         existingGuide={selectedGuide}
                         onClose={() => setSelectedGuide(null)}

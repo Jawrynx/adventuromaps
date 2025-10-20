@@ -61,7 +61,18 @@ const Modal = ({ children, onClose, isOpen = true }) => {
       >
         {/* Optional close button */}
         {onClose && (
-          <button className="modal-close" onClick={onClose}>&times;</button>
+          <button 
+            className="modal-close" 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+            type="button"
+            aria-label="Close modal"
+          >
+            &times;
+          </button>
         )}
         {children}
       </div>
