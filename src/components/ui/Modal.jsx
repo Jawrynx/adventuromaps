@@ -27,6 +27,9 @@ const Modal = ({ isOpen, onClose, children }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeHandle, setResizeHandle] = useState('');
+  const [size, setSize] = useState({ width: 400, height: 600 });
 
   /**
    * Handle modal open/close side effects
@@ -122,22 +125,69 @@ const Modal = ({ isOpen, onClose, children }) => {
    */
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
+    setIsResizing(false);
   }, []);
 
   /**
-   * Add global mouse event listeners for dragging
+   * Handle resize mouse down
+   */
+  const handleResizeStart = (e, handle) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    setResizeHandle(handle);
+  };
+
+  /**
+   * Handle mouse move during resizing
+   */
+  const handleResizeMove = useCallback((e) => {
+    if (!isResizing || !modalRef.current) return;
+
+    const rect = modalRef.current.getBoundingClientRect();
+    
+    let newSize = { ...size };
+    let newPosition = { ...position };
+
+    if (resizeHandle.includes('right')) {
+      newSize.width = Math.max(300, e.clientX - rect.left);
+    }
+    if (resizeHandle.includes('left')) {
+      const newWidth = Math.max(300, rect.right - e.clientX);
+      newSize.width = newWidth;
+      newPosition.x = e.clientX;
+    }
+    if (resizeHandle.includes('bottom')) {
+      newSize.height = Math.max(200, e.clientY - rect.top);
+    }
+    if (resizeHandle.includes('top')) {
+      const newHeight = Math.max(200, rect.bottom - e.clientY);
+      newSize.height = newHeight;
+      newPosition.y = e.clientY;
+    }
+
+    setSize(newSize);
+    if (resizeHandle.includes('left') || resizeHandle.includes('top')) {
+      setPosition(newPosition);
+    }
+  }, [isResizing, resizeHandle, size, position]);
+
+  /**
+   * Add global mouse event listeners for dragging and resizing
    */
   useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleDragMove);
+    if (isDragging || isResizing) {
+      const handleMouseMove = isDragging ? handleDragMove : handleResizeMove;
+      
+      document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleDragEnd);
       
       return () => {
-        document.removeEventListener('mousemove', handleDragMove);
+        document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleDragEnd);
       };
     }
-  }, [isDragging, handleDragMove, handleDragEnd]);
+  }, [isDragging, isResizing, handleDragMove, handleResizeMove, handleDragEnd]);
 
   if (!isOpen) return null;
 
@@ -145,7 +195,7 @@ const Modal = ({ isOpen, onClose, children }) => {
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
       <div 
         ref={modalRef}
-        className={`modal-content draggable-modal ${isDragging ? 'dragging' : ''}`}
+        className={`modal-content draggable-modal ${isDragging ? 'dragging' : ''} ${isResizing ? 'resizing' : ''}`}
         id='modal'
         tabIndex="-1"
         role="dialog"
@@ -153,6 +203,12 @@ const Modal = ({ isOpen, onClose, children }) => {
         style={{
           left: position.x,
           top: position.y,
+          width: size.width,
+          height: size.height,
+          minWidth: '300px',
+          minHeight: '200px',
+          maxWidth: '90vw',
+          maxHeight: '90vh',
           cursor: isDragging ? 'grabbing' : 'grab'
         }}
         onMouseDown={handleDragStart}
@@ -172,7 +228,55 @@ const Modal = ({ isOpen, onClose, children }) => {
             &times;
           </button>
         )}
-        {children}
+        
+        {/* Scrollable content area */}
+        <div className="modal-scrollable-content">
+          {children}
+        </div>
+        
+        {/* Resize handles - positioned relative to modal container */}
+        <div 
+          className="resize-handle resize-left"
+          onMouseDown={(e) => handleResizeStart(e, 'left')}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '8px',
+            cursor: 'w-resize',
+            background: 'transparent',
+            zIndex: 1001
+          }}
+        />
+        <div 
+          className="resize-handle resize-bottom"
+          onMouseDown={(e) => handleResizeStart(e, 'bottom')}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '8px',
+            cursor: 's-resize',
+            background: 'transparent',
+            zIndex: 1001
+          }}
+        />
+        <div 
+          className="resize-handle resize-corner"
+          onMouseDown={(e) => handleResizeStart(e, 'left bottom')}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            width: '12px',
+            height: '12px',
+            cursor: 'ne-resize',
+            background: 'transparent',
+            zIndex: 1002
+          }}
+        />
       </div>
     </div>
   );
