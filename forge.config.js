@@ -4,12 +4,17 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
+    extraResource: ['public'],
+    icon: 'public/assets/adventuro-logo-min.ico',
   },
   rebuildConfig: {},
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
-      config: {},
+      config: {
+        iconUrl: 'https://raw.githubusercontent.com/Jawrynx/adventuromaps/main/public/assets/adventuro-logo-min.ico',
+        setupIcon: 'public/assets/adventuro-logo-min.ico'
+      },
     },
     {
       name: '@electron-forge/maker-zip',
