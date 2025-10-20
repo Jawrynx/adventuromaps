@@ -66,6 +66,18 @@ function PostsList({ category }) {
         }
     }, [category]);
 
+    /**
+     * Reset selected post when category changes
+     * 
+     * Ensures that when a user switches categories, any previously
+     * selected post is cleared and the list view is restored.
+     */
+    useEffect(() => {
+        setSelectedPost(null);
+        setShowPostContent(false);
+        setIsTransitioning(false);
+    }, [category]);
+
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [showPostContent, setShowPostContent] = useState(false);
 
