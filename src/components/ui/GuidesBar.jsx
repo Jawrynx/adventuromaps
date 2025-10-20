@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Modal from './Modal'
 import GuideForm from './GuideForm'
 import GuideSelector from './GuideSelector'
+import { getUserDocument } from '../../services/userService'
 import './css/GuidesBar.css'
 
 /**
@@ -29,6 +30,25 @@ function GuidesBar({ onCategorySelect, user }) {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showModifySelector, setShowModifySelector] = useState(false);
     const [selectedGuide, setSelectedGuide] = useState(null);
+    const [userDocument, setUserDocument] = useState(null);
+
+    // Fetch user document to check admin status
+    useEffect(() => {
+        const fetchUserDocument = async () => {
+            if (user) {
+                try {
+                    const doc = await getUserDocument(user.uid);
+                    setUserDocument(doc);
+                } catch (error) {
+                    console.error('Error fetching user document:', error);
+                }
+            } else {
+                setUserDocument(null);
+            }
+        };
+
+        fetchUserDocument();
+    }, [user]);
 
     // Predefined categories for organizing guide content
     const categories = [
@@ -59,7 +79,7 @@ function GuidesBar({ onCategorySelect, user }) {
                     </div>
                 ))}
             </div>
-            {user ? (
+            {user && userDocument?.userType === 'admin' ? (
                 <div className="admin">
                     <button
                         className='adm-button green'
