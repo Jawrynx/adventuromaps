@@ -15,43 +15,49 @@ service cloud.firestore {
     // Only allow write for authenticated users (you can restrict this further for admins only)
     match /adventure/{adventureId} {
       allow read: if true; // Public read access
-      allow write: if request.auth != null;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
       
       // Nested routes and waypoints in adventures
       match /routes/{routeId} {
         allow read: if true; // Public read access
-        allow write: if request.auth != null;
+        allow write: if request.auth != null && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
         
         match /waypoints/{waypointId} {
           allow read: if true; // Public read access
-          allow write: if request.auth != null;
+          allow write: if request.auth != null && 
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
         }
       }
     }
     
     match /exploration/{explorationId} {
       allow read: if true; // Public read access
-      allow write: if request.auth != null;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
       
       // Nested routes and waypoints in explorations
       match /routes/{routeId} {
         allow read: if true; // Public read access
-        allow write: if request.auth != null;
+        allow write: if request.auth != null && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
         
         match /waypoints/{waypointId} {
           allow read: if true; // Public read access
-          allow write: if request.auth != null;
+          allow write: if request.auth != null && 
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
         }
       }
     }
     
     match /guides/{document} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if request.auth != null;
     }
     
     match /posts/{document} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if request.auth != null;
     }
     

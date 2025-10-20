@@ -528,7 +528,7 @@ const MainContent = () => {
                 {/* Primary routing for full-page views */}
                 <Routes>
                     <Route path="/" element={<MainMap {...mapProps} onSmoothPanReady={handleSmoothPanReady} />} />
-                    <Route path="/guides" element={<Guides />} />
+                    <Route path="/guides" element={<Guides user={user} />} />
                     <Route path="/profile" element={user ? <Profile user={user} /> : <div>Please log in to view your profile.</div>} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/help" element={<Help />} />

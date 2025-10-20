@@ -22,7 +22,7 @@ import './css/Guides.css';
  * 
  * @returns {JSX.Element} Guides interface with category navigation and content display
  */
-function Guides() {
+function Guides({user}) {
   // ========== COMPONENT STATE ==========
   const [selectedCategory, setSelectedCategory] = useState(null); // Currently selected guide category
 
@@ -40,7 +40,7 @@ function Guides() {
 
   return (
     <div id='guides'>
-      <GuidesBar onCategorySelect={handleCategorySelect} />
+      <GuidesBar onCategorySelect={handleCategorySelect} user={user} />
       <div className="guides-content">
         {selectedCategory ? (
           <PostsList category={selectedCategory} />

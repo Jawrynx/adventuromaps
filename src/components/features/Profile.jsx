@@ -20,9 +20,10 @@ import {
     faCamera, faBell, faPalette, faRoute, faRuler, faClock,
     faKey, faTrash, faEye, faEyeSlash, faTools 
 } from '@fortawesome/free-solid-svg-icons';
-import { updatePassword, updateEmail, deleteUser } from 'firebase/auth';
+import { updatePassword, updateEmail, deleteUser, updateProfile } from 'firebase/auth';
 import { auth } from '../../services/firebase';
 import { getUserDocument, updateUserProfile, updateUserPreferences } from '../../services/userService';
+import { uploadFile } from '../../services/uploadService';
 import './css/Profile.css';
 
 /**
@@ -44,6 +45,7 @@ function Profile({ user }) {
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     
@@ -71,6 +73,67 @@ function Profile({ user }) {
             loadUserDocument();
         }
     }, [user]);
+
+    /**
+     * Handle profile picture upload
+     */
+    const handleProfilePictureUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            setError('Please select an image file');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            setError('Image size must be less than 5MB');
+            return;
+        }
+
+        setIsUploadingPhoto(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            // Upload image to Firebase Storage
+            const fileName = `profile-pictures/${user.uid}/${Date.now()}_${file.name}`;
+            const photoURL = await uploadFile(file, fileName);
+
+            // Update Firebase Auth profile
+            await updateProfile(auth.currentUser, {
+                photoURL: photoURL
+            });
+
+            // Update Firestore user document
+            await updateUserProfile(user.uid, {
+                photoURL: photoURL
+            });
+
+            setSuccess('Profile picture updated successfully!');
+            await loadUserDocument(); // Reload to get updated data
+            
+            // Clear success message after 3 seconds
+            setTimeout(() => setSuccess(''), 3000);
+        } catch (error) {
+            console.error('Error updating profile picture:', error);
+            setError('Failed to update profile picture. Please try again.');
+        } finally {
+            setIsUploadingPhoto(false);
+        }
+    };
+
+    /**
+     * Trigger file input click
+     */
+    const triggerFileInput = () => {
+        const fileInput = document.getElementById('profile-picture-input');
+        if (fileInput) {
+            fileInput.click();
+        }
+    };
 
     /**
      * Load user document from Firestore
@@ -218,9 +281,22 @@ function Profile({ user }) {
                     ) : (
                         <FontAwesomeIcon icon={faUser} />
                     )}
-                    <button className="avatar-edit-btn">
-                        <FontAwesomeIcon icon={faCamera} />
+                    <button 
+                        className="avatar-edit-btn"
+                        onClick={triggerFileInput}
+                        disabled={isUploadingPhoto}
+                        title="Change profile picture"
+                    >
+                        <FontAwesomeIcon icon={isUploadingPhoto ? faUser : faCamera} spin={isUploadingPhoto} />
                     </button>
+                    {/* Hidden file input */}
+                    <input
+                        id="profile-picture-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfilePictureUpload}
+                        style={{ display: 'none' }}
+                    />
                 </div>
                 <div className="profile-basic-info">
                     <div className="profile-name-container">

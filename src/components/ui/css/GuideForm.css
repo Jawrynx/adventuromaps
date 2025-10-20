@@ -32,6 +32,10 @@
     margin-bottom: 15px;
 }
 
+.form-group select > option {
+    color: black;
+}
+
 .form-group label {
     display: block;
     margin-bottom: 5px;

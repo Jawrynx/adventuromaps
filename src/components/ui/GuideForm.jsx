@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { auth, db } from '../../services/firebase';
 import { uploadFile } from '../../services/uploadService';
 import './css/GuideForm.css';
 
@@ -41,6 +41,18 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
     const [selectedFile, setSelectedFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(existingGuide?.image_url || null);
     const [isUploading, setIsUploading] = useState(false);
+
+    // Automatically set author from current user
+    useEffect(() => {
+        const currentUser = auth.currentUser;
+        if (currentUser && !existingGuide) {
+            // Only set author automatically for new guides, not when editing
+            setFormData(prev => ({
+                ...prev,
+                author: currentUser.displayName || currentUser.email || 'Anonymous User'
+            }));
+        }
+    }, [existingGuide]);
 
     const categories = [
         'Getting Started',
@@ -206,18 +218,12 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
                 />
             </div>
 
-            <div className="form-group">
-                <label htmlFor="author">Author:</label>
-                <input
-                    type="text"
-                    id="author"
-                    name="author"
-                    value={formData.author}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter author name"
-                />
-            </div>
+            {!existingGuide && formData.author && (
+                <div className="form-group author-display">
+                    <label>Author:</label>
+                    <p className="author-info">{formData.author}</p>
+                </div>
+            )}
 
             <div className="form-group">
                 <label htmlFor="image">Guide Image:</label>
