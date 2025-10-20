@@ -81,6 +81,26 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
     };
 
     /**
+     * Calculates the distance between two coordinates in meters using Haversine formula
+     * 
+     * @param {number} lat1 - Start latitude
+     * @param {number} lng1 - Start longitude
+     * @param {number} lat2 - End latitude
+     * @param {number} lng2 - End longitude
+     * @returns {number} Distance in meters
+     */
+    const calculateDistance = (lat1, lng1, lat2, lng2) => {
+        const R = 6371000; // Earth's radius in meters
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    };
+
+    /**
      * Creates a cinematic panning effect with zoom animation
      * 
      * Provides a more dramatic panning experience by zooming out, panning
@@ -95,14 +115,50 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
     const cinematicPanTo = (map, newLat, newLng, targetZoom) => {
         const currentZoom = map.getZoom();
         
-        // Calculate intermediate zoom level (zoom out for overview)
-        const zoomOutLevel = Math.max(currentZoom - 3, 5);
-        
         // Get current map center
         const startLat = map.getCenter().lat();
         const startLng = map.getCenter().lng();
         
-        // Set initial position
+        // Calculate distance between current and target positions
+        const distanceInMeters = calculateDistance(startLat, startLng, newLat, newLng);
+        
+        // Determine zoom adjustment based on distance
+        let zoomAdjustment;
+        if (distanceInMeters < 400) {
+            zoomAdjustment = 0; // No zoom out for very short distances
+        } else if (distanceInMeters < 2000) { // 400m to 2km
+            zoomAdjustment = 1;
+        } else if (distanceInMeters < 8000) { // 2km to 8km
+            zoomAdjustment = 2;
+        } else if (distanceInMeters < 20000) { // 8km to 20km
+            zoomAdjustment = 3;
+        } else if (distanceInMeters < 40000) { // 20km to 40km
+            zoomAdjustment = 4;
+        } else if (distanceInMeters < 60000) { // 40km to 60km
+            zoomAdjustment = 5;
+        } else if (distanceInMeters < 120000) { // 60km to 120km
+            zoomAdjustment = 6;
+        } else if (distanceInMeters < 180000) { // 120km to 180km
+            zoomAdjustment = 7;
+        } else if (distanceInMeters < 250000) { // 180km to 250km
+            zoomAdjustment = 8;
+        } else if (distanceInMeters < 350000) { // 250km to 350km
+            zoomAdjustment = 9;
+        } else if (distanceInMeters < 500000) { // 350km to 500km
+            zoomAdjustment = 10;
+        } else if (distanceInMeters < 750000) { // 500km to 750km
+            zoomAdjustment = 11;
+        } else if (distanceInMeters < 1000000) { // 750km to 1000km
+            zoomAdjustment = 12;
+        } else {
+            // For distances > 1000km, cap at maximum zoom adjustment
+            zoomAdjustment = 12;
+        }
+        
+        // Calculate intermediate zoom level (zoom out for overview)
+        const zoomOutLevel = Math.max(currentZoom - zoomAdjustment, 5);
+        
+        // Set initial position (startLat and startLng already declared above)
         map.setCenter(new window.google.maps.LatLng(startLat, startLng));
         
         smoothZoom(map, zoomOutLevel, currentZoom, true);
@@ -111,8 +167,8 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         
         setTimeout(() => {
             
-            const CINEMATIC_STEPS = 30;
-            const STEP_DURATION = 50;
+            const CINEMATIC_STEPS = 100;
+            const STEP_DURATION = 20;
             
             const dLat = (newLat - startLat) / CINEMATIC_STEPS;
             const dLng = (newLng - startLng) / CINEMATIC_STEPS;

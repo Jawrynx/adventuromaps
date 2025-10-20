@@ -28,9 +28,11 @@ import { useSettings } from "../../services/SettingsContext.jsx";
  * 
  * @param {Function} onSelectRoute - Callback to display route on map
  * @param {Function} onStartDemo - Callback to start interactive demo mode
+ * @param {Object} user - Current authenticated user object
+ * @param {boolean} isAuthLoading - Whether authentication state is being determined
  * @returns {JSX.Element} Exploration browser interface
  */
-function Explore({ onSelectRoute, onStartDemo }) {
+function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
     // ========== COMPONENT STATE ==========
     const [showMore, setShowMore] = useState({});       // Tracks which exploration cards are expanded
     const [explorations, setExplorations] = useState([]); // Array of published exploration data

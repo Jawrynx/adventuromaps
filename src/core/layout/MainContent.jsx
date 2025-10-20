@@ -538,14 +538,24 @@ const MainContent = () => {
                 {/* Modal overlay for Explore feature */}
                 {activeItem === 'explore' && (
                     <Modal onClose={() => setActiveItem('map')}>
-                        <Explore onSelectRoute={handleRouteSelection} onStartDemo={handleStartDemo} />
+                        <Explore 
+                            onSelectRoute={handleRouteSelection} 
+                            onStartDemo={handleStartDemo} 
+                            user={user}
+                            isAuthLoading={isAuthLoading}
+                        />
                     </Modal>
                 )}
                 
                 {/* Modal overlay for Adventures feature */}
                 {activeItem === 'adventures' && (
                     <Modal onClose={() => setActiveItem('map')}>
-                        <Adventure onSelectRoute={handleRouteSelection} onStartDemo={handleStartDemo} />
+                        <Adventure 
+                            onSelectRoute={handleRouteSelection} 
+                            onStartDemo={handleStartDemo} 
+                            user={user}
+                            isAuthLoading={isAuthLoading}
+                        />
                     </Modal>
                 )}
                 
