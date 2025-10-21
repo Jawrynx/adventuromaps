@@ -1,6 +1,6 @@
 {
   "name": "adventuromaps",
-  "productName": "adventuromaps",
+  "productName": "Adventuro Maps",
   "version": "1.0.0",
   "description": "My Electron application description",
   "main": ".vite/build/main.js",
@@ -30,6 +30,7 @@
     "@vitejs/plugin-react": "^5.0.2",
     "dotenv": "^17.2.3",
     "electron": "38.0.0",
+    "rcedit": "^4.0.1",
     "vite": "^5.4.20"
   },
   "dependencies": {

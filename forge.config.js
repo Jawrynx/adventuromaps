@@ -1,19 +1,22 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 
+const path = require('path');
+
 module.exports = {
   packagerConfig: {
     asar: true,
     extraResource: ['public'],
-    icon: 'public/assets/adventuro-logo-min.ico',
+    icon: 'public/assets/favicon.ico',
+    name: 'Adventuro Maps',
+    executableName: 'Adventuro Maps'
   },
   rebuildConfig: {},
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        iconUrl: 'https://raw.githubusercontent.com/Jawrynx/adventuromaps/main/public/assets/adventuro-logo-min.ico',
-        setupIcon: 'public/assets/adventuro-logo-min.ico'
+        setupIcon: 'public/assets/favicon.ico'
       },
     },
     {

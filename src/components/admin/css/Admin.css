@@ -51,7 +51,6 @@
         flex-wrap: wrap;
         justify-content: start;
         align-items: center;
-        height: 150px;
         width: 100%;
 
         button {
@@ -199,6 +198,10 @@
             margin-top: 15px !important;
             margin-bottom: 0 !important;
             pointer-events: none !important; /* Prevent h2 from interfering with drag */
+        }
+
+        .modal-scrollable-content {
+            overflow: hidden !important;
         }
 
         .waypoints-list,
@@ -451,6 +454,11 @@
         background-color: #333;
         padding: 10px;
         border-radius: 8px;
+
+        span {
+            width: 70%;
+            height: auto;
+        }
 
 
         button {

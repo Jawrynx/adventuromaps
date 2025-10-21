@@ -19,7 +19,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { createServer } from 'node:http';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { extname } from 'node:path';
 
 // Handle Squirrel events on Windows (installer/updater)
@@ -129,8 +129,8 @@ const createWindow = async () => {
     width: 1200,
     height: 800,
     icon: MAIN_WINDOW_VITE_DEV_SERVER_URL 
-      ? path.join(__dirname, '../../public/assets/adventuro-logo-min.png') // Development path
-      : path.join(process.resourcesPath, 'public/assets/adventuro-logo-min.png'), // Production path
+      ? path.join(__dirname, '../../public/assets/favicon.ico') // Development path
+      : path.join(process.resourcesPath, 'public/assets/favicon.ico'), // Production path
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false, // Security: Disable node integration in renderer
@@ -174,6 +174,11 @@ const createWindow = async () => {
 
 // Initialize app when Electron has finished initialization
 app.whenReady().then(() => {
+  // Set the app icon for Windows
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.n.adventuro-maps');
+  }
+  
   createWindow();
 
   // macOS: Re-create window when dock icon is clicked and no windows are open
