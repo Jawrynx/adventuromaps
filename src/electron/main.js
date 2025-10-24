@@ -137,6 +137,7 @@ const createWindow = async () => {
       contextIsolation: true, // Security: Isolate context between main and renderer
       webSecurity: true, // Enable web security
     },
+    autoHideMenuBar: true // Hide the top menu bar
   });
 
   /**
@@ -165,6 +166,18 @@ const createWindow = async () => {
   } else {
     // Production: Load from local HTTP server
     mainWindow.loadURL(`http://localhost:${localServerPort}`);
+    // Disable DevTools shortcuts in production
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if ((input.control || input.meta) && input.shift && input.key.toLowerCase() === 'i') {
+        event.preventDefault();
+      }
+      if (input.key === 'F12') {
+        event.preventDefault();
+      }
+    });
+    mainWindow.webContents.on('devtools-opened', () => {
+      mainWindow.webContents.closeDevTools();
+    });
   }
 };
 

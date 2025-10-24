@@ -272,7 +272,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
                             <div className="explore-more">
                                 <div className="route-info">
                                     <h3>Route Summary</h3>
-                                    <p>{item.subDescription}</p>
+                                    <p className='long-description'>{item.subDescription}</p>
                                     {item.keyLocations && (
                                         <div className="route-locations">
                                             <h3>Key Locations</h3>
@@ -284,10 +284,10 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
                                         </div>
                                     )}
                                     {item.estimatedTime && (
-                                        <>
+                                        <div className="route-estimated-time">
                                             <h3>Estimated Time</h3>
                                             <p>{item.estimatedTime}</p>
-                                        </>
+                                        </div>
                                     )}
                                 </div>
                                 {item.categories && (
