@@ -10,6 +10,12 @@ body {
   color: white;
 }
 
+/* Adds extra margin to the next grid row when previous item is expanded */
+.grid-row-margin {
+  margin-top: 100px;
+  transition: margin-top 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 #adventure,
 #explore {
   padding: 20px;
@@ -34,28 +40,17 @@ body {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden; /* Prevent horizontal overflow */
-    padding-right: 10px;
-    
+    gap: 12px;
     /* Responsive grid layout based on container width */
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
+    display: flex;
+    flex-direction: column;
     align-items: start; /* Use start alignment for better control */
-    
+
     /* Container queries for responsive grid based on modal width */
     @container (min-width: 500px) {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    
-    @container (min-width: 750px) {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-    
-    @container (min-width: 1000px) {
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      flex-direction: row;
+      flex-wrap: wrap;
+
     }
   }
 
@@ -82,8 +77,16 @@ body {
       height: auto; /* Allow natural growth */
       overflow: visible; /* NO SCROLLBARS BY DEFAULT */
       padding-bottom: 15px; /* Consistent padding */
-      max-width: 100%; /* Ensure item doesn't exceed grid cell width */
+      width: 48%; /* Ensure item doesn't exceed grid cell width */
         min-width: 0; /* Prevent grid overflow in multi-column layouts */
+    }
+
+    @container (min-width: 750px) {
+      width: 31%; /* Adjust width for 3-column layout */
+    }
+    
+    @container (min-width: 1000px) {
+      width: 23%; /* Adjust width for 4-column layout */
     }
 
     &:hover {
@@ -98,8 +101,8 @@ body {
   /* Apply height constraint and scrolling ONLY to expanded items */
   .adventure-item.item-expanded,
   .explore-item.item-expanded {
-    @container (min-width: 500px) {
-      max-height: 500px; /* Maximum height only when expanded */
+    @container (min-width: 500px) { /* Maximum height only when expanded */
+      max-height: 700px;
       overflow-x: hidden; /* Prevent horizontal overflow */
       overflow-y: auto; /* Add vertical scrolling only when expanded */
     }
