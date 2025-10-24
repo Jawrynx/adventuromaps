@@ -23,6 +23,11 @@ import './css/Modal.css';
  * @returns {JSX.Element|null} Modal overlay or null if closed
  */
 const Modal = ({ isOpen, onClose, children }) => {
+  // Reset minimize state when modal is opened
+  useEffect(() => {
+    if (isOpen) setIsMinimized(false);
+  }, [isOpen]);
+  const [isMinimized, setIsMinimized] = useState(false);
   const modalRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -198,11 +203,13 @@ const Modal = ({ isOpen, onClose, children }) => {
 
   if (!isOpen) return null;
 
+  // Modal minimized: apply .minimized class and hide main content
+
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
       <div 
         ref={modalRef}
-        className={`modal-content draggable-modal ${isDragging ? 'dragging' : ''} ${isResizing ? 'resizing' : ''}`}
+        className={`modal-content draggable-modal${isMinimized ? ' minimized' : ''}${isDragging ? ' dragging' : ''}${isResizing ? ' resizing' : ''}`}
         id='modal'
         tabIndex="-1"
         role="dialog"
@@ -235,12 +242,24 @@ const Modal = ({ isOpen, onClose, children }) => {
             &times;
           </button>
         )}
-        
-        {/* Scrollable content area */}
-        <div className="modal-scrollable-content">
+        {/* Minimize/Restore button */}
+        <button 
+          className="modal-minimize"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsMinimized(!isMinimized);
+          }}
+          type="button"
+          aria-label={isMinimized ? 'Restore modal' : 'Minimize modal'}
+        >
+          {isMinimized ? '_' : '_'}
+        </button>
+        {/* Modal header/title (optional) */}
+        {/* Scrollable content area (hidden when minimized) */}
+        <div className="modal-scrollable-content" style={isMinimized ? (null) : {}}>
           {children}
         </div>
-        
         {/* Resize handles - positioned relative to modal container */}
         <div 
           className="resize-handle resize-left"
