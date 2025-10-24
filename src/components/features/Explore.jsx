@@ -39,6 +39,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
     const [loading, setLoading] = useState(true);        // Loading state for data fetching
     const [showOptions, setShowOptions] = useState({}); // Tracks which option menus are open
     const [includeNarration, setIncludeNarration] = useState({}); // Tracks narration preference for each item
+    const [expandedId, setExpandedId] = useState(null); // Only one expanded per grid row
     const { settingsVersion } = useSettings(); // Listen for settings changes
 
     /**
@@ -110,10 +111,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
      * @param {string} itemId - The unique ID of the exploration to toggle
      */
     const toggleShowMore = (itemId) => {
-        setShowMore(prevShowMore => ({
-            ...prevShowMore,
-            [itemId]: !prevShowMore[itemId]
-        }));
+        setExpandedId(prevId => (prevId === itemId ? null : itemId));
     };
 
     /**
@@ -263,72 +261,79 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
         <div id='explore'>
             <h1>Exploration <FontAwesomeIcon icon={faCompass} /></h1>
             <ul>
-                {explorations.map(item => (
-                    <li key={item.id} className={`explore-item ${showMore[item.id] ? 'item-expanded' : ''}`} onClick={() => handleRouteClick(item)}>
-                        <img src={item.image_url} alt={item.name} width='100%' height='100px' className='explore-image' />
-                        <h2>{item.name}</h2>
-                        <p>{item.description}</p>
-                        <div className={`explore-more-container ${showMore[item.id] ? 'expanded' : ''}`}>
-                            <div className="explore-more">
-                                <div className="route-info">
-                                    <h3>Route Summary</h3>
-                                    <p className='long-description'>{item.subDescription}</p>
-                                    {item.keyLocations && (
-                                        <div className="route-locations">
-                                            <h3>Key Locations</h3>
+                {explorations.map((item, idx) => {
+                    const isExpanded = expandedId === item.id;
+                    return (
+                        <li
+                            key={item.id}
+                            className={`explore-item${isExpanded ? ' item-expanded' : ''}`}
+                            onClick={() => handleRouteClick(item)}
+                        >
+                            <img src={item.image_url} alt={item.name} width='100%' height='100px' className='explore-image' />
+                            <h2>{item.name}</h2>
+                            <p>{item.description}</p>
+                            <div className={`explore-more-container${isExpanded ? ' expanded' : ''}`}>
+                                <div className="explore-more">
+                                    <div className="route-info">
+                                        <h3>Route Summary</h3>
+                                        <p className='long-description'>{item.subDescription}</p>
+                                        {item.keyLocations && (
+                                            <div className="route-locations">
+                                                <h3>Key Locations</h3>
+                                                <ul>
+                                                    {item.keyLocations.map((location, index) => (
+                                                        <li key={index}>{location}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                        {item.estimatedTime && (
+                                            <div className="route-estimated-time">
+                                                <h3>Estimated Time</h3>
+                                                <p>{item.estimatedTime}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {item.categories && (
+                                        <div className="route-topics">
+                                            <h3>Topics Covered</h3>
                                             <ul>
-                                                {item.keyLocations.map((location, index) => (
-                                                    <li key={index}>{location}</li>
+                                                {item.categories.map((category, index) => (
+                                                    <li key={index}>{category}</li>
                                                 ))}
                                             </ul>
                                         </div>
                                     )}
-                                    {item.estimatedTime && (
-                                        <div className="route-estimated-time">
-                                            <h3>Estimated Time</h3>
-                                            <p>{item.estimatedTime}</p>
-                                        </div>
-                                    )}
                                 </div>
-                                {item.categories && (
-                                    <div className="route-topics">
-                                        <h3>Topics Covered</h3>
-                                        <ul>
-                                            {item.categories.map((category, index) => (
-                                                <li key={index}>{category}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
                             </div>
-                        </div>
-                        <div className="explore-buttons">
-                            <button className='more-button' onClick={(e) => { e.stopPropagation(); toggleShowMore(item.id); }}>
-                                <FontAwesomeIcon icon={showMore[item.id] ? faChevronUp : faChevronDown} />
-                            </button>
-                            <button className='demo-button' onClick={(e) => { e.stopPropagation(); handleDemoClick(item); }}>
-                                <FontAwesomeIcon icon={faPlay} />
-                            </button>
-                            <button className='options-button' onClick={(e) => { e.stopPropagation(); toggleOptions(item.id); }}>
-                                <FontAwesomeIcon icon={faEllipsisV} />
-                            </button>
-                        </div>
+                            <div className="explore-buttons">
+                                <button className='more-button' onClick={(e) => { e.stopPropagation(); toggleShowMore(item.id); }}>
+                                    <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />
+                                </button>
+                                <button className='demo-button' onClick={(e) => { e.stopPropagation(); handleDemoClick(item); }}>
+                                    <FontAwesomeIcon icon={faPlay} />
+                                </button>
+                                <button className='options-button' onClick={(e) => { e.stopPropagation(); toggleOptions(item.id); }}>
+                                    <FontAwesomeIcon icon={faEllipsisV} />
+                                </button>
+                            </div>
 
-                        {/* Options Menu */}
-                        <div className={`options-menu ${showOptions[item.id] ? 'options-menu-open' : 'options-menu-closed'}`} onClick={(e) => e.stopPropagation()}>
-                            <div className="option-item">
-                                <label>
-                                    <input
-                                        type="checkbox"
-                                        checked={includeNarration[item.id] || false}
-                                        onChange={(e) => handleNarrationToggle(item.id, e.target.checked)}
-                                    />
-                                    Include Narration
-                                </label>
+                            {/* Options Menu */}
+                            <div className={`options-menu ${showOptions[item.id] ? 'options-menu-open' : 'options-menu-closed'}`} onClick={(e) => e.stopPropagation()}>
+                                <div className="option-item">
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={includeNarration[item.id] || false}
+                                            onChange={(e) => handleNarrationToggle(item.id, e.target.checked)}
+                                        />
+                                        Include Narration
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                    </li>
-                ))}
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );
