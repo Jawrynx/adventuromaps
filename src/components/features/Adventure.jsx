@@ -281,7 +281,7 @@ function Adventure({ onSelectRoute, onStartDemo }) {
               <div className="adventure-more">
                 <div className="route-info">
                   <h3>Route Summary</h3>
-                  <p>{item.subDescription}</p>
+                  <p className='long-description'>{item.subDescription}</p>
                   
                   {/* Key locations list */}
                   {item.keyLocations && (
@@ -297,18 +297,18 @@ function Adventure({ onSelectRoute, onStartDemo }) {
                   
                   {/* Estimated time */}
                   {item.estimatedTime && (
-                    <>
+                    <div className="route-estimated-time">
                       <h3>Estimated Time</h3>
                       <p>{item.estimatedTime}</p>
-                    </>
+                    </div>
                   )}
                   
                   {/* Difficulty level */}
                   {item.difficulty && (
-                    <>
+                    <div className="route-difficulty">
                       <h3>Difficulty Level</h3>
                       <p>{item.difficulty === 'easy' ? 'Easy' : item.difficulty === 'medium' ? 'Medium' : 'Hard'}</p>
-                    </>
+                    </div>
                   )}
                 </div>
                 
