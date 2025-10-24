@@ -25,6 +25,10 @@ body {
   overflow: hidden;
   container-type: inline-size; /* Enable container queries */
 
+  .item-brief-info {
+    height: 322px;
+  }
+
   h1 {
     margin-bottom: 10px;
     display: flex;
@@ -89,7 +93,7 @@ body {
   .adventure-item.item-expanded,
   .explore-item.item-expanded {
     grid-row: span 2;
-    height: auto;
+    height: 100%;
   }
 
   /* Ensure proper flex layout for buttons at bottom */
@@ -126,12 +130,12 @@ body {
     width: 100%; /* Ensure inner content respects container width */
     max-width: 100%; /* Force maximum width constraint */
     box-sizing: border-box;
-    height: 85%;
     padding: 0; /* Remove any extra padding */
     margin: 0; /* Remove any extra margin */
     overflow-wrap: break-word; /* Break long words to prevent overflow */
     overflow-x: hidden; /* Only hide horizontal overflow */
     overflow-y: scroll; /* Allow vertical content to show naturally */
+    height: 100%;
   }
 
   /* Ensure all nested content within expanded areas respects width */
@@ -170,7 +174,6 @@ body {
   .route-estimated-time {
     background-color: #222;
     text-align: center;
-    padding: 0px 5px;
     border-radius: 12px;
 
     p {
@@ -216,16 +219,18 @@ body {
     }
   }
 
-  .adventure-item p,
-  .explore-item p {
+  .adventure-item > p,
+  .explore-item > p {
     font-size: 1rem;
     line-height: 1.4;
     margin-bottom: 8px;
-    overflow-y: visible; /* Changed from auto to visible */
-    flex-shrink: 0; /* Prevent shrinking when expanded content appears */
+    overflow-y: auto;
+    flex-shrink: 0;
+    height: 130px;
     
     @container (min-width: 500px) {
       font-size: 0.85em;
+      height: 150px;
     }
     
     @container (min-width: 750px) {
@@ -240,7 +245,6 @@ body {
     margin-top: auto;
     margin-bottom: 0;
     margin-right: 0;
-    padding-top: 10px;
     width: 100%;
     text-align: right;
     flex-shrink: 0;
@@ -313,7 +317,7 @@ body {
 
   .explore-more-container.expanded,
   .adventure-more-container.expanded {
-    max-height: 1000px;
+    max-height: 420px;
     overflow-y: auto;
     transition: max-height 1s ease-in-out;
   }
