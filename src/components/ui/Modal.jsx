@@ -154,35 +154,50 @@ const Modal = ({ isOpen, onClose, children }) => {
    * Handle mouse move during resizing
    */
   const handleResizeMove = useCallback((e) => {
-    if (!isResizing || !modalRef.current) return;
+    if (!isResizing || !modalRef.current) return;
 
-    const rect = modalRef.current.getBoundingClientRect();
+    const rect = modalRef.current.getBoundingClientRect();
+    
+    let newSize = { ...size };
+    let newPosition = { ...position };
+
+    // Use the explicit minimums set in the style attribute for consistency
+    const MIN_WIDTH = 400; // From style: minWidth: '400px'
+    const MIN_HEIGHT = 200; // From style: minHeight: '200px'
+
+    // --- Horizontal Resizing (Left Edge) ---
+    if (resizeHandle.includes('left')) {
+      // Calculate the potential new width based on mouse position relative to the right edge
+      const potentialNewWidth = rect.right - e.clientX;
+      
+      if (potentialNewWidth > MIN_WIDTH) {
+        // If not at minimum, update both width and x position normally
+        newSize.width = potentialNewWidth;
+        newPosition.x = e.clientX;
+      } else {
+        // FIX: If at minimum, lock the width and calculate the fixed x position 
+        // (right edge minus min width) to prevent the modal from sliding right.
+        newSize.width = MIN_WIDTH;
+        newPosition.x = rect.right - MIN_WIDTH;
+      }
+    }
     
-    let newSize = { ...size };
-    let newPosition = { ...position };
+    // --- Vertical Resizing (Bottom Edge) ---
+    if (resizeHandle.includes('bottom')) {
+      // The bottom edge already works correctly because y position is not updated here.
+      newSize.height = Math.max(MIN_HEIGHT, e.clientY - rect.top);
+    }
+    
+    // --- Top Edge and Right Edge are disabled/ignored as per the user request ---
 
-    if (resizeHandle.includes('right')) {
-      newSize.width = Math.max(300, e.clientX - rect.left);
-    }
-    if (resizeHandle.includes('left')) {
-      const newWidth = Math.max(300, rect.right - e.clientX);
-      newSize.width = newWidth;
-      newPosition.x = e.clientX;
-    }
-    if (resizeHandle.includes('bottom')) {
-      newSize.height = Math.max(200, e.clientY - rect.top);
-    }
-    if (resizeHandle.includes('top')) {
-      const newHeight = Math.max(200, rect.bottom - e.clientY);
-      newSize.height = newHeight;
-      newPosition.y = e.clientY;
-    }
-
-    setSize(newSize);
-    if (resizeHandle.includes('left') || resizeHandle.includes('top')) {
-      setPosition(newPosition);
-    }
-  }, [isResizing, resizeHandle, size, position]);
+    // The current resizeHandle check is redundant due to the new logic, but kept 
+    // for safety if other handles were enabled. For 'left' (and 'top' if it were active),
+    // newPosition is calculated correctly in the IF block above.
+    setSize(newSize);
+    if (resizeHandle.includes('left') || resizeHandle.includes('top')) {
+      setPosition(newPosition);
+    }
+  }, [isResizing, resizeHandle, size, position]);
 
   /**
    * Add global mouse event listeners for dragging and resizing
@@ -219,7 +234,7 @@ const Modal = ({ isOpen, onClose, children }) => {
           top: position.y,
           width: size.width,
           height: size.height,
-          minWidth: '300px',
+          minWidth: '400px',
           minHeight: '200px',
           maxWidth: '90vw',
           maxHeight: '90vh',
