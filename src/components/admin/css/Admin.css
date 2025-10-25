@@ -1,19 +1,28 @@
 #admin {
+    margin-top: 20px;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 95%;
 
     h2,
     h3 {
-        text-align: center;
-        ;
+        margin-left: 20px;
+        text-align: left;
+    }
+
+    .main-tools {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        width: 100%;
     }
 
     .waypoints-list {
         display: flex;
         flex-direction: column;
         align-items: center;
-        height: 80%;
+        flex-grow: 1;
         overflow-y: auto;
 
         .waypoints-table {
@@ -47,10 +56,8 @@
 
     .tools-container {
         display: flex;
-        flex-direction: column;
         flex-wrap: wrap;
-        justify-content: start;
-        align-items: center;
+        justify-content: space-evenly;
         width: 100%;
 
         button {
@@ -71,7 +78,7 @@
                 border-radius: 8px;
                 display: flex;
                 justify-content: space-evenly;
-                margin-top: 10px;
+                margin-top: 5px;
                 scale: 0;
                 transition: scale 0.3s ease-in-out;
 
@@ -93,10 +100,30 @@
     .modal-content {
         position: absolute;
         overflow-y: hidden;
-        transition: height 0.3s ease, width 0.3s ease;
 
         .modal-close {
             display: none;
+        }
+
+        .modal-minimize {
+            right: 15px;
+        }
+    }
+
+    .minimized {
+        height: 30px !important;
+
+        .modal-scrollable-content {
+            h2 {
+                display: block !important;
+            }
+
+            h3,
+            .main-tools,
+            .load-items-list,
+            .admin-info {
+                display: none !important;
+            }
         }
     }
 
@@ -166,55 +193,6 @@
 
     .waypoints-table tbody tr.route-start-row:hover+tr td {
         border-bottom-color: #ccc;
-    }
-
-    #minimize-button {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: #444;
-        padding: 5px 10px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .minimized {
-        height: 60px !important;
-        width: 130px !important;
-        min-height: 80px !important;
-        min-width: 130px !important;
-        max-height: 80px !important;
-        max-width: 130px !important;
-        overflow: hidden !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        border-radius: 8px !important;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
-        transition: height 0.3s ease, width 0.3s ease, min-height 0.3s ease, min-width 0.3s ease;
-
-        h2 {
-            margin-right: 50px;
-            margin-top: 15px !important;
-            margin-bottom: 0 !important;
-            pointer-events: none !important; /* Prevent h2 from interfering with drag */
-        }
-
-        .modal-scrollable-content {
-            overflow: hidden !important;
-        }
-
-        .waypoints-list,
-        .tools-container,
-        .admin-info {
-            display: none !important;
-        }
-
-        /* Ensure minimize button stays clickable */
-        #minimize-button {
-            pointer-events: auto !important;
-            z-index: 1003 !important;
-        }
     }
 }
 
@@ -375,7 +353,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
+    min-height: 500px;
 
     h1 {
         font-size: 4rem;
@@ -436,13 +414,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: calc(100% - 100px);
-    margin-top: 30px;
     overflow-y: scroll;
 
     h3 {
-        position: absolute;
-        top: 40px;
+        margin-bottom: 20px;
     }
 
     .load-item {

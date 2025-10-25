@@ -442,9 +442,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
     return (
         <div id='admin'>
-            <button id='minimize-button' onClick={() => {
-                document.getElementById('modal').classList.toggle('minimized');
-            }}>_</button>
             <h2>Admin Tools</h2>
             {isCreatingItem ? (
                 <>
@@ -454,7 +451,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                         </div>
                     ) : hasCreatedItemInfo ? (
                         <>
-                            <h3 style={{ margin: '5px 0', backgroundColor: '#444', width: 'fit-content', alignSelf: 'center', padding: '10px', borderRadius: '10px' }}>
+                            <h3 style={{ margin: '5px 0', backgroundColor: '#444', width: 'fit-content', alignSelf: 'center', textAlign: 'center', padding: '10px', borderRadius: '10px' }}>
                                 - {itemData.type === 'exploration' ? 'Exploration' : 'Adventure'} -
                                 <br />
                                 <span style={{ fontSize: '1.6rem' }}>{itemData.name}</span>
@@ -467,7 +464,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                     onSave={handleUpdateWaypoint}
                                 />
                             ) : (
-                                <>
+                                <div className="main-tools">
                                     <div className="waypoints-list">
                                         <h3>Waypoints</h3>
                                         <table className="waypoints-table">
@@ -564,7 +561,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                                 </div>
                                         </div>
                                     </div>
-                                </>
+                                </div>
                             )}
                         </>
                     ) : (
