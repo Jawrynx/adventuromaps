@@ -80,6 +80,38 @@ const Modal = ({ isOpen, onClose, children }) => {
     }
   }, [isOpen]);
 
+  const resetModalOnResize = useCallback(() => {
+        // Only reset if the modal is currently open
+        if (!isOpen) return;
+
+        // Reset position to default (top right corner placement)
+        setPosition({
+            x: Math.max(0, window.innerWidth - 410),
+            y: 60
+        });
+        
+        // Reset size to default
+        setSize({
+            width: 400,
+            height: 600
+        });
+        
+        // Ensure minimize state is reset if it was minimized
+        if (isMinimized) {
+            setIsMinimized(false);
+        }
+    }, [isOpen, isMinimized]);
+
+	useEffect(() => {
+        // Debounce or throttle the resize event is generally recommended for performance,
+        // but for a simple reset, a direct listener is often sufficient in React.
+		window.addEventListener('resize', resetModalOnResize);
+
+		return () => {
+			window.removeEventListener('resize', resetModalOnResize);
+		};
+	}, [resetModalOnResize]);
+
   /**
    * Handle mouse down anywhere on modal to start dragging
    */
@@ -161,9 +193,8 @@ const Modal = ({ isOpen, onClose, children }) => {
     let newSize = { ...size };
     let newPosition = { ...position };
 
-    // Use the explicit minimums set in the style attribute for consistency
-    const MIN_WIDTH = 400; // From style: minWidth: '400px'
-    const MIN_HEIGHT = 200; // From style: minHeight: '200px'
+    const MIN_WIDTH = 400;
+    const MIN_HEIGHT = 200;
 
     // --- Horizontal Resizing (Left Edge) ---
     if (resizeHandle.includes('left')) {
