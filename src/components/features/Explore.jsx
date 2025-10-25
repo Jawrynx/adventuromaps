@@ -17,6 +17,9 @@ import { db } from "../../services/firebase";
 import { getSetting } from "../../services/settingsService";
 import { useSettings } from "../../services/SettingsContext.jsx";
 
+// UI Components
+import SearchFilter from "../ui/SearchFilter.jsx";
+
 /**
  * Explore Component
  * 
@@ -36,6 +39,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
     // ========== COMPONENT STATE ==========
     const [showMore, setShowMore] = useState({});       // Tracks which exploration cards are expanded
     const [explorations, setExplorations] = useState([]); // Array of published exploration data
+    const [filteredExplorations, setFilteredExplorations] = useState([]); // Filtered explorations for display
     const [loading, setLoading] = useState(true);        // Loading state for data fetching
     const [showOptions, setShowOptions] = useState({}); // Tracks which option menus are open
     const [includeNarration, setIncludeNarration] = useState({}); // Tracks narration preference for each item
@@ -63,6 +67,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
                 }));
 
                 setExplorations(fetchedExplorations);
+                setFilteredExplorations(fetchedExplorations); // Initialize filtered list
 
                 // Initialize narration preferences based on default setting
                 const defaultNarration = getSetting('defaultNarrationEnabled');
@@ -260,8 +265,17 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
     return (
         <div id='explore'>
             <h1>Exploration <FontAwesomeIcon icon={faCompass} /></h1>
-            <ul>
-                {explorations.map((item, idx) => {
+            
+            <div className="content-wrapper">
+                {/* Search and Filter Component */}
+                <SearchFilter 
+                    items={explorations}
+                    onFilteredItems={setFilteredExplorations}
+                    placeholder="Search explorations..."
+                />
+                
+                <ul>
+                    {filteredExplorations.map((item, idx) => {
                     const isExpanded = expandedId === item.id;
                     return (
                         <li
@@ -335,6 +349,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
                     );
                 })}
             </ul>
+            </div>
         </div>
     );
 }

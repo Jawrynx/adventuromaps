@@ -1,0 +1,413 @@
+/**
+ * SearchFilter.css - Styling for the search and filter component
+ * 
+ * Provides a colorful, responsive UI with:
+ * - Modern search bar with icons
+ * - Animated filter toggles
+ * - Colorful chip buttons for different filter types
+ * - Smooth transitions and hover effects
+ * - Fully responsive layout
+ */
+
+/* ========== MAIN CONTAINER ========== */
+.search-filter {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(135deg, rgba(125, 33, 148, 0.95) 0%, rgba(240, 100, 233, 0.95) 100%);
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+}
+
+.search-filter:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08), 0 3px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ========== SEARCH BAR ROW ========== */
+.search-bar-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    outline: none;
+    color: black;
+}
+
+.search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-input:hover {
+    border-color: #cbd5e1;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.6rem;
+    color: #e9e9e9;
+    background-color: #333;
+    padding: 0.4rem 0.3rem;
+    border-radius: 50%;
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 0.75rem;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: none;
+    color: #eeeeee;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+    background: #8b8c8d;
+    color: #64748b;
+}
+
+/* ========== FILTER TOGGLE BUTTON ========== */
+.filter-toggle-btn {
+    position: relative;
+    padding: 0.75rem 1rem;
+    background: rgb(56, 75, 160);
+    border: 2px solid #5788c9;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #64748b;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 60px;
+    justify-content: center;
+}
+
+.filter-toggle-btn:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    background: #499ed6;
+}
+
+.filter-toggle-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.filter-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 0.15rem 0.4rem;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* ========== CLEAR ALL BUTTON ========== */
+.clear-all-btn {
+    padding: 0.75rem 1rem;
+    background: #f1f5f9;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #64748b;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.clear-all-btn:hover {
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+/* ========== FILTERS SECTION ========== */
+.filters-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid #f1f5f9;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== FILTER GROUPS ========== */
+.filter-group {
+    margin-bottom: 1rem;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-group-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ========== FILTER CHIPS ========== */
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 10px;
+}
+
+.filter-chip {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    white-space: nowrap;
+}
+
+.filter-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== DIFFICULTY CHIPS ========== */
+.filter-chip.difficulty-easy {
+    color: #059669;
+    border-color: #d1fae5;
+}
+
+.filter-chip.difficulty-easy:hover {
+    background: #d1fae5;
+}
+
+.filter-chip.difficulty-easy.active {
+    background: #10b981;
+    color: white;
+    border-color: #10b981;
+}
+
+.filter-chip.difficulty-medium {
+    color: #d97706;
+    border-color: #fed7aa;
+}
+
+.filter-chip.difficulty-medium:hover {
+    background: #fed7aa;
+}
+
+.filter-chip.difficulty-medium.active {
+    background: #f59e0b;
+    color: white;
+    border-color: #f59e0b;
+}
+
+.filter-chip.difficulty-hard {
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.filter-chip.difficulty-hard:hover {
+    background: #fecaca;
+}
+
+.filter-chip.difficulty-hard.active {
+    background: #57a5e6;
+    color: white;
+    border-color: #ef4444;
+}
+
+/* ========== TRANSPORT CHIPS ========== */
+.filter-chip.transport-chip {
+    color: #7eacf7;
+    background-color: #177faf;
+    border-color: #0112ff;
+}
+
+.filter-chip.transport-chip:hover {
+    background: #6ba5f0;
+}
+
+.filter-chip.transport-chip.active {
+    background: #0041a8;
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* ========== LOCATION CHIPS ========== */
+.filter-chip.location-chip {
+    color: #8b5cf6;
+    border-color: #ede9fe;
+}
+
+.filter-chip.location-chip:hover {
+    background: #ede9fe;
+}
+
+.filter-chip.location-chip.active {
+    background: #8b5cf6;
+    color: white;
+    border-color: #8b5cf6;
+}
+
+.location-chips {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.location-chips::-webkit-scrollbar {
+    width: 6px;
+}
+
+.location-chips::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.location-chips::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.location-chips::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.more-locations-hint {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 0.5rem 1rem;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 768px) {
+    .search-filter {
+        padding: 0.75rem;
+    }
+
+    .search-bar-row {
+        gap: 0.5rem;
+    }
+
+    .search-input-wrapper {
+        min-width: 100%;
+        order: 1;
+    }
+
+    .filter-toggle-btn {
+        order: 2;
+        flex: 1;
+    }
+
+    .clear-all-btn {
+        order: 3;
+        flex: 1;
+    }
+
+    .filter-chip {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .filter-group-title {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-filter {
+        border-radius: 12px;
+        padding: 0.5rem;
+    }
+
+    .search-input {
+        font-size: 0.9rem;
+        padding: 0.65rem 0.75rem 0.65rem 2.5rem;
+    }
+
+    .filter-chip {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+    }
+}
+
+/* ========== ACCESSIBILITY ========== */
+.filter-chip:focus,
+.filter-toggle-btn:focus,
+.clear-all-btn:focus,
+.clear-search-btn:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* ========== ANIMATIONS ========== */
+.filter-chip.active {
+    animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.95);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

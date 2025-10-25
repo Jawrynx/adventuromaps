@@ -19,6 +19,9 @@ import { db } from "../../services/firebase";
 import { getSetting } from "../../services/settingsService";
 import { useSettings } from "../../services/SettingsContext.jsx";
 
+// UI Components
+import SearchFilter from "../ui/SearchFilter.jsx";
+
 /**
  * Adventure Component
  * 
@@ -36,6 +39,7 @@ function Adventure({ onSelectRoute, onStartDemo }) {
   // ========== COMPONENT STATE ==========
   const [showMore, setShowMore] = useState({});     // Tracks which adventure cards are expanded
   const [adventures, setAdventures] = useState([]); // Array of published adventure data
+  const [filteredAdventures, setFilteredAdventures] = useState([]); // Filtered adventures for display
   const [loading, setLoading] = useState(true);     // Loading state for data fetching
   const [showOptions, setShowOptions] = useState({}); // Tracks which option menus are open
   const [includeNarration, setIncludeNarration] = useState({}); // Tracks narration preference for each item  
@@ -63,6 +67,7 @@ function Adventure({ onSelectRoute, onStartDemo }) {
         }));
 
         setAdventures(fetchedAdventures);
+        setFilteredAdventures(fetchedAdventures); // Initialize filtered list
 
         // Initialize narration preferences based on default setting
         const defaultNarration = getSetting('defaultNarrationEnabled');
@@ -266,8 +271,17 @@ function Adventure({ onSelectRoute, onStartDemo }) {
   return (
     <div id='adventure'>
       <h1>Adventure <FontAwesomeIcon icon={faHatCowboySide} /></h1>
-      <ul>
-        {adventures.map(item => (
+      
+      <div className="content-wrapper">
+        {/* Search and Filter Component */}
+        <SearchFilter 
+          items={adventures}
+          onFilteredItems={setFilteredAdventures}
+          placeholder="Search adventures..."
+        />
+        
+        <ul>
+          {filteredAdventures.map(item => (
           <li key={item.id} className={`adventure-item ${showMore[item.id] ? 'item-expanded' : ''}`} onClick={() => handleRouteClick(item)}>
             {/* Adventure card image */}
             <img src={item.image_url} alt={item.name} width='100%' height='100px' className='adventure-image' />
@@ -360,6 +374,7 @@ function Adventure({ onSelectRoute, onStartDemo }) {
           </li>
         ))}
       </ul>
+      </div>
     </div>
   );
 }

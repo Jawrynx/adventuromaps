@@ -27,6 +27,14 @@ body {
   container-type: inline-size; /* Enable container queries */
   transition: 0.2s ease-in-out;
 
+  .content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
   .item-brief-info {
     height: 322px;
   }
@@ -43,13 +51,15 @@ body {
 
   ul {
     list-style-type: none;
-    overflow-y: auto;
+    overflow-y: hidden;
     overflow-x: hidden; /* Prevent horizontal overflow */
     display: grid;
     gap: 16px;
     grid-template-columns: 1fr;
     align-items: start;
     grid-auto-rows: 400px;
+    flex: 0 0 auto; /* Don't shrink, don't grow, auto size */
+    padding-bottom: 20px; /* Add some padding at the bottom */
 
     @container (min-width: 500px) {
       grid-template-columns: repeat(2, 1fr);
