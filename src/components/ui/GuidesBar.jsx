@@ -31,6 +31,7 @@ function GuidesBar({ onCategorySelect, user }) {
     const [showModifySelector, setShowModifySelector] = useState(false);
     const [selectedGuide, setSelectedGuide] = useState(null);
     const [userDocument, setUserDocument] = useState(null);
+    const [activeCategory, setActiveCategory] = useState(null);
 
     // Fetch user document to check admin status
     useEffect(() => {
@@ -70,8 +71,11 @@ function GuidesBar({ onCategorySelect, user }) {
                 {categories.map((category) => (
                     <div
                         key={category}
-                        className="category"
-                        onClick={() => onCategorySelect(category)}
+                        className={`category ${activeCategory === category ? 'active' : ''}`}
+                        onClick={() => {
+                            setActiveCategory(category);
+                            onCategorySelect(category);
+                        }}
                         role="button"
                         tabIndex={0}
                     >

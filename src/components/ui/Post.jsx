@@ -35,9 +35,13 @@ function Post({ post }) {
                 </div>
                 <h1 className="post-title">{post.title}</h1>
                 <div className="post-info">
-                    <span className="post-author">By {post.author}</span>
+                    <span className="post-author">{post.author}</span>
                     <span className="post-date">
-                        {post.created_at?.toDate().toLocaleDateString()}
+                        {post.created_at?.toDate().toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                        })}
                     </span>
                 </div>
             </header>

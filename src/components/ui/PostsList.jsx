@@ -139,16 +139,43 @@ function PostsList({ category }) {
                         role="button"
                         tabIndex={0}
                         style={{ 
-                            animationDelay: `${index * 0.1}s`,
+                            animationDelay: `${index * 0.05}s`,
                             opacity: 0,
                             transform: 'translateY(20px)'
                         }}
                     >
-                        <h3>{post.title}</h3>
-                        <div className="post-meta">
-                            <span>By {post.author}</span>
-                            <span>•</span>
-                            <span>{new Date(post.created_at.toDate()).toLocaleDateString()}</span>
+                        {/* Post thumbnail image */}
+                        {post.image_url ? (
+                            <div className="post-item-image">
+                                <img src={post.image_url} alt={post.title} />
+                            </div>
+                        ) : (
+                            <div className="post-item-no-image">
+                                {post.type === 'Safety' ? '⚠️' : '📖'}
+                            </div>
+                        )}
+                        
+                        <div className="post-item-content">
+                            <div className={`post-type-badge ${post.type === 'Safety' ? 'safety' : ''}`}>
+                                {post.type === 'Safety' ? '⚠️' : '📖'} {post.type}
+                            </div>
+                            <h3>{post.title}</h3>
+                            {post.excerpt && (
+                                <p className="post-excerpt">{post.excerpt}</p>
+                            )}
+                            <div className="post-meta">
+                                <span className="post-meta-author">
+                                    👤 {post.author}
+                                </span>
+                                <span>•</span>
+                                <span className="post-meta-date">
+                                    {new Date(post.created_at.toDate()).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric'
+                                    })}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -160,7 +187,7 @@ function PostsList({ category }) {
                         className="back-button adm-button red"
                         onClick={handleBack}
                     >
-                        Back to List
+                        ← Back to List
                     </button>
                     <Post post={selectedPost} />
                 </div>
