@@ -17,7 +17,7 @@
 
     .waypoint-card {
         text-align: center;
-        width: 80%;
+        width: 85%;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -31,6 +31,7 @@
         .waypoint-info {
             height: 350px;
             overflow-y: scroll;
+            flex-grow: 1;
 
             p {
                 font-size: 1.5rem;

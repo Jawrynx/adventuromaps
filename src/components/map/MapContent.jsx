@@ -93,11 +93,11 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         if (distanceInMeters < 400) {
             return 500; // Very short distance - 0.5 seconds
         } else if (distanceInMeters < 2000) { // 400m to 2km
-            return 3000; // 3 seconds
+            return 3200; // 3.2 seconds
         } else if (distanceInMeters < 8000) { // 2km to 8km
-            return 3000; // 3 seconds
+            return 3500; // 3.5 seconds
         } else if (distanceInMeters < 20000) { // 8km to 20km
-            return 3000; // 3 seconds
+            return 4000; // 4 seconds
         } else if (distanceInMeters < 40000) { // 20km to 40km
             return 4000; // 4 seconds
         } else if (distanceInMeters < 60000) { // 40km to 60km
@@ -118,7 +118,7 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
             return 7750; // 7.75 seconds
         } else {
             // For distances > 1000km
-            return 9500; // 9.5 seconds
+            return 9000; // 9 seconds
         }
     };
 

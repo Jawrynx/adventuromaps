@@ -43,30 +43,6 @@
   box-sizing: border-box;
 }
 
-.modal-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: #444;
-  color: #fff;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 18px;
-  line-height: 1;
-  z-index: 10;
-  transition: background-color 0.2s;
-}
-
-.modal-close:hover {
-  background-color: #555;
-}
-
-.modal-close:active {
-  background-color: #333;
-}
-
 /* Scroller Bar */
 
 /* For WebKit browsers (Chrome, Safari, Edge) */
@@ -218,7 +194,7 @@
   width: 30px;
   height: 28px;
   top: 10px;
-  right: 50px;
+  right: 10px;
   background-color: #444;
   color: #fff;
   padding: 5px 10px;
@@ -249,6 +225,21 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
   transition: height 0.3s ease, width 0.3s ease, min-height 0.3s ease, min-width 0.3s ease;
   
+  .demo-header {
+    .narration-indicator {
+      display: none !important;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+  }
+
+  .waypoint-card, .demo-controls {
+    display: none !important;
+  }
+  
+
   #explore,
   #adventure {
     h1 {

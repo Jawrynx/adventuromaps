@@ -273,21 +273,6 @@ const Modal = ({ isOpen, onClose, children }) => {
         }}
         onMouseDown={handleDragStart}
       >
-        {/* Optional close button */}
-        {onClose && (
-          <button 
-            className="modal-close" 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onClose();
-            }}
-            type="button"
-            aria-label="Close modal"
-          >
-            &times;
-          </button>
-        )}
         {/* Minimize/Restore button */}
         <button 
           className="modal-minimize"
@@ -306,49 +291,53 @@ const Modal = ({ isOpen, onClose, children }) => {
         <div className="modal-scrollable-content" style={isMinimized ? (null) : {}}>
           {children}
         </div>
-        {/* Resize handles - positioned relative to modal container */}
-        <div 
-          className="resize-handle resize-left"
-          onMouseDown={(e) => handleResizeStart(e, 'left')}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: '8px',
-            cursor: 'w-resize',
-            background: 'transparent',
-            zIndex: 1001
-          }}
-        />
-        <div 
-          className="resize-handle resize-bottom"
-          onMouseDown={(e) => handleResizeStart(e, 'bottom')}
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '8px',
-            cursor: 's-resize',
-            background: 'transparent',
-            zIndex: 1001
-          }}
-        />
-        <div 
-          className="resize-handle resize-corner"
-          onMouseDown={(e) => handleResizeStart(e, 'left bottom')}
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            width: '12px',
-            height: '12px',
-            cursor: 'ne-resize',
-            background: 'transparent',
-            zIndex: 1002
-          }}
-        />
+        {/* Resize handles - positioned relative to modal container (disabled when minimized) */}
+        {!isMinimized && (
+          <>
+            <div 
+              className="resize-handle resize-left"
+              onMouseDown={(e) => handleResizeStart(e, 'left')}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: '8px',
+                cursor: 'w-resize',
+                background: 'transparent',
+                zIndex: 1001
+              }}
+            />
+            <div 
+              className="resize-handle resize-bottom"
+              onMouseDown={(e) => handleResizeStart(e, 'bottom')}
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: '8px',
+                cursor: 's-resize',
+                background: 'transparent',
+                zIndex: 1001
+              }}
+            />
+            <div 
+              className="resize-handle resize-corner"
+              onMouseDown={(e) => handleResizeStart(e, 'left bottom')}
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: '12px',
+                height: '12px',
+                cursor: 'ne-resize',
+                background: 'transparent',
+                zIndex: 1002
+              }}
+            />
+          </>
+        )}
       </div>
     </div>
   );

@@ -184,6 +184,9 @@ const MainContent = () => {
         const structuredData = demoOptions.routes || demoOptions; // Support both new and legacy format
         const narrationEnabled = demoOptions.includeNarration || false;
 
+        // Close Adventure/Explore modals when starting demo
+        setActiveItem('map');
+        
         // Clear any existing route display
         setActiveRoute(null);
         setIsZooming(true);                 // Indicate map is zooming
