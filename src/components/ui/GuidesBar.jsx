@@ -23,15 +23,24 @@ import './css/GuidesBar.css'
  * 
  * @param {Object} props - Component props
  * @param {Function} props.onCategorySelect - Callback when category is selected
+ * @param {Object} props.user - Current authenticated user
+ * @param {string} props.selectedCategory - Pre-selected category from navigation
  * @returns {JSX.Element} Guides navigation sidebar
  */
-function GuidesBar({ onCategorySelect, user }) {
+function GuidesBar({ onCategorySelect, user, selectedCategory }) {
     // Modal state management for guide creation and editing
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showModifySelector, setShowModifySelector] = useState(false);
     const [selectedGuide, setSelectedGuide] = useState(null);
     const [userDocument, setUserDocument] = useState(null);
     const [activeCategory, setActiveCategory] = useState(null);
+
+    // Update active category when selectedCategory prop changes
+    useEffect(() => {
+        if (selectedCategory) {
+            setActiveCategory(selectedCategory);
+        }
+    }, [selectedCategory]);
 
     // Fetch user document to check admin status
     useEffect(() => {

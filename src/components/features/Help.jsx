@@ -7,6 +7,7 @@
  */
 
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import './css/Help.css';
 
 /**
@@ -21,6 +22,9 @@ import './css/Help.css';
  * @returns {JSX.Element} Complete help interface with FAQ and contact form
  */
 function Help() {
+  // ========== NAVIGATION ==========
+  const navigate = useNavigate();
+
   // ========== CONTACT FORM STATE ==========
   const [contactForm, setContactForm] = useState({
     name: '',              // User's name
@@ -31,6 +35,18 @@ function Help() {
 
   const [isSubmitting, setIsSubmitting] = useState(false); // Form submission state
   const [submitMessage, setSubmitMessage] = useState('');  // Feedback message after submission
+
+  /**
+   * Handles navigation to Guides section with specific category
+   * 
+   * Navigates to the /guides route and passes the selected category
+   * through router state so it can be pre-selected.
+   * 
+   * @param {string} category - The category to navigate to
+   */
+  const handleGuideNavigation = (category) => {
+    navigate('/guides', { state: { selectedCategory: category } });
+  };
 
   /**
    * Handles input changes in the contact form
@@ -86,16 +102,12 @@ function Help() {
               <p>Navigate through our interactive maps to discover national parks, areas of outstanding natural beauty, and adventure routes.</p>
             </div>
             <div className="quick-start-item">
-              <h3>📍 Creating Routes</h3>
-              <p>Use the drawing tools to create custom routes and waypoints for your outdoor adventures.</p>
-            </div>
-            <div className="quick-start-item">
               <h3>📚 Reading Guides</h3>
               <p>Access comprehensive guides covering safety, navigation, and activity-specific information.</p>
             </div>
             <div className="quick-start-item">
               <h3>💾 Offline Access</h3>
-              <p>Download maps and guides for offline use during your outdoor adventures.</p>
+              <p>Download maps and guides for offline use during your outdoor adventures. COMING SOON!</p>
             </div>
           </div>
         </section>
@@ -104,11 +116,41 @@ function Help() {
         <section className="help-section">
           <h2>User Guides</h2>
           <div className="guide-links">
-            <a href="#" className="guide-link">📱 Getting Started with AdventuroMaps</a>
-            <a href="#" className="guide-link">🎯 Navigation & Wayfinding</a>
-            <a href="#" className="guide-link">🏔️ Trip Planning & Preparation</a>
-            <a href="#" className="guide-link">🚨 Emergency & First Aid</a>
-            <a href="#" className="guide-link">🌿 Environmental Safety & Etiquette</a>
+            <a 
+              href="#" 
+              className="guide-link" 
+              onClick={(e) => { e.preventDefault(); handleGuideNavigation('Getting Started'); }}
+            >
+              📱 Getting Started with AdventuroMaps
+            </a>
+            <a 
+              href="#" 
+              className="guide-link"
+              onClick={(e) => { e.preventDefault(); handleGuideNavigation('Navigation & Wayfinding'); }}
+            >
+              🎯 Navigation & Wayfinding
+            </a>
+            <a 
+              href="#" 
+              className="guide-link"
+              onClick={(e) => { e.preventDefault(); handleGuideNavigation('Trip Planning & Preparation'); }}
+            >
+              🏔️ Trip Planning & Preparation
+            </a>
+            <a 
+              href="#" 
+              className="guide-link"
+              onClick={(e) => { e.preventDefault(); handleGuideNavigation('Emergency & First Aid'); }}
+            >
+              🚨 Emergency & First Aid
+            </a>
+            <a 
+              href="#" 
+              className="guide-link"
+              onClick={(e) => { e.preventDefault(); handleGuideNavigation('Environmental Safety & Etiquette'); }}
+            >
+              🌿 Environmental Safety & Etiquette
+            </a>
           </div>
         </section>
 

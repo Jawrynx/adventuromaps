@@ -6,7 +6,8 @@
  * instructional content, safety protocols, and user guides for the application.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import GuidesBar from '../ui/GuidesBar';
 import PostsList from '../ui/PostsList';
 import './css/Guides.css';
@@ -23,8 +24,23 @@ import './css/Guides.css';
  * @returns {JSX.Element} Guides interface with category navigation and content display
  */
 function Guides({user}) {
+  // ========== ROUTER STATE ==========
+  const location = useLocation();
+  
   // ========== COMPONENT STATE ==========
   const [selectedCategory, setSelectedCategory] = useState(null); // Currently selected guide category
+
+  /**
+   * Handle initial category selection from navigation state
+   * 
+   * If user navigates to Guides with a pre-selected category
+   * (e.g., from Help page links), automatically select that category.
+   */
+  useEffect(() => {
+    if (location.state?.selectedCategory) {
+      setSelectedCategory(location.state.selectedCategory);
+    }
+  }, [location.state]);
 
   /**
    * Handles category selection from the navigation sidebar
@@ -40,7 +56,11 @@ function Guides({user}) {
 
   return (
     <div id='guides'>
-      <GuidesBar onCategorySelect={handleCategorySelect} user={user} />
+      <GuidesBar 
+        onCategorySelect={handleCategorySelect} 
+        user={user} 
+        selectedCategory={selectedCategory}
+      />
       <div className="guides-content">
         {selectedCategory ? (
           <PostsList category={selectedCategory} />
