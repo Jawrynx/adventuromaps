@@ -284,8 +284,9 @@ const MainContent = () => {
      * 
      * @param {number} index - Global waypoint index across all routes
      * @param {Function} onPanningSkipped - Optional callback to notify when panning is skipped
+     * @param {Function} onTransitionInfo - Optional callback to receive transition distance/duration info
      */
-    const handleWaypointChange = useCallback((index, onPanningSkipped) => {
+    const handleWaypointChange = useCallback((index, onPanningSkipped, onTransitionInfo) => {
         let cumulativeWaypointCount = 0;
         let currentWaypoint = null;
         let currentRoute = null;
@@ -335,17 +336,17 @@ const MainContent = () => {
                 const autoAdvance = getSetting('autoAdvanceWaypoints');
                 if (autoAdvance) {
                     // Auto-advance enabled: Just set map position instantly, no animation
-                    smoothPanFunction(coords.lat, coords.lng, currentZoom, false); // false = no cinematic
+                    smoothPanFunction(coords.lat, coords.lng, currentZoom, false, onTransitionInfo); // false = no cinematic
                     // Notify that panning was skipped (auto-advance mode)
                     if (onPanningSkipped) onPanningSkipped('skipped');
                 } else if (shouldSmoothPanOnly) {
                     // Medium distance (11-400m): Smooth pan without zoom/cinematic effects
-                    smoothPanFunction(coords.lat, coords.lng, currentZoom, false); // false = no cinematic zoom
+                    smoothPanFunction(coords.lat, coords.lng, currentZoom, false, onTransitionInfo); // false = no cinematic zoom
                     // Notify that smooth pan only was used
                     if (onPanningSkipped) onPanningSkipped('smooth');
                 } else {
                     // Long distance: Full cinematic panning with zoom effects
-                    smoothPanFunction(coords.lat, coords.lng, currentZoom, true); // true = cinematic
+                    smoothPanFunction(coords.lat, coords.lng, currentZoom, true, onTransitionInfo); // true = cinematic
                 }
             } else if (timeSinceDemoStart <= 5000) {
                 // Skipping cinematic pan during initial demo period

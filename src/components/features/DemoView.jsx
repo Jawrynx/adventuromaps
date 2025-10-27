@@ -250,8 +250,8 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     /**
      * Navigates to the next waypoint or exits demo
      * 
-     * Shows loading state, triggers map transition, then loads waypoint content
-     * after a delay to allow the cinematic pan to complete. If already at
+     * Shows loading state, triggers map transition with distance-based timing,
+     * then loads waypoint content after the transition completes. If already at
      * the last waypoint, automatically closes the demo experience.
      */
     const handleNext = () => {
@@ -262,32 +262,49 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             
             // Default transition duration for cinematic panning
             let transitionDuration = 3500;
+            let durationSet = false;
             
-            // Callback to handle different panning types
-            const handlePanningSkipped = (panningType) => {
-                if (panningType === 'skipped') {
-                    transitionDuration = 100; // Very short duration when panning is skipped entirely
-                } else if (panningType === 'smooth') {
-                    transitionDuration = 400; // 400ms for smooth pan only (no zoom)
-                }
+            // Callback to receive distance and timing information from MapContent
+            const handleTransitionInfo = (info) => {
+                // Use the calculated transition duration based on distance
+                transitionDuration = info.transitionDuration;
+                durationSet = true;
+                console.log(`Travelling ${info.distanceInKm}km - Duration: ${transitionDuration}ms`);
+                
+                // Set timeout for distance-based duration
                 setTimeout(() => {
                     setIsTransitioning(false);
                 }, transitionDuration);
             };
             
-            // Trigger map transition immediately
-            onWaypointChange(nextIndex, handlePanningSkipped);
+            // Callback to handle different panning types and distance-based timing
+            const handlePanningSkipped = (panningType) => {
+                // Only set timeout if handleTransitionInfo hasn't already handled it
+                if (!durationSet) {
+                    if (panningType === 'skipped') {
+                        transitionDuration = 100; // Very short duration when panning is skipped entirely
+                    } else if (panningType === 'smooth') {
+                        transitionDuration = 400; // 400ms for smooth pan only (no zoom)
+                    }
+                    setTimeout(() => {
+                        setIsTransitioning(false);
+                    }, transitionDuration);
+                }
+            };
             
             // Check if auto-advance is enabled to skip transition animations
             const autoAdvance = getSetting('autoAdvanceWaypoints');
             if (autoAdvance) {
                 transitionDuration = 100;
+                // Trigger map transition immediately with distance callback
+                onWaypointChange(nextIndex, handlePanningSkipped, handleTransitionInfo);
+                setTimeout(() => {
+                    setIsTransitioning(false);
+                }, transitionDuration);
+            } else {
+                // Trigger map transition immediately with distance callback
+                onWaypointChange(nextIndex, handlePanningSkipped, handleTransitionInfo);
             }
-            
-            // Set timeout for normal cinematic panning (will be overridden if panning is skipped)
-            setTimeout(() => {
-                setIsTransitioning(false);
-            }, transitionDuration);
         } else {
             onClose();
         }
@@ -296,8 +313,8 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     /**
      * Navigates to the previous waypoint
      * 
-     * Shows loading state, triggers map transition, then loads waypoint content
-     * after a delay to allow the cinematic pan to complete. Does nothing if
+     * Shows loading state, triggers map transition with distance-based timing,
+     * then loads waypoint content after the transition completes. Does nothing if
      * already at the first waypoint.
      */
     const handlePrevious = () => {
@@ -308,32 +325,49 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             
             // Default transition duration for cinematic panning
             let transitionDuration = 3500;
+            let durationSet = false;
             
-            // Callback to handle different panning types
-            const handlePanningSkipped = (panningType) => {
-                if (panningType === 'skipped') {
-                    transitionDuration = 100; // Very short duration when panning is skipped entirely
-                } else if (panningType === 'smooth') {
-                    transitionDuration = 400; // 400ms for smooth pan only (no zoom)
-                }
+            // Callback to receive distance and timing information from MapContent
+            const handleTransitionInfo = (info) => {
+                // Use the calculated transition duration based on distance
+                transitionDuration = info.transitionDuration;
+                durationSet = true;
+                console.log(`Travelling ${info.distanceInKm}km - Duration: ${transitionDuration}ms`);
+                
+                // Set timeout for distance-based duration
                 setTimeout(() => {
                     setIsTransitioning(false);
                 }, transitionDuration);
             };
             
-            // Trigger map transition immediately
-            onWaypointChange(prevIndex, handlePanningSkipped);
+            // Callback to handle different panning types and distance-based timing
+            const handlePanningSkipped = (panningType) => {
+                // Only set timeout if handleTransitionInfo hasn't already handled it
+                if (!durationSet) {
+                    if (panningType === 'skipped') {
+                        transitionDuration = 100; // Very short duration when panning is skipped entirely
+                    } else if (panningType === 'smooth') {
+                        transitionDuration = 400; // 400ms for smooth pan only (no zoom)
+                    }
+                    setTimeout(() => {
+                        setIsTransitioning(false);
+                    }, transitionDuration);
+                }
+            };
             
             // Check if auto-advance is enabled to skip transition animations
             const autoAdvance = getSetting('autoAdvanceWaypoints');
             if (autoAdvance) {
                 transitionDuration = 100;
+                // Trigger map transition immediately with distance callback
+                onWaypointChange(prevIndex, handlePanningSkipped, handleTransitionInfo);
+                setTimeout(() => {
+                    setIsTransitioning(false);
+                }, transitionDuration);
+            } else {
+                // Trigger map transition immediately with distance callback
+                onWaypointChange(prevIndex, handlePanningSkipped, handleTransitionInfo);
             }
-            
-            // Set timeout for normal cinematic panning (will be overridden if panning is skipped)
-            setTimeout(() => {
-                setIsTransitioning(false);
-            }, transitionDuration);
         }
     };
 

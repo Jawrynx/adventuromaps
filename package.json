@@ -41,6 +41,7 @@
     "@vis.gl/react-google-maps": "^1.5.5",
     "electron-squirrel-startup": "^1.0.1",
     "firebase": "^12.2.1",
+    "firebase-admin": "^13.5.0",
     "i": "^0.3.7",
     "js-marker-clusterer": "github:googlemaps/markerclusterer",
     "proj4": "^2.19.10",

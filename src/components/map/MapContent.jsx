@@ -81,6 +81,48 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
     };
 
     /**
+     * Calculates the transition duration based on distance between waypoints
+     * 
+     * Determines how long the loading screen should display based on the
+     * distance being traveled. Longer distances get longer durations.
+     * 
+     * @param {number} distanceInMeters - Distance between waypoints in meters
+     * @returns {number} Duration in milliseconds for the loading screen
+     */
+    const calculateTransitionDuration = (distanceInMeters) => {
+        if (distanceInMeters < 400) {
+            return 500; // Very short distance - 0.5 seconds
+        } else if (distanceInMeters < 2000) { // 400m to 2km
+            return 3000; // 3 seconds
+        } else if (distanceInMeters < 8000) { // 2km to 8km
+            return 3000; // 3 seconds
+        } else if (distanceInMeters < 20000) { // 8km to 20km
+            return 3000; // 3 seconds
+        } else if (distanceInMeters < 40000) { // 20km to 40km
+            return 4000; // 4 seconds
+        } else if (distanceInMeters < 60000) { // 40km to 60km
+            return 4500; // 4.5 seconds
+        } else if (distanceInMeters < 120000) { // 60km to 120km
+            return 5500; // 5.5 seconds
+        } else if (distanceInMeters < 180000) { // 120km to 180km
+            return 6000; // 6 seconds
+        } else if (distanceInMeters < 250000) { // 180km to 250km
+            return 7000; // 7 seconds
+        } else if (distanceInMeters < 350000) { // 250km to 350km
+            return 7000; // 7 seconds
+        } else if (distanceInMeters < 500000) { // 350km to 500km
+            return 7500; // 7.5 seconds
+        } else if (distanceInMeters < 750000) { // 500km to 750km
+            return 7500; // 7.5 seconds
+        } else if (distanceInMeters < 1000000) { // 750km to 1000km
+            return 7750; // 7.75 seconds
+        } else {
+            // For distances > 1000km
+            return 9500; // 9.5 seconds
+        }
+    };
+
+    /**
      * Calculates the distance between two coordinates in meters using Haversine formula
      * 
      * @param {number} lat1 - Start latitude
@@ -111,8 +153,9 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
      * @param {number} newLat - Target latitude coordinate
      * @param {number} newLng - Target longitude coordinate
      * @param {number} targetZoom - Final zoom level after panning
+     * @param {Function} onTransitionInfo - Callback with distance and duration info
      */
-    const cinematicPanTo = (map, newLat, newLng, targetZoom) => {
+    const cinematicPanTo = (map, newLat, newLng, targetZoom, onTransitionInfo) => {
         const currentZoom = map.getZoom();
         
         // Get current map center
@@ -121,6 +164,18 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
         
         // Calculate distance between current and target positions
         const distanceInMeters = calculateDistance(startLat, startLng, newLat, newLng);
+        
+        // Calculate the loading screen duration based on distance
+        const transitionDuration = calculateTransitionDuration(distanceInMeters);
+        
+        // Call the callback with distance and duration information
+        if (onTransitionInfo) {
+            onTransitionInfo({
+                distanceInMeters,
+                transitionDuration,
+                distanceInKm: (distanceInMeters / 1000).toFixed(2)
+            });
+        }
         
         // Determine zoom adjustment based on distance
         let zoomAdjustment;
@@ -339,10 +394,11 @@ function MapContent({ activeRoute, activePathForDemo, waypoints, activeWaypoint,
              * @param {number} lng - Target longitude  
              * @param {number} zoom - Target zoom level (defaults to current zoomLevel)
              * @param {boolean} useCinematic - Whether to use cinematic panning animation
+             * @param {Function} onTransitionInfo - Callback with transition distance and duration info
              */
-            const smoothPanFunction = (lat, lng, zoom = zoomLevel, useCinematic = false) => {
+            const smoothPanFunction = (lat, lng, zoom = zoomLevel, useCinematic = false, onTransitionInfo = null) => {
                 if (useCinematic) {
-                    cinematicPanTo(map, lat, lng, zoom);
+                    cinematicPanTo(map, lat, lng, zoom, onTransitionInfo);
                 } else {
                     smoothPanTo(map, lat, lng, zoom);
                 }
