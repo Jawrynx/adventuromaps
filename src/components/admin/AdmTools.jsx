@@ -486,6 +486,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                                                 <input
                                                                     type="text"
                                                                     name="waypoint-name-start"
+                                                                    className='waypoint-name'
                                                                     value={route.waypoints[0].name}
                                                                     onChange={(e) => onUpdateWaypointName(route.id, 0, e.target.value)}
                                                                 />
@@ -514,6 +515,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                                                 <input
                                                                     type="text"
                                                                     name="waypoint-name-end"
+                                                                    className='waypoint-name'
                                                                     value={route.waypoints[1].name}
                                                                     onChange={(e) => onUpdateWaypointName(route.id, 1, e.target.value)}
                                                                 />
