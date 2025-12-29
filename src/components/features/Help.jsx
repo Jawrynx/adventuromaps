@@ -79,7 +79,7 @@ function Help() {
     
     // Simulate form submission (replace with actual implementation later)
     setTimeout(() => {
-      setSubmitMessage('Thank you for your message! We\'ll get back to you soon.');
+      setSubmitMessage('✓ Thank you for your message! We\'ll get back to you soon.');
       setContactForm({ name: '', email: '', subject: '', message: '' });
       setIsSubmitting(false);
       

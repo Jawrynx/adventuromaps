@@ -16,7 +16,11 @@ module.exports = {
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        setupIcon: 'public/assets/favicon.ico'
+        setupIcon: 'public/assets/favicon.ico',
+        authors: 'Jawrynx',
+        description: 'Adventuro Maps - Your adventure planning companion',
+        noMsi: false,
+        setupExe: 'AdventuroMapsSetup.exe',
       },
     },
     {

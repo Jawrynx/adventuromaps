@@ -114,7 +114,7 @@ function GuidesBar({ onCategorySelect, user, selectedCategory }) {
                 <GuideForm
                     onClose={() => setShowCreateForm(false)}
                     onSuccess={() => {
-                        alert('Guide created successfully!');
+                        alert('✓ Guide created successfully!');
                         setShowCreateForm(false);
                         // You might want to refresh the guides list here
                     }}
@@ -138,7 +138,7 @@ function GuidesBar({ onCategorySelect, user, selectedCategory }) {
                     existingGuide={selectedGuide}
                     onClose={() => setSelectedGuide(null)}
                     onSuccess={() => {
-                        alert('Guide updated successfully!');
+                        alert('✓ Guide updated successfully!');
                         setSelectedGuide(null);
                         // You might want to refresh the guides list here
                     }}

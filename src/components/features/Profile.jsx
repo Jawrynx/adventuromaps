@@ -112,7 +112,7 @@ function Profile({ user }) {
                 photoURL: photoURL
             });
 
-            setSuccess('Profile picture updated successfully!');
+            setSuccess('✓ Profile picture updated successfully!');
             await loadUserDocument(); // Reload to get updated data
             
             // Clear success message after 3 seconds
@@ -204,7 +204,7 @@ function Profile({ user }) {
             // Update preferences separately
             await updateUserPreferences(user.uid, formData.preferences);
             
-            setSuccess('Profile updated successfully!');
+            setSuccess('✓ Profile updated successfully!');
             setIsEditing(false);
             await loadUserDocument(); // Reload to get updated data
             

@@ -1,12 +1,29 @@
 #guides {
-    background-color: #333;
+    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 50%, #151d2f 100%);
     height: 100%;
     display: flex;
+    position: relative;
+    overflow: hidden;
+}
+
+#guides::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(100, 200, 255, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
 }
 
 .guides-content {
     flex: 1;
     overflow-y: auto;
+    position: relative;
+    z-index: 1;
 }
 
 .select-category {
@@ -21,8 +38,18 @@
 
 .select-category h2 {
     margin-bottom: 15px;
+    font-size: 2.5rem;
+    font-weight: 200;
+    background: linear-gradient(135deg, #64c8ff 0%, #64ff96 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(100, 200, 255, 0.3);
+    letter-spacing: 1px;
 }
 
 .select-category p {
-    color: #ccc;
+    color: #9bb3c8;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
 }

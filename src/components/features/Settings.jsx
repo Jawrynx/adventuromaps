@@ -78,8 +78,9 @@ function Settings() {
         // Notify other components that settings have changed
         refreshSettings();
         
-        // Show confirmation (optional)
-        alert('Settings saved successfully!');
+        // Show confirmation toast (using browser notification for now)
+        // In future, could implement a custom toast component
+        console.log('✓ Settings saved successfully!');
     };
 
     // Handle settings reset

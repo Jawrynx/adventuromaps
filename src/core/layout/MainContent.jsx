@@ -511,7 +511,7 @@ const MainContent = () => {
         width: `calc(100% - ${sidebarWidth}px)`,     // Adjust content width for sidebar
         position: 'relative',
         left: `${sidebarWidth}px`,                   // Offset content by sidebar width
-        transition: 'width 0.3s ease, left 0.3s ease' // Smooth animation when sidebar toggles
+        transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1), left 0.4s cubic-bezier(0.4, 0, 0.2, 1)' // Sync with sidebar timing
     };
 
     // ========== COMPONENT RENDER ==========
