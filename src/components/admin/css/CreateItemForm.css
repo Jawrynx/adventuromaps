@@ -1,8 +1,8 @@
 .create-item-form {
-    font-family: 'Chelsea Market', cursive;
+    font-family: 'TASA Explorer', sans-serif;
     font-size: 14px;
-    padding: 10px 0;
-    background-color: #222;
+    padding: 20px;
+    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 50%, #151d2f 100%);
     width: 100%;
     height: auto;
     display: flex;
@@ -13,7 +13,17 @@
 
     .form-group {
         width: 100%;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
+        background: linear-gradient(135deg, rgba(100, 200, 255, 0.1) 0%, rgba(100, 255, 150, 0.05) 100%);
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(100, 200, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .form-group:hover {
+        border-color: rgba(100, 200, 255, 0.4);
+        background: linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(100, 255, 150, 0.08) 100%);
     }
 
     .form-group label {
@@ -21,32 +31,64 @@
         flex-direction: column;
         align-items: center;
         width: 100%;
-        font-weight: bold;
+        font-weight: 600;
+        color: #64c8ff;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
 
         input, select {
-            width: 70%;
-            font-weight: bold;
-            padding: 5px;
-            color: black;
+            width: 90%;
+            max-width: 500px;
+            font-weight: 600;
+            padding: 12px;
+            color: #64c8ff;
             text-align: center;
-            border: none;
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%);
+            border: 1px solid rgba(100, 200, 255, 0.3);
+            border-radius: 8px;
+            margin-top: 8px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            background: linear-gradient(135deg, rgba(20, 25, 35, 0.95) 0%, rgba(25, 40, 70, 0.95) 100%);
+            border-color: rgba(100, 200, 255, 0.6);
+            box-shadow: 0 0 12px rgba(100, 200, 255, 0.3);
         }
 
         option {
-            color: black;
+            color: #64c8ff;
             font-weight: bold;
+            background: #0f1419;
         }
 
         input[type="file"] {
-            color: black;
+            color: #64c8ff;
         }
 
         textarea {
-            min-height: 100px;
-            width: 70%;
-            color: black;
-            padding: 5px;
-            border: none;
+            min-height: 120px;
+            width: 90%;
+            max-width: 500px;
+            color: #64c8ff;
+            padding: 12px;
+            border: 1px solid rgba(100, 200, 255, 0.3);
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%);
+            border-radius: 8px;
+            margin-top: 8px;
+            resize: vertical;
+            transition: all 0.3s ease;
+            font-family: 'TASA Explorer', sans-serif;
+        }
+
+        textarea:focus {
+            outline: none;
+            background: linear-gradient(135deg, rgba(20, 25, 35, 0.95) 0%, rgba(25, 40, 70, 0.95) 100%);
+            border-color: rgba(100, 200, 255, 0.6);
+            box-shadow: 0 0 12px rgba(100, 200, 255, 0.3);
         }
 
         input, select, textarea {
@@ -58,10 +100,33 @@
         display: flex;
         justify-content: space-evenly;
         width: 100%;
+        gap: 12px;
+        margin-top: 20px;
 
         button {
-            padding: 10px;
+            padding: 12px 24px;
             height: auto;
+            background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(100, 255, 150, 0.1) 100%);
+            color: #64c8ff;
+            border: 1px solid rgba(100, 200, 255, 0.4);
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 4px 12px rgba(100, 200, 255, 0.1);
+            flex: 1;
+            max-width: 200px;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, rgba(100, 200, 255, 0.35) 0%, rgba(100, 255, 150, 0.2) 100%);
+            border-color: rgba(100, 200, 255, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(100, 200, 255, 0.25);
+        }
+
+        button:active {
+            transform: translateY(0);
         }
     }
 }

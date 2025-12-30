@@ -1,12 +1,12 @@
 /* NarrationPreview.css - Styling for narration and keyframe preview */
 
 .narration-preview {
-    padding: 20px;
+    padding: 24px;
     width: 100%;
     height: 100%;
     margin: 0 auto;
-    background: #444;
-    border-radius: 8px;
+    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 50%, #151d2f 100%);
+    border-radius: 12px;
 }
 
 .preview-header {
@@ -15,29 +15,35 @@
 }
 
 .preview-header h3 {
-    color: #fff;
+    color: #64c8ff;
     margin: 0 0 10px 0;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
 .error {
-    color: #d32f2f;
+    color: #ff6464;
     font-weight: bold;
+    background: rgba(255, 100, 100, 0.1);
+    border: 1px solid rgba(255, 100, 100, 0.3);
+    padding: 12px;
+    border-radius: 8px;
 }
 
 .loading-spinner {
     text-align: center;
     padding: 40px;
     font-size: 16px;
-    color: #fff;
+    color: #64c8ff;
 }
 
 .preview-loading {
-    background: #555;
-    border: 2px dashed #888;
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.1) 0%, rgba(100, 255, 150, 0.05) 100%);
+    border: 2px dashed rgba(100, 200, 255, 0.3);
     border-radius: 8px;
     padding: 40px;
     text-align: center;
-    color: #ccc;
+    color: #64c8ff;
     font-size: 18px;
     width: 100%;
     height: 100%;
@@ -45,23 +51,25 @@
 
 /* Animated Text Display */
 .animated-text-display {
-    background: #666;
-    border: 2px solid #333;
-    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(100, 255, 150, 0.08) 100%);
+    border: 1px solid rgba(100, 200, 255, 0.3);
+    border-radius: 12px;
     padding: 30px;
     margin: 20px 0;
     min-height: 150px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 4px 12px rgba(100, 200, 255, 0.1);
 }
 
 .text-content {
     font-size: 18px;
     line-height: 1.6;
     text-align: center;
-    color: #fff;
+    color: #64c8ff;
     animation: textFadeIn 0.3s ease-in;
+    font-weight: 500;
 }
 
 @keyframes textFadeIn {
@@ -71,16 +79,18 @@
 
 /* Keyframes Info */
 .keyframes-info {
-    background: #e3f2fd;
-    padding: 10px;
-    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(100, 255, 150, 0.08) 100%);
+    padding: 16px;
+    border-radius: 8px;
     margin: 10px 0;
     font-size: 14px;
-    color: #1976d2;
+    color: #64c8ff;
     text-align: center;
+    border: 1px solid rgba(100, 200, 255, 0.3);
 
     p {
-        color: #222;
+        color: #64c8ff;
+        margin: 0;
     }
 }
 
@@ -95,6 +105,22 @@
 
 .audio-controls button {
     min-width: 100px;
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(100, 255, 150, 0.1) 100%);
+    color: #64c8ff;
+    border: 1px solid rgba(100, 200, 255, 0.4);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 12px rgba(100, 200, 255, 0.1);
+}
+
+.audio-controls button:hover {
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.35) 0%, rgba(100, 255, 150, 0.2) 100%);
+    border-color: rgba(100, 200, 255, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(100, 200, 255, 0.25);
 }
 
 .yellow {
