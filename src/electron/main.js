@@ -137,7 +137,26 @@ const createWindow = async () => {
       contextIsolation: true, // Security: Isolate context between main and renderer
       webSecurity: true, // Enable web security
     },
-    autoHideMenuBar: true // Hide the top menu bar
+    autoHideMenuBar: true, // Hide the top menu bar
+    backgroundColor: '#0f1419', // Dark background
+    show: false, // Don't show until ready
+    titleBarStyle: 'hidden', // Required for titleBarOverlay to work
+    // Platform-specific titlebar styling
+    ...(process.platform === 'win32' && {
+      titleBarOverlay: {
+        color: '#16213e',
+        symbolColor: '#ffffff',
+        height: 32
+      }
+    }),
+    ...(process.platform === 'darwin' && {
+      titleBarStyle: 'hiddenInset'
+    })
+  });
+
+  // Show window when ready to prevent white flash
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
   });
 
   /**

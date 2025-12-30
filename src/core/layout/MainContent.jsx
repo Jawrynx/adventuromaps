@@ -516,19 +516,33 @@ const MainContent = () => {
 
     // ========== COMPONENT RENDER ==========
     return (
-        <div style={{ display: 'flex', height: '100vh' }}>
-            {/* Fixed sidebar with navigation and responsive width */}
-            <Sidebar 
-                activeItem={activeItem} 
-                onSidebarClick={handleSidebarClick}
-                onSidebarToggle={handleSidebarToggle}
-                user={user}
-                userDocument={userDocument}
-                onLogout={handleLogout}
-            />
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+            {/* Custom titlebar spacer for Electron - matches titleBarOverlay height */}
+            {typeof window !== 'undefined' && window.electron && (
+                <div style={{
+                    height: '33px',
+                    backgroundColor: '#16213e',
+                    WebkitAppRegion: 'drag',
+                    userSelect: 'none',
+                    pointerEvents: 'none',
+                    zIndex: 999
+                }} />
+            )}
             
-            {/* Main content area that adjusts to sidebar width */}
-            <div style={mainContentStyle}>
+            {/* Main flex container for sidebar and content */}
+            <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+                {/* Fixed sidebar with navigation and responsive width */}
+                <Sidebar 
+                    activeItem={activeItem} 
+                    onSidebarClick={handleSidebarClick}
+                    onSidebarToggle={handleSidebarToggle}
+                    user={user}
+                    userDocument={userDocument}
+                    onLogout={handleLogout}
+                />
+                
+                {/* Main content area that adjusts to sidebar width */}
+                <div style={mainContentStyle}>
                 {/* Primary routing for full-page views */}
                 <Routes>
                     <Route path="/" element={<MainMap {...mapProps} onSmoothPanReady={handleSmoothPanReady} />} />
@@ -576,6 +590,7 @@ const MainContent = () => {
                         <Auth onAuthSuccess={handleAuthSuccess} />
                     </AuthModal>
                 )}
+            </div>
             </div>
         </div>
     );
