@@ -517,20 +517,26 @@ const MainContent = () => {
     // ========== COMPONENT RENDER ==========
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-            {/* Custom titlebar spacer for Electron - matches titleBarOverlay height */}
+            {/* Fixed titlebar spacer for Electron - stays at top and is draggable */}
             {typeof window !== 'undefined' && window.electron && (
                 <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
                     height: '33px',
                     backgroundColor: '#16213e',
                     WebkitAppRegion: 'drag',
                     userSelect: 'none',
-                    pointerEvents: 'none',
-                    zIndex: 999
-                }} />
+                    zIndex: 9999
+                }}>
+                    {/* Right-side no-drag area so native controls remain clickable */}
+                    <div style={{position: 'absolute', top: 0, right: 0, bottom: 0, width: 160, WebkitAppRegion: 'no-drag'}} />
+                </div>
             )}
-            
-            {/* Main flex container for sidebar and content */}
-            <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+
+            {/* Main flex container for sidebar and content (padded for fixed titlebar) */}
+            <div style={{ display: 'flex', flex: 1, minHeight: 0, paddingTop: '33px' }}>
                 {/* Fixed sidebar with navigation and responsive width */}
                 <Sidebar 
                     activeItem={activeItem} 
