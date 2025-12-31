@@ -248,7 +248,7 @@
 }
 
 .minimized {
-  height: 130px !important;
+  height: auto !important;
   width: 220px !important;
   min-height: 80px !important;
   min-width: 130px !important;
@@ -269,6 +269,10 @@
     h2 {
       margin-top: 30px;
     }
+  }
+
+  .search-filter {
+    display: none !important;
   }
 
   .waypoint-card, .demo-controls {

@@ -54,8 +54,8 @@ function AuthModal({ children, onClose }) {
     };
 
     return (
-        <div className="auth-modal-overlay" onClick={handleBackdropClick}>
-            <div className="auth-modal-content">
+        <div className="auth-modal-overlay">
+            <div className="auth-modal-content" onClick={handleBackdropClick}>
                 {children}
             </div>
         </div>

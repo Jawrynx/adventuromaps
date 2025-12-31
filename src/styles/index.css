@@ -19,7 +19,7 @@ body {
 #adventure,
 #explore {
   display: block;
-  padding: 20px;
+  padding: 10px 0px 10px 10px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -51,6 +51,7 @@ body {
 
   ul {
     list-style-type: none;
+    margin-right: 10px;
     overflow-y: hidden;
     overflow-x: hidden; /* Prevent horizontal overflow */
     display: grid;
@@ -627,10 +628,10 @@ body {
 
 .gm-style-mtc-bbw .gm-style-mtc:first-of-type>button {
   background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(20, 20, 35, 1) 100%) !important;
-  color: #ffd700 !important;
+  color: #ffffff !important;
   border: 1px solid rgba(255, 215, 0, 0.3) !important;
   border-radius: 12px;
-  font-family: 'Sigmar' !important;
+  font-family: 'TASA Explorer' !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 215, 0, 0.1) !important;
 
@@ -644,10 +645,10 @@ body {
 
 .gm-style-mtc-bbw .gm-style-mtc:last-of-type>button {
   background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(20, 20, 35, 1) 100%) !important;
-  color: #ffd700 !important;
+  color: #ffffff !important;
   border: 1px solid rgba(255, 215, 0, 0.3) !important;
   border-radius: 12px;
-  font-family: 'Sigmar' !important;
+  font-family: 'TASA Explorer' !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 215, 0, 0.1) !important;
 
@@ -678,7 +679,6 @@ body {
     &:hover {
       background: rgba(255, 215, 0, 0.1) !important;
       border-color: rgba(255, 215, 0, 0.3) !important;
-      transform: translateX(2px) !important;
     }
 
     span {
@@ -686,7 +686,7 @@ body {
       color: #ffd700 !important;
       
       span {
-        background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 100%) !important;
+        background: white;
         border-radius: 5px !important;
         border: 1px solid rgba(255, 215, 0, 0.3) !important;
       }

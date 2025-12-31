@@ -25,6 +25,7 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -33,7 +34,8 @@
 /* Modal content container */
 .auth-modal-content {
     position: relative;
-    max-width: 500px;
+    justify-content: center;
+    display: flex;
     width: 100%;
     max-height: 90vh;
     overflow: visible;
@@ -45,6 +47,7 @@
         opacity: 0;
         transform: translateY(30px) scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -56,7 +59,7 @@
     .auth-modal-overlay {
         padding: 12px;
     }
-    
+
     .auth-modal-content {
         max-height: 95vh;
     }
@@ -70,30 +73,30 @@
 }
 
 /* Custom scrollbar styling for auth modal */
-.auth-modal-content .auth-card {
+.auth-modal-content .auth-card .auth-inner {
     scrollbar-width: thin;
-    scrollbar-color: #cbd5e0 transparent;
+    scrollbar-color: #cbd5e0 transparent !important;
 }
 
 /* Webkit scrollbar styling */
-.auth-modal-content .auth-card::-webkit-scrollbar {
+.auth-modal-content .auth-card .auth-inner::-webkit-scrollbar {
     width: 6px;
 }
 
-.auth-modal-content .auth-card::-webkit-scrollbar-track {
+.auth-modal-content .auth-card .auth-inner::-webkit-scrollbar-track {
     background: transparent;
     border-radius: 16px;
     margin: 16px 0;
 }
 
-.auth-modal-content .auth-card::-webkit-scrollbar-thumb {
+.auth-modal-content .auth-card .auth-inner::-webkit-scrollbar-thumb {
     background: #cbd5e0;
     border-radius: 16px;
     border: 2px solid transparent;
     background-clip: content-box;
 }
 
-.auth-modal-content .auth-card::-webkit-scrollbar-thumb:hover {
+.auth-modal-content .auth-card .auth-inner::-webkit-scrollbar-thumb:hover {
     background: #a0aec0;
     background-clip: content-box;
 }

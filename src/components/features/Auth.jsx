@@ -49,43 +49,45 @@ function Auth({ onAuthSuccess }) {
     return (
         <div className="auth-card">
             {/* Header with logo and title */}
-            <div className="auth-header">
-                <img src="/assets/adventuro-logo-min.png" alt="AdventuroMaps" className="auth-logo" />
-                <h1>AdventuroMaps</h1>
-                <p>Discover and explore amazing adventures</p>
-            </div>
+            <div className="auth-inner">
+                <div className="auth-header">
+                    <img src="/assets/adventuro-logo-min.png" alt="AdventuroMaps" className="auth-logo" />
+                    <h1>AdventuroMaps</h1>
+                    <p>Discover and explore amazing adventures</p>
+                </div>
 
-            {/* Tab navigation */}
-            <div className="auth-tabs">
-                <button 
-                    className={`auth-tab ${activeTab === 'login' ? 'active' : ''}`}
-                    onClick={() => handleTabSwitch('login')}
-                >
-                    <FontAwesomeIcon icon={faUser} />
-                    Login
-                </button>
-                <button 
-                    className={`auth-tab ${activeTab === 'register' ? 'active' : ''}`}
-                    onClick={() => handleTabSwitch('register')}
-                >
-                    <FontAwesomeIcon icon={faEnvelope} />
-                    Register
-                </button>
-            </div>
+                {/* Tab navigation */}
+                <div className="auth-tabs">
+                    <button
+                        className={`auth-tab ${activeTab === 'login' ? 'active' : ''}`}
+                        onClick={() => handleTabSwitch('login')}
+                    >
+                        <FontAwesomeIcon icon={faUser} />
+                        Login
+                    </button>
+                    <button
+                        className={`auth-tab ${activeTab === 'register' ? 'active' : ''}`}
+                        onClick={() => handleTabSwitch('register')}
+                    >
+                        <FontAwesomeIcon icon={faEnvelope} />
+                        Register
+                    </button>
+                </div>
 
-            {/* Tab content */}
-            <div className="auth-content">
-                {activeTab === 'login' ? (
-                    <Login 
-                        onSwitchToRegister={() => handleTabSwitch('register')} 
-                        onAuthSuccess={onAuthSuccess}
-                    />
-                ) : (
-                    <Register 
-                        onSwitchToLogin={() => handleTabSwitch('login')} 
-                        onAuthSuccess={onAuthSuccess}
-                    />
-                )}
+                {/* Tab content */}
+                <div className="auth-content">
+                    {activeTab === 'login' ? (
+                        <Login
+                            onSwitchToRegister={() => handleTabSwitch('register')}
+                            onAuthSuccess={onAuthSuccess}
+                        />
+                    ) : (
+                        <Register
+                            onSwitchToLogin={() => handleTabSwitch('login')}
+                            onAuthSuccess={onAuthSuccess}
+                        />
+                    )}
+                </div>
             </div>
         </div>
     );

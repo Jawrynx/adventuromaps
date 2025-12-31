@@ -246,15 +246,15 @@ function Settings() {
                                 <h4>Application Information</h4>
                                 <div className="info-item">
                                     <span>Version:</span>
-                                    <span>1.0.0-beta</span>
+                                    <span>1.1.0</span>
                                 </div>
                                 <div className="info-item">
                                     <span>Build Date:</span>
-                                    <span>October 2025</span>
+                                    <span>31 December 2025</span>
                                 </div>
                                 <div className="info-item">
                                     <span>Platform:</span>
-                                    <span>Electron + React</span>
+                                    <span>Electron + Vite + React</span>
                                 </div>
                             </div>
 
@@ -262,6 +262,8 @@ function Settings() {
                                 <h4>Credits & Attribution</h4>
                                 <p>AdventuroMaps - Interactive adventure route exploration</p>
                                 <p>Built with modern web technologies for immersive outdoor experiences.</p>
+                                <br></br>
+                                <p>Software developed by <strong><em>Jawrynx</em></strong></p>
                                 
                                 <div className="tech-stack">
                                     <h5>Technology Stack:</h5>

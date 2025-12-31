@@ -176,6 +176,19 @@ const createWindow = async () => {
     simulateWindowRefocus();
   });
 
+  // Allow renderer to request titleBarOverlay changes at runtime
+  ipcMain.handle('set-titlebar-overlay', (event, opts) => {
+    try {
+      if (mainWindow && typeof mainWindow.setTitleBarOverlay === 'function') {
+        mainWindow.setTitleBarOverlay(Object.assign({}, opts));
+      }
+      return { ok: true };
+    } catch (err) {
+      console.error('Failed to set titleBarOverlay:', err);
+      return { ok: false, error: String(err) };
+    }
+  });
+
   // Load the React application
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     // Development: Load from Vite dev server
