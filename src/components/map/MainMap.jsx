@@ -136,6 +136,9 @@ function MainMap({ activeRoute, activePathForDemo, waypoints, activeWaypoint, ma
     } else if (mapTheme === 'gm-dark') {
         effectiveMapId = '8a2ac04064bf383366ad6b1e';
         colorScheme = 'DARK';
+    } else if (mapTheme === 'adventure') {
+        effectiveMapId = '8a2ac04064bf383360bc1cbc';
+        colorScheme = 'LIGHT';
     }
 
     // Get scale bar and compass settings

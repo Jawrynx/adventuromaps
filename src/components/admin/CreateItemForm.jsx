@@ -41,13 +41,21 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
     // Initialize form data - either from provided initial data (editing mode) or default state
     const [formData, setFormData] = useState(initialData ? {
         ...initialData,
-        // Convert arrays to comma-separated strings for text inputs
-        categories: Array.isArray(initialData.categories) ? initialData.categories.join(', ') : initialData.categories || '',
-        keyLocations: Array.isArray(initialData.keyLocations) ? initialData.keyLocations.join(', ') : initialData.keyLocations || ''
-    } : initialFormState);
+        // Keep arrays as arrays for tag inputs
+        categories: Array.isArray(initialData.categories) ? initialData.categories : (initialData.categories ? initialData.categories.split(',').map(c => c.trim()).filter(c => c) : []),
+        keyLocations: Array.isArray(initialData.keyLocations) ? initialData.keyLocations : (initialData.keyLocations ? initialData.keyLocations.split(',').map(l => l.trim()).filter(l => l) : [])
+    } : {
+        ...initialFormState,
+        categories: [],
+        keyLocations: []
+    });
     
     // Track saving state to prevent multiple submissions
     const [isSaving, setIsSaving] = useState(false);
+    
+    // Temporary input states for tag fields
+    const [categoryInput, setCategoryInput] = useState('');
+    const [locationInput, setLocationInput] = useState('');
 
     /**
      * Handles standard form input changes
@@ -81,10 +89,55 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
     };
 
     /**
+     * Adds a tag to categories list
+     */
+    const handleAddCategory = () => {
+        if (categoryInput.trim() && !formData.categories.includes(categoryInput.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                categories: [...prev.categories, categoryInput.trim()]
+            }));
+            setCategoryInput('');
+        }
+    };
+
+    /**
+     * Removes a tag from categories list
+     */
+    const handleRemoveCategory = (indexToRemove) => {
+        setFormData(prev => ({
+            ...prev,
+            categories: prev.categories.filter((_, index) => index !== indexToRemove)
+        }));
+    };
+
+    /**
+     * Adds a tag to key locations list
+     */
+    const handleAddLocation = () => {
+        if (locationInput.trim() && !formData.keyLocations.includes(locationInput.trim())) {
+            setFormData(prev => ({
+                ...prev,
+                keyLocations: [...prev.keyLocations, locationInput.trim()]
+            }));
+            setLocationInput('');
+        }
+    };
+
+    /**
+     * Removes a tag from key locations list
+     */
+    const handleRemoveLocation = (indexToRemove) => {
+        setFormData(prev => ({
+            ...prev,
+            keyLocations: prev.keyLocations.filter((_, index) => index !== indexToRemove)
+        }));
+    };
+
+    /**
      * Handles form submission for creating or updating items
      * 
-     * Processes form data, converts comma-separated strings back to arrays,
-     * and either creates a new item or updates an existing one.
+     * Processes form data and either creates a new item or updates an existing one.
      * 
      * @param {Event} e - The form submission event
      * @param {boolean} shouldLoad - Whether to load the item after saving (editing mode)
@@ -99,12 +152,8 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
 
         setIsSaving(true);
 
-        // Process form data: convert comma-separated strings to arrays
-        const dataToSubmit = {
-            ...formData,
-            categories: formData.categories.split(',').map(c => c.trim()).filter(c => c),
-            keyLocations: formData.keyLocations.split(',').map(loc => loc.trim()).filter(loc => loc)
-        };
+        // Data is already in correct format (arrays)
+        const dataToSubmit = { ...formData };
 
         try {
             if (isEditing) {
@@ -190,11 +239,30 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
                     />
                 </label>
             </div>
-            <div className="form-group">
-                <label>
-                    Categories (comma-separated):
-                    <input type="text" name="categories" value={formData.categories} onChange={handleChange} />
-                </label>
+            <div className="form-group tag-input-group">
+                <label>Categories:</label>
+                <div className="tag-input-container">
+                    <input 
+                        type="text" 
+                        value={categoryInput}
+                        onChange={(e) => setCategoryInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
+                        placeholder="Type a category..."
+                    />
+                    <button type="button" className="add-tag-btn" onClick={handleAddCategory}>
+                        + Add
+                    </button>
+                </div>
+                <div className="tags-list">
+                    {formData.categories.map((category, index) => (
+                        <div key={index} className="tag">
+                            <span>{category}</span>
+                            <button type="button" className="remove-tag-btn" onClick={() => handleRemoveCategory(index)}>
+                                ×
+                            </button>
+                        </div>
+                    ))}
+                </div>
             </div>
             <div className="form-group">
                 <label>
@@ -202,11 +270,30 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
                     <input type="text" name="estimatedTime" value={formData.estimatedTime} onChange={handleChange} />
                 </label>
             </div>
-            <div className="form-group">
-                <label>
-                    Key Locations (comma-separated):
-                    <input type="text" name="keyLocations" value={formData.keyLocations} onChange={handleChange} />
-                </label>
+            <div className="form-group tag-input-group">
+                <label>Key Locations:</label>
+                <div className="tag-input-container">
+                    <input 
+                        type="text" 
+                        value={locationInput}
+                        onChange={(e) => setLocationInput(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLocation())}
+                        placeholder="Type a location..."
+                    />
+                    <button type="button" className="add-tag-btn" onClick={handleAddLocation}>
+                        + Add
+                    </button>
+                </div>
+                <div className="tags-list">
+                    {formData.keyLocations.map((location, index) => (
+                        <div key={index} className="tag">
+                            <span>{location}</span>
+                            <button type="button" className="remove-tag-btn" onClick={() => handleRemoveLocation(index)}>
+                                ×
+                            </button>
+                        </div>
+                    ))}
+                </div>
             </div>
             {formData.type === 'adventure' && (
                 <div className="form-group">

@@ -172,6 +172,7 @@ function Settings() {
                                     <option value="adventuro-earth">Adventuro Earth</option>
                                     <option value="gm-light">Google Maps Light</option>
                                     <option value="gm-dark">Google Maps Dark</option>
+                                    <option value="adventure">Adventure</option>
                                 </select>
                             </label>
                             <label className="setting-item">

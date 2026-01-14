@@ -23,12 +23,12 @@ function ScaleControlManager({ showScale }) {
     useEffect(() => {
         if (!map) return;
 
-        
+
         // Set the scale control option on the map
-        map.setOptions({ 
-            scaleControl: showScale 
+        map.setOptions({
+            scaleControl: showScale
         });
-        
+
     }, [map, showScale]);
 
     return null; // This component doesn't render anything
@@ -46,14 +46,14 @@ function CompassControlManager({ showCompass }) {
         if (!map) return;
 
         // Set the rotate control option on the map
-        map.setOptions({ 
+        map.setOptions({
             rotateControl: showCompass,
             gestureHandling: 'greedy', // Allow all gestures including tilt
             rotateControlOptions: {
                 position: window.google?.maps?.ControlPosition?.RIGHT_BOTTOM
             }
         });
-        
+
     }, [map, showCompass]);
 
     return null; // This component doesn't render anything
@@ -63,6 +63,7 @@ function CompassControlManager({ showCompass }) {
 import Modal from '../ui/Modal';
 import AdmTools from './AdmTools';
 import SuggestionsPortal from './SuggestionsPortal';
+import OSMapAdmin from './OSMapAdmin';
 
 // Map Components
 import MapRoutes from '../map/MapRoutes';
@@ -90,16 +91,19 @@ import { useSettings } from '../../services/SettingsContext.jsx';
 function Admin({ mapId }) {
     // Google Maps instance hook
     const map = useMap();
-    
+
     // Get settings for reactive updates
     const { settings } = useSettings();
-    
+
+    // ========== MAP PROVIDER STATE ==========
+    const [mapProvider, setMapProvider] = useState('google'); // 'google' or 'osmap'
+
     // ========== ROUTE & DRAWING STATE ==========
     const [routes, setRoutes] = useState([]);               // Array of completed routes with waypoints
     const [isDrawing, setIsDrawing] = useState(false);      // Whether user is actively drawing a route
     const [tempPath, setTempPath] = useState([]);           // Temporary path coordinates while drawing
     const [mousePosition, setMousePosition] = useState(null); // Current mouse position for live drawing preview
-    
+
     // ========== ADMIN WORKFLOW STATE ==========
     const [isCreatingItem, setIsCreatingItem] = useState(false);     // Whether item creation modal is open
     const [hasCreatedItemInfo, setHasCreatedItemInfo] = useState(false); // Whether item info has been created
@@ -110,11 +114,11 @@ function Admin({ mapId }) {
     const [showSuggestions, setShowSuggestions] = useState(false);  // Whether to show suggestions dropdown
     const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1); // For keyboard navigation
     const [inputPosition, setInputPosition] = useState({ top: 0, left: 0, width: 0 }); // Input position for portal dropdown
-    
+
     // Refs for autocomplete service and search functionality
     const autocompleteServiceRef = useRef(null);
     const searchInputRef = useRef(null);
-    
+
     // Ref to maintain current drawing state across async operations
     const drawingStateRef = useRef({ isDrawing, tempPath });
 
@@ -148,7 +152,7 @@ function Admin({ mapId }) {
      */
     useEffect(() => {
         if (!map) return;
-        
+
         // Handle single clicks to add route points
         const clickListener = map.addListener('click', (e) => {
             const { isDrawing } = drawingStateRef.current;
@@ -253,11 +257,11 @@ function Admin({ mapId }) {
             // Create route with start/end waypoints from current path
             const newRoute = {
                 id: Date.now(),
-                order: routes.length + 1, 
+                order: routes.length + 1,
                 coordinates: tempPath,
                 waypoints: [
                     { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },
-                    { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 } 
+                    { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 }
                 ]
             };
             setRoutes(prevRoutes => [...prevRoutes, newRoute]);
@@ -304,7 +308,7 @@ function Admin({ mapId }) {
                     const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
                     routeDocRef = await addDoc(routesCollectionRef, {
                         coordinates: route.coordinates,
-                        order: routeOrder 
+                        order: routeOrder
                     });
                 }
 
@@ -312,46 +316,46 @@ function Admin({ mapId }) {
                 // Use the correct route ID for the waypoints collection
                 const routeIdForWaypoints = route.firestoreId || routeDocRef.id;
                 const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeIdForWaypoints, 'waypoints');
-                
+
                 await Promise.all(
                     route.waypoints.map(async (waypoint) => {
                         // Remove firestoreId and sanitize data for Firestore
                         const { firestoreId, ...waypointDataRaw } = waypoint;
-                        
+
                         // Sanitize data: remove undefined values, File objects, and other invalid Firestore data
                         const waypointDataToSave = {};
-                        
+
                         Object.entries(waypointDataRaw).forEach(([key, value]) => {
                             // Skip undefined, null, or internal fields
                             if (value === undefined || value === null || key.startsWith('__') || key === 'id') {
                                 return;
                             }
-                            
+
                             // Skip File objects and other complex objects that can't be serialized
                             if (value instanceof File || value instanceof FileList) {
                                 console.warn(`Skipping File object in field: ${key}`);
                                 return;
                             }
-                            
+
                             // Handle arrays - filter out any File objects or invalid entries
                             if (Array.isArray(value)) {
-                                const cleanArray = value.filter(item => 
-                                    item !== undefined && 
-                                    item !== null && 
-                                    !(item instanceof File) && 
+                                const cleanArray = value.filter(item =>
+                                    item !== undefined &&
+                                    item !== null &&
+                                    !(item instanceof File) &&
                                     !(item instanceof FileList)
                                 );
                                 // Always include arrays, even if empty, to properly clear fields
                                 waypointDataToSave[key] = cleanArray;
                                 return;
                             }
-                            
+
                             // For primitive values and valid objects
                             waypointDataToSave[key] = value;
                         });
-                        
+
                         // Debug: Log the data being saved
-                        
+
                         if (waypoint.firestoreId) {
                             // Try to update existing waypoint
                             try {
@@ -381,15 +385,15 @@ function Admin({ mapId }) {
                     })
                 );
 
-                return { 
-                    ...route, 
-                    firestoreId: route.firestoreId || routeDocRef.id, 
+                return {
+                    ...route,
+                    firestoreId: route.firestoreId || routeDocRef.id,
                     order: routeOrder,
-                    waypoints: newWaypointsWithIds 
+                    waypoints: newWaypointsWithIds
                 };
             })
         );
-        
+
         // Update local state with Firestore IDs for future operations
         setRoutes(newRoutesWithIds);
 
@@ -482,10 +486,10 @@ function Admin({ mapId }) {
     const handleSearchInputChange = (e) => {
         const value = e.target.value;
         setSearchValue(value);
-        
+
         // Update dropdown position
         updateInputPosition();
-        
+
         // Debounce the API calls
         const timeoutId = setTimeout(() => {
             fetchSuggestions(value);
@@ -502,23 +506,23 @@ function Admin({ mapId }) {
      */
     const getZoomLevelForPlaceType = (types) => {
         if (!types || types.length === 0) return 10;
-        
+
         // Country level
         if (types.includes('country')) return 6;
-        
+
         // State/Province level
         if (types.includes('administrative_area_level_1')) return 7;
-        
+
         // City level
         if (types.includes('locality') || types.includes('administrative_area_level_2')) return 10;
-        
+
         // Neighborhood/suburb level
         if (types.includes('sublocality') || types.includes('neighborhood')) return 14;
-        
+
         // Street/establishment level
-        if (types.includes('establishment') || types.includes('point_of_interest') || 
+        if (types.includes('establishment') || types.includes('point_of_interest') ||
             types.includes('street_address') || types.includes('premise')) return 16;
-        
+
         // Default for other types
         return 10;
     };
@@ -529,10 +533,10 @@ function Admin({ mapId }) {
     const handleSuggestionSelect = (placeId, description) => {
         setSearchValue(description);
         setShowSuggestions(false);
-        
+
         // Use PlacesService to get place details and location
         const service = new window.google.maps.places.PlacesService(map);
-        
+
         service.getDetails({
             placeId: placeId,
             fields: ['geometry', 'formatted_address', 'types']
@@ -541,10 +545,10 @@ function Admin({ mapId }) {
                 const location = place.geometry.location;
                 const lat = location.lat();
                 const lng = location.lng();
-                
+
                 // Determine appropriate zoom level based on place type
                 const zoomLevel = getZoomLevelForPlaceType(place.types);
-                
+
                 // Center the map on the selected location with adaptive zoom
                 if (map) {
                     map.setCenter({ lat, lng });
@@ -570,7 +574,7 @@ function Admin({ mapId }) {
             }
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
-            setSelectedSuggestionIndex(prev => 
+            setSelectedSuggestionIndex(prev =>
                 prev < suggestions.length - 1 ? prev + 1 : prev
             );
         } else if (e.key === 'ArrowUp') {
@@ -641,38 +645,155 @@ function Admin({ mapId }) {
     // ========== COMPONENT RENDER ==========
     return (
         <div style={{ height: '100%', width: '100%' }} id='admin-tools'>
+            {/* Map Provider Selector */}
+            <div style={{
+                position: 'absolute',
+                top: '10px',
+                left: '200px',
+                zIndex: 1000,
+                background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
+                border: '2px solid rgba(255, 165, 0, 0.6)',
+                borderRadius: '12px',
+                boxShadow: '0 4px 16px rgba(255, 165, 0, 0.3)',
+                padding: '16px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+                minWidth: '280px'
+            }}>
+                <div style={{
+                    background: 'linear-gradient(90deg, #ff6b35 0%, #f7931e 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                    marginBottom: '4px'
+                }}>
+                    ⚠ Important - Cannot Change Later
+                </div>
+                <div style={{
+                    display: 'flex',
+                    gap: '10px',
+                    alignItems: 'center'
+                }}>
+                    <label style={{ 
+                        fontSize: '14px', 
+                        fontWeight: '600', 
+                        color: '#64c8ff',
+                        letterSpacing: '0.5px',
+                        whiteSpace: 'nowrap'
+                    }}>Select Map:</label>
+                    <select
+                        value={mapProvider}
+                        onChange={(e) => setMapProvider(e.target.value)}
+                        disabled={hasCreatedItemInfo}
+                        style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(100, 200, 255, 0.4)',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: hasCreatedItemInfo ? 'not-allowed' : 'pointer',
+                            background: hasCreatedItemInfo 
+                                ? 'linear-gradient(135deg, rgba(100, 100, 100, 0.15) 0%, rgba(80, 80, 80, 0.1) 100%)'
+                                : 'linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(100, 255, 150, 0.1) 100%)',
+                            color: hasCreatedItemInfo ? '#888' : '#64c8ff',
+                            outline: 'none',
+                            transition: 'all 0.3s ease',
+                            opacity: hasCreatedItemInfo ? 0.6 : 1
+                        }}
+                    >
+                        <option value="google" style={{ background: '#0f1419', color: '#64c8ff' }}>Google Maps</option>
+                        <option value="osmap" style={{ background: '#0f1419', color: '#64c8ff' }}>OS Maps</option>
+                    </select>
+                </div>
+                <div style={{
+                    fontSize: '11px',
+                    color: '#ff9966',
+                    lineHeight: '1.4',
+                    fontStyle: 'italic'
+                }}>
+                    Choose your map before creating your project
+                </div>
+            </div>
+
             {/* Interactive map with route drawing capabilities */}
-            <Map
-                mapId={effectiveMapId}
-                defaultZoom={3}
-                defaultCenter={{ lat: 30, lng: 0 }} // Centered on UK
-                clickableIcons={false} // Disable default map icons to prevent interference
-                mapTypeId={mapType} // Map type from settings
-                colorScheme={colorScheme}
-                options={{
-                    scaleControl: showScaleBar,
-                    rotateControl: showCompass
-                }}
-            >
-                {/* Live drawing preview - shows path as user draws */}
-                {isDrawing && livePath.length > 1 && (
-                    <Polyline
-                        path={livePath}
-                        strokeColor="#FF0000"     // Red color for active drawing
-                        strokeOpacity={0.8}
-                        strokeWeight={4}
-                        clickable={false}
-                    />
-                )}
-                
-                {/* Display all completed routes */}
-                <MapRoutes routes={routes} />
-                <ScaleControlManager showScale={showScaleBar} />
-                <CompassControlManager showCompass={showCompass} />
-            </Map>
-            
+            {mapProvider === 'google' ? (
+                <Map
+                    mapId={effectiveMapId}
+                    defaultZoom={3}
+                    defaultCenter={{ lat: 30, lng: 0 }} // Centered on UK
+                    clickableIcons={false} // Disable default map icons to prevent interference
+                    mapTypeId={mapType} // Map type from settings
+                    colorScheme={colorScheme}
+                    options={{
+                        scaleControl: showScaleBar,
+                        rotateControl: showCompass
+                    }}
+                >
+                    {/* Live drawing preview - shows path as user draws */}
+                    {isDrawing && livePath.length > 1 && (
+                        <Polyline
+                            path={livePath}
+                            strokeColor="#FF0000"     // Red color for active drawing
+                            strokeOpacity={0.8}
+                            strokeWeight={4}
+                            clickable={false}
+                        />
+                    )}
+
+                    {/* Display all completed routes */}
+                    <MapRoutes routes={routes} />
+                    <ScaleControlManager showScale={showScaleBar} />
+                    <CompassControlManager showCompass={showCompass} />
+                </Map>
+            ) : (
+                <OSMapAdmin
+                    isDrawing={isDrawing}
+                    tempPath={tempPath}
+                    mousePosition={mousePosition}
+                    routes={routes}
+                    onAddPoint={(point) => {
+                        setTempPath((prevPath) => [...prevPath, point]);
+                    }}
+                    onComplete={() => {
+                        if (tempPath.length > 1) {
+                            const newRoute = {
+                                id: Date.now(),
+                                order: routes.length + 1,
+                                coordinates: tempPath,
+                                waypoints: [
+                                    { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },
+                                    { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 }
+                                ]
+                            };
+                            setRoutes(prevRoutes => [...(prevRoutes || []), newRoute]);
+                        }
+                        setIsDrawing(false);
+                        setTempPath([]);
+                    }}
+                    onMouseMove={(position) => {
+                        setMousePosition(position);
+                    }}
+                />
+            )}
+
             {/* Drawing control buttons */}
-            <div className="drawing-tool">
+            <div className="drawing-tool" style={{
+                position: 'absolute',
+                top: '0px',
+                right: '40px',
+                zIndex: 1000,
+                padding: '10px 20px',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+            }}>
                 {!isCreatingItem ? (
                     <button onClick={() => handleCreateItem()} style={{ marginRight: '5px', backgroundColor: 'green' }}>
                         Create Exploration/Adventure
@@ -684,73 +805,75 @@ function Admin({ mapId }) {
                         ) : (
                             <button onClick={handleStopDrawing}>Stop Drawing</button>
                         )}
-                        
-                        {/* Location search bar with autocomplete */}
-                        <div className="search-container" style={{ 
-                            display: 'inline-flex', 
-                            alignItems: 'flex-start', 
-                            marginLeft: '10px',
-                            position: 'relative'
-                        }}>
-                            <input
-                                ref={searchInputRef}
-                                type="text"
-                                placeholder="Search location..."
-                                value={searchValue}
-                                onChange={handleSearchInputChange}
-                                onKeyDown={handleSearchKeyPress}
-                                onBlur={handleSearchBlur}
-                                onFocus={() => {
-                                    updateInputPosition();
-                                    if (searchValue) setShowSuggestions(true);
-                                }}
-                                style={{
-                                    padding: '8px 35px 8px 12px', // Add right padding for clear button
-                                    borderRadius: '4px',
-                                    border: '1px solid #ccc',
-                                    minWidth: '250px',
-                                    fontSize: '14px',
-                                    height: '38px',
-                                    color: '#333'
-                                }}
-                            />
-                            
-                            {/* Clear button - only show when there's text */}
-                            {searchValue && (
-                                <button
-                                    onClick={handleClearSearch}
-                                    style={{
-                                        position: 'absolute',
-                                        right: '8px',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        background: 'none',
-                                        border: 'none',
-                                        fontSize: '16px',
-                                        color: '#666',
-                                        cursor: 'pointer',
-                                        padding: '2px 4px',
-                                        borderRadius: '50%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        width: '20px',
-                                        height: '20px',
-                                        zIndex: 1
+
+                        {/* Location search bar with autocomplete - Google Maps only */}
+                        {mapProvider === 'google' && (
+                            <div className="search-container" style={{
+                                display: 'inline-flex',
+                                alignItems: 'flex-start',
+                                marginLeft: '10px',
+                                position: 'relative'
+                            }}>
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    placeholder="Search location..."
+                                    value={searchValue}
+                                    onChange={handleSearchInputChange}
+                                    onKeyDown={handleSearchKeyPress}
+                                    onBlur={handleSearchBlur}
+                                    onFocus={() => {
+                                        updateInputPosition();
+                                        if (searchValue) setShowSuggestions(true);
                                     }}
-                                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-                                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                    type="button" // Prevent form submission
-                                    tabIndex={-1} // Keep focus on input
-                                >
-                                    ×
-                                </button>
-                            )}
-                        </div>
+                                    style={{
+                                        padding: '8px 35px 8px 12px', // Add right padding for clear button
+                                        borderRadius: '4px',
+                                        border: '1px solid #ccc',
+                                        minWidth: '250px',
+                                        fontSize: '14px',
+                                        height: '38px',
+                                        color: '#333'
+                                    }}
+                                />
+
+                                {/* Clear button - only show when there's text */}
+                                {searchValue && (
+                                    <button
+                                        onClick={handleClearSearch}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '8px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            background: 'none',
+                                            border: 'none',
+                                            fontSize: '16px',
+                                            color: '#666',
+                                            cursor: 'pointer',
+                                            padding: '2px 4px',
+                                            borderRadius: '50%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: '20px',
+                                            height: '20px',
+                                            zIndex: 1
+                                        }}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                        type="button" // Prevent form submission
+                                        tabIndex={-1} // Keep focus on input
+                                    >
+                                        ×
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </>
                 ) : null}
             </div>
-            
+
             {/* Admin tools modal - always visible during admin workflow */}
             <Modal
                 isOpen={true}
@@ -780,7 +903,7 @@ function Admin({ mapId }) {
                     }}
                 />
             </Modal>
-            
+
             {/* Portal for suggestions dropdown - renders outside modal */}
             <SuggestionsPortal
                 isVisible={showSuggestions}

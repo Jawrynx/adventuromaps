@@ -25,6 +25,10 @@
         width: 100%;
     }
 
+    .item-buttons {
+        display: flex;
+    }
+
     .waypoints-list {
         display: flex;
         flex-direction: column;
@@ -184,7 +188,8 @@
             h3,
             .main-tools,
             .load-items-list,
-            .admin-info {
+            .admin-info,
+            .waypoint-editor {
                 display: none !important;
             }
         }
@@ -493,40 +498,41 @@
         border-color: rgba(100, 200, 255, 0.6);
         box-shadow: 0 0 12px rgba(100, 200, 255, 0.3);
     }
-        border-radius: 10px;
-        margin-bottom: 10px;
+
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.editor-buttons {
+    display: flex;
+    justify-content: space-evenly;
+    width: 100%;
+    padding-bottom: 10px;
+    gap: 12px;
+
+    button {
+        width: 48%;
+        background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(100, 255, 150, 0.1) 100%);
+        color: #64c8ff;
+        border: 1px solid rgba(100, 200, 255, 0.4);
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 4px 12px rgba(100, 200, 255, 0.1);
     }
 
-    .editor-buttons {
-        display: flex;
-        justify-content: space-evenly;
-        width: 100%;
-        padding-bottom: 10px;
-        gap: 12px;
-
-        button {
-            width: 48%;
-            background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(100, 255, 150, 0.1) 100%);
-            color: #64c8ff;
-            border: 1px solid rgba(100, 200, 255, 0.4);
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            box-shadow: 0 4px 12px rgba(100, 200, 255, 0.1);
-        }
-
-        button:hover {
-            background: linear-gradient(135deg, rgba(100, 200, 255, 0.35) 0%, rgba(100, 255, 150, 0.2) 100%);
-            border-color: rgba(100, 200, 255, 0.6);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(100, 200, 255, 0.25);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
+    button:hover {
+        background: linear-gradient(135deg, rgba(100, 200, 255, 0.35) 0%, rgba(100, 255, 150, 0.2) 100%);
+        border-color: rgba(100, 200, 255, 0.6);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(100, 200, 255, 0.25);
     }
+
+    button:active {
+        transform: translateY(0);
+    }
+}
 
 .admin-info {
     display: flex;
@@ -591,7 +597,7 @@
     button.blue {
         width: 100%;
         background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(100, 255, 150, 0.1) 100%);
-        color: #64c8ff;
+        color: #ddeaf1;
         border-color: rgba(100, 200, 255, 0.4);
 
         &:hover {
@@ -630,6 +636,18 @@
     align-items: center;
     overflow-y: scroll;
     background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 100%);
+
+    button.blue {
+        width: 100%;
+        background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(100, 255, 150, 0.1) 100%);
+        color: #ffffff;
+        border-color: rgba(100, 200, 255, 0.4);
+
+        &:hover {
+            border-color: rgba(100, 200, 255, 0.6);
+            box-shadow: 0 6px 16px rgba(100, 200, 255, 0.25);
+        }
+    }
 
     h3 {
         margin-bottom: 20px;
@@ -694,7 +712,7 @@
         position: absolute;
         bottom: 10px;
         background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(100, 255, 150, 0.1) 100%);
-        color: #64c8ff;
+        color: #ffffff;
         border: 1px solid rgba(100, 200, 255, 0.4);
         border-radius: 8px;
         cursor: pointer;
