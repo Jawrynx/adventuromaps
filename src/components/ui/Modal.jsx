@@ -69,7 +69,7 @@ const Modal = ({ isOpen, onClose, children }) => {
       // Reset position to default
       setPosition({ 
         x: Math.max(0, window.innerWidth - 410), 
-        y: 60 
+        y: 100 
       });
       
       // Reset size to default

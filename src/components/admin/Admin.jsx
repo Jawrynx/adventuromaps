@@ -648,8 +648,8 @@ function Admin({ mapId }) {
             {/* Map Provider Selector */}
             <div style={{
                 position: 'absolute',
-                top: '110px',
-                left: '10px',
+                top: `${mapProvider === 'osmap' ? 10 : 10}px`,
+                left: `${mapProvider === 'osmap' ? 10 : 200}px`,
                 zIndex: 1000,
                 background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
                 border: '2px solid rgba(255, 165, 0, 0.6)',
