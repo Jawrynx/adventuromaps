@@ -648,8 +648,8 @@ function Admin({ mapId }) {
             {/* Map Provider Selector */}
             <div style={{
                 position: 'absolute',
-                top: '10px',
-                left: '200px',
+                top: '110px',
+                left: '10px',
                 zIndex: 1000,
                 background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
                 border: '2px solid rgba(255, 165, 0, 0.6)',
