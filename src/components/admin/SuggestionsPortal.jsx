@@ -53,23 +53,28 @@ const SuggestionsPortal = ({
                 width: `${position.width}px`,
             }}
         >
-            {suggestions.map((suggestion, index) => (
-                <div
-                    key={suggestion.place_id}
-                    className={`suggestion-item ${selectedIndex === index ? 'selected' : ''}`}
-                    onMouseDown={() => onSuggestionSelect(suggestion.place_id, suggestion.description)}
-                    onMouseEnter={() => onSuggestionHover(index)}
-                >
-                    <div className="suggestion-main-text">
-                        {suggestion.structured_formatting?.main_text || suggestion.description}
-                    </div>
-                    {suggestion.structured_formatting?.secondary_text && (
-                        <div className="suggestion-secondary-text">
-                            {suggestion.structured_formatting.secondary_text}
+            {suggestions.map((suggestion, index) => {
+                const mainText = suggestion.structured_formatting?.main_text || suggestion.description;
+                const secondaryText = suggestion.structured_formatting?.secondary_text || '';
+                
+                return (
+                    <div
+                        key={suggestion.place_id}
+                        className={`suggestion-item ${selectedIndex === index ? 'selected' : ''}`}
+                        onMouseDown={() => onSuggestionSelect(suggestion.place_id, suggestion.description)}
+                        onMouseEnter={() => onSuggestionHover(index)}
+                    >
+                        <div className="suggestion-main-text">
+                            {mainText}
                         </div>
-                    )}
-                </div>
-            ))}
+                        {secondaryText && (
+                            <div className="suggestion-secondary-text">
+                                {secondaryText}
+                            </div>
+                        )}
+                    </div>
+                );
+            })}
         </div>,
         document.body
     );

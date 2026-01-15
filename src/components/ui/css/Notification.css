@@ -1,0 +1,140 @@
+/**
+ * Notification Component Styles
+ * 
+ * Consistent styling with app theme using dark gradients and accent colors
+ */
+
+.notification {
+    position: fixed;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    min-width: 300px;
+    max-width: 500px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.notification.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.notification.hidden {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* Positioning */
+.notification-top-right {
+    top: 20px;
+    right: 20px;
+}
+
+.notification-top-center {
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+}
+
+.notification-top-center.visible {
+    transform: translateX(-50%) translateY(0);
+}
+
+.notification-bottom-right {
+    bottom: 20px;
+    right: 20px;
+    transform: translateY(20px);
+}
+
+.notification-bottom-right.visible {
+    transform: translateY(0);
+}
+
+.notification-bottom-center {
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+}
+
+.notification-bottom-center.visible {
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Notification types */
+.notification-success {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(21, 128, 61, 0.9) 100%);
+    border: 2px solid rgba(34, 197, 94, 0.6);
+}
+
+.notification-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(185, 28, 28, 0.9) 100%);
+    border: 2px solid rgba(239, 68, 68, 0.6);
+}
+
+.notification-warning {
+    background: linear-gradient(135deg, rgba(255, 165, 0, 0.95) 0%, rgba(247, 147, 30, 0.9) 100%);
+    border: 2px solid rgba(255, 165, 0, 0.6);
+}
+
+.notification-info {
+    background: linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%);
+    border: 2px solid rgba(100, 200, 255, 0.6);
+}
+
+/* Icon */
+.notification-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* Message */
+.notification-message {
+    flex: 1;
+    line-height: 1.4;
+}
+
+/* Close button */
+.notification-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.notification-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.notification-close:active {
+    background: rgba(255, 255, 255, 0.3);
+}

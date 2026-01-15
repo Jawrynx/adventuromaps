@@ -61,6 +61,7 @@ function CompassControlManager({ showCompass }) {
 
 // UI Components
 import Modal from '../ui/Modal';
+import Notification from '../ui/Notification';
 import AdmTools from './AdmTools';
 import SuggestionsPortal from './SuggestionsPortal';
 import OSMapAdmin from './OSMapAdmin';
@@ -115,8 +116,10 @@ function Admin({ mapId }) {
     const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1); // For keyboard navigation
     const [inputPosition, setInputPosition] = useState({ top: 0, left: 0, width: 0 }); // Input position for portal dropdown
 
-    // Refs for autocomplete service and search functionality
-    const autocompleteServiceRef = useRef(null);
+    // ========== NOTIFICATION STATE ==========
+    const [notification, setNotification] = useState({ isVisible: false, message: '', type: 'info' });
+
+    // Ref for search functionality
     const searchInputRef = useRef(null);
 
     // Ref to maintain current drawing state across async operations
@@ -133,14 +136,7 @@ function Admin({ mapId }) {
         drawingStateRef.current.tempPath = tempPath;
     }, [isDrawing, tempPath]);
 
-    /**
-     * Initialize Google Places AutocompleteService when Google Maps loads
-     */
-    useEffect(() => {
-        if (window.google && window.google.maps && window.google.maps.places) {
-            autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
-        }
-    }, [map]);
+
 
     /**
      * Sets up interactive map event listeners for route drawing
@@ -438,32 +434,144 @@ function Admin({ mapId }) {
 
 
     /**
-     * Fetches place suggestions from Google Places AutocompleteService
+     * Detects if input is a coordinate pair and parses it
+     * Supports formats: "lat, lng", "lat,lng", "lat lng"
+     * 
+     * @param {string} input - The input string to parse
+     * @returns {Object|null} - {lat, lng} object or null if not valid coordinates
+     */
+    const parseCoordinates = (input) => {
+        if (!input) return null;
+        
+        // Remove extra whitespace and try to parse coordinates
+        const trimmed = input.trim();
+        
+        // Match patterns like: "44.111, -1.2222" or "44.111,-1.2222" or "44.111 -1.2222"
+        const coordPattern = /^(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)$/;
+        const match = trimmed.match(coordPattern);
+        
+        if (match) {
+            const lat = parseFloat(match[1]);
+            const lng = parseFloat(match[2]);
+            
+            // Validate coordinate ranges
+            if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                return { lat, lng };
+            }
+        }
+        
+        return null;
+    };
+
+    /**
+     * Fetches place suggestions from Google Places AutocompleteSuggestion API
      * 
      * Called when user types in the search input to provide real-time suggestions.
+     * 
+     * @param {string} input - The search query
+     * @param {boolean} isExplicitSearch - Whether this is an explicit search (button/Enter)
+     * @returns {Promise<boolean>} - True if results were found, false otherwise
      */
-    const fetchSuggestions = (input) => {
-        if (!input.trim() || !autocompleteServiceRef.current) {
+    const fetchSuggestions = async (input, isExplicitSearch = false) => {
+        if (!input.trim() || !window.google?.maps?.places?.AutocompleteSuggestion) {
             setSuggestions([]);
             setShowSuggestions(false);
-            return;
+            return false;
         }
 
-        const request = {
-            input: input,
-            // No country restrictions - global search enabled
-        };
+        // Check if input is coordinates - don't fetch suggestions for coordinate input
+        const coords = parseCoordinates(input);
+        if (coords) {
+            setSuggestions([]);
+            setShowSuggestions(false);
+            return true; // Valid coordinates
+        }
 
-        autocompleteServiceRef.current.getPlacePredictions(request, (predictions, status) => {
-            if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-                setSuggestions(predictions);
+        try {
+            const request = {
+                input: input,
+                // No country restrictions - global search enabled
+            };
+
+            const { suggestions } = await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+            
+            if (suggestions && suggestions.length > 0) {
+                // Convert new API format to match old format for compatibility
+                const formattedSuggestions = suggestions.map(suggestion => ({
+                    place_id: suggestion.placePrediction.placeId,
+                    description: suggestion.placePrediction.text.text,
+                    structured_formatting: {
+                        main_text: suggestion.placePrediction.structuredFormat?.mainText?.text || suggestion.placePrediction.text.text,
+                        secondary_text: suggestion.placePrediction.structuredFormat?.secondaryText?.text || ''
+                    }
+                }));
+                setSuggestions(formattedSuggestions);
                 setShowSuggestions(true);
                 setSelectedSuggestionIndex(-1);
+                return true;
             } else {
                 setSuggestions([]);
                 setShowSuggestions(false);
+                if (isExplicitSearch) {
+                    setNotification({
+                        isVisible: true,
+                        message: `No results found for "${input}"`,
+                        type: 'warning'
+                    });
+                }
+                return false;
             }
-        });
+        } catch (error) {
+            console.error('Error fetching suggestions:', error);
+            setSuggestions([]);
+            setShowSuggestions(false);
+            if (isExplicitSearch) {
+                setNotification({
+                    isVisible: true,
+                    message: 'Error searching for location. Please try again.',
+                    type: 'error'
+                });
+            }
+            return false;
+        }
+    };
+
+    /**
+     * Handles explicit search (via search button or Enter key)
+     */
+    const handleSearch = async () => {
+        if (!searchValue.trim()) {
+            setNotification({
+                isVisible: true,
+                message: 'Please enter a location to search',
+                type: 'info'
+            });
+            return;
+        }
+
+        // Check if input is coordinates
+        const coords = parseCoordinates(searchValue);
+        if (coords) {
+            // Handle coordinate input directly
+            if (map) {
+                map.setCenter({ lat: coords.lat, lng: coords.lng });
+                map.setZoom(14); // Zoom in for coordinate searches
+                setShowSuggestions(false);
+                setNotification({
+                    isVisible: true,
+                    message: `Centered on coordinates: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`,
+                    type: 'success'
+                });
+            }
+            return;
+        }
+
+        const hasResults = await fetchSuggestions(searchValue, true);
+        
+        // If we have results and exactly one, auto-select it
+        if (hasResults && suggestions.length === 1) {
+            handleSuggestionSelect(suggestions[0].place_id, suggestions[0].description);
+        }
     };
 
     /**
@@ -568,9 +676,9 @@ function Admin({ mapId }) {
                 // Select the highlighted suggestion
                 const suggestion = suggestions[selectedSuggestionIndex];
                 handleSuggestionSelect(suggestion.place_id, suggestion.description);
-            } else if (searchValue.trim()) {
-                // If no suggestion selected, hide suggestions and keep current input
-                setShowSuggestions(false);
+            } else {
+                // Perform explicit search
+                handleSearch();
             }
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
@@ -810,64 +918,98 @@ function Admin({ mapId }) {
                         {mapProvider === 'google' && (
                             <div className="search-container" style={{
                                 display: 'inline-flex',
-                                alignItems: 'flex-start',
+                                alignItems: 'center',
                                 marginLeft: '10px',
-                                position: 'relative'
+                                gap: '8px'
                             }}>
-                                <input
-                                    ref={searchInputRef}
-                                    type="text"
-                                    placeholder="Search location..."
-                                    value={searchValue}
-                                    onChange={handleSearchInputChange}
-                                    onKeyDown={handleSearchKeyPress}
-                                    onBlur={handleSearchBlur}
-                                    onFocus={() => {
-                                        updateInputPosition();
-                                        if (searchValue) setShowSuggestions(true);
-                                    }}
-                                    style={{
-                                        padding: '8px 35px 8px 12px', // Add right padding for clear button
-                                        borderRadius: '4px',
-                                        border: '1px solid #ccc',
-                                        minWidth: '250px',
-                                        fontSize: '14px',
-                                        height: '38px',
-                                        color: '#333'
-                                    }}
-                                />
-
-                                {/* Clear button - only show when there's text */}
-                                {searchValue && (
-                                    <button
-                                        onClick={handleClearSearch}
-                                        style={{
-                                            position: 'absolute',
-                                            right: '8px',
-                                            top: '50%',
-                                            transform: 'translateY(-50%)',
-                                            background: 'none',
-                                            border: 'none',
-                                            fontSize: '16px',
-                                            color: '#666',
-                                            cursor: 'pointer',
-                                            padding: '2px 4px',
-                                            borderRadius: '50%',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '20px',
-                                            height: '20px',
-                                            zIndex: 1
+                                <div style={{ position: 'relative', display: 'flex' }}>
+                                    <input
+                                        ref={searchInputRef}
+                                        type="text"
+                                        placeholder="Search location or coordinates (lat, lng)..."
+                                        value={searchValue}
+                                        onChange={handleSearchInputChange}
+                                        onKeyDown={handleSearchKeyPress}
+                                        onBlur={handleSearchBlur}
+                                        onFocus={() => {
+                                            updateInputPosition();
+                                            if (searchValue) setShowSuggestions(true);
                                         }}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                                        type="button" // Prevent form submission
-                                        tabIndex={-1} // Keep focus on input
-                                    >
-                                        ×
-                                    </button>
-                                )}
+                                        style={{
+                                            padding: '8px 35px 8px 12px',
+                                            borderRadius: '4px',
+                                            border: '1px solid #ccc',
+                                            minWidth: '250px',
+                                            fontSize: '14px',
+                                            height: '38px',
+                                            color: '#333'
+                                        }}
+                                    />
+
+                                    {/* Clear button - only show when there's text */}
+                                    {searchValue && (
+                                        <button
+                                            onClick={handleClearSearch}
+                                            style={{
+                                                position: 'absolute',
+                                                right: '8px',
+                                                top: '50%',
+                                                transform: 'translateY(-50%)',
+                                                background: 'none',
+                                                border: 'none',
+                                                fontSize: '16px',
+                                                color: '#666',
+                                                cursor: 'pointer',
+                                                padding: '2px 4px',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: '20px',
+                                                height: '20px',
+                                                zIndex: 1
+                                            }}
+                                            onMouseEnter={(e) => e.target.style.backgroundColor = '#f0f0f0'}
+                                            onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                                            type="button"
+                                            tabIndex={-1}
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Search button */}
+                                <button
+                                    onClick={handleSearch}
+                                    style={{
+                                        padding: '8px 16px',
+                                        height: '38px',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        background: 'linear-gradient(135deg, #64c8ff 0%, #4a9fd8 100%)',
+                                        color: '#fff',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: '0 2px 8px rgba(100, 200, 255, 0.3)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = 'linear-gradient(135deg, #4a9fd8 0%, #3a8fc8 100%)';
+                                        e.target.style.boxShadow = '0 4px 12px rgba(100, 200, 255, 0.4)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = 'linear-gradient(135deg, #64c8ff 0%, #4a9fd8 100%)';
+                                        e.target.style.boxShadow = '0 2px 8px rgba(100, 200, 255, 0.3)';
+                                    }}
+                                >
+                                    <span>🔍</span>
+                                    <span>Search</span>
+                                </button>
                             </div>
                         )}
                     </>
@@ -912,6 +1054,16 @@ function Admin({ mapId }) {
                 selectedIndex={selectedSuggestionIndex}
                 onSuggestionSelect={handleSuggestionSelect}
                 onSuggestionHover={setSelectedSuggestionIndex}
+            />
+
+            {/* Notification component for user messages */}
+            <Notification
+                isVisible={notification.isVisible}
+                message={notification.message}
+                type={notification.type}
+                onClose={() => setNotification({ ...notification, isVisible: false })}
+                duration={3000}
+                position="top-center"
             />
         </div>
     );
