@@ -19,23 +19,20 @@ import { faPlay, faPause, faStop } from '@fortawesome/free-solid-svg-icons';
  * @param {string} description - The description text to animate
  * @param {string} narrationUrl - URL of the narration audio file
  * @param {string} keyframesUrl - URL of the keyframes text file
+ * @param {number} maxKeyframeTime - Max keyframe timestamp for scaling (from TTS generation)
  * @param {Function} onClose - Callback to close the preview and return to editor
  * @returns {JSX.Element} The narration preview interface
  */
-function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) {
+function NarrationPreview({ description, narrationUrl, keyframesUrl, maxKeyframeTime, onClose }) {
     // ========== AUDIO STATE ==========
     const audioRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     
-    // ========== TTS STATE ==========
-    const [isUsingTTS, setIsUsingTTS] = useState(false);
-    const [ttsUtterance, setTtsUtterance] = useState(null);
-    const [ttsStartTime, setTtsStartTime] = useState(0);
-    
     // ========== ANIMATION STATE ==========
     const [keyframes, setKeyframes] = useState([]);
+    const [rawKeyframes, setRawKeyframes] = useState([]); // Unscaled keyframes from TTS
     const [currentKeyframe, setCurrentKeyframe] = useState(0);
     const [animatedText, setAnimatedText] = useState('');
     
@@ -74,7 +71,14 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
                     })
                     .sort((a, b) => a.time - b.time); // Sort by timestamp
 
-                setKeyframes(parsedKeyframes);                
+                // Store raw keyframes for scaling when audio duration is known
+                setRawKeyframes(parsedKeyframes);
+                
+                // If no maxKeyframeTime provided, use keyframes as-is
+                if (!maxKeyframeTime) {
+                    setKeyframes(parsedKeyframes);
+                }
+                
                 // Set initial text (first keyframe or description)
                 if (parsedKeyframes.length > 0) {
                     setAnimatedText(parsedKeyframes[0].text);
@@ -82,16 +86,10 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
                     setAnimatedText(description);
                 }
                 
-                // Check if this is a TTS-generated preview (blob URL for keyframes indicates TTS)
-                if (keyframesUrl && keyframesUrl.startsWith('blob:')) {
-                    setIsUsingTTS(true);
-                    
-                    // Calculate duration from keyframes for TTS
-                    if (parsedKeyframes.length > 0) {
-                        const lastKeyframe = parsedKeyframes[parsedKeyframes.length - 1];
-                        const estimatedDuration = lastKeyframe.time + 2; // Add buffer
-                        setDuration(estimatedDuration);
-                    }
+                // Check if this is a TTS-generated preview (blob URL indicates generated content)
+                const isGeneratedTTS = keyframesUrl && keyframesUrl.startsWith('blob:');
+                if (isGeneratedTTS) {
+                    console.log('Using Google Cloud TTS-generated keyframes, maxKeyframeTime:', maxKeyframeTime);
                 }
                 
                 setLoading(false);
@@ -104,7 +102,32 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
         };
 
         loadKeyframes();
-    }, [keyframesUrl, description]);
+    }, [keyframesUrl, description, maxKeyframeTime]);
+
+    /**
+     * Scale keyframes when audio duration is known (for TTS-generated content)
+     * 
+     * This ensures keyframes are properly scaled to match the actual audio duration,
+     * compensating for any discrepancy between TTS timestamps and MP3 encoding.
+     */
+    useEffect(() => {
+        if (!maxKeyframeTime || !duration || rawKeyframes.length === 0) return;
+        
+        // Account for trailing silence in MP3 (Google TTS adds ~0.8s silence at end)
+        const TRAILING_SILENCE = 2; // seconds of silence at end of MP3
+        const effectiveDuration = Math.max(duration - TRAILING_SILENCE, duration * 0.86); // Don't reduce by more than 10%
+        
+        // Calculate scale factor to fit keyframes within effective audio duration
+        const scaleFactor = effectiveDuration / maxKeyframeTime;
+        console.log('Scaling keyframes:', { maxKeyframeTime, audioDuration: duration, effectiveDuration, scaleFactor });
+        
+        const scaledKeyframes = rawKeyframes.map(kf => ({
+            time: kf.time * scaleFactor,
+            text: kf.text
+        }));
+        
+        setKeyframes(scaledKeyframes);
+    }, [maxKeyframeTime, duration, rawKeyframes]);
 
     /**
      * Updates animation based on current audio time
@@ -158,81 +181,15 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
      * Handles play button click
      */
     const handlePlay = async () => {
-        if (isUsingTTS) {
-            // Use Speech Synthesis API for TTS-generated content
-            playTTSContent();
-        } else if (audioRef.current) {
-            // Use regular audio playback for uploaded files
+        if (audioRef.current && narrationUrl) {
+            // Use regular audio playback
             playRegularAudio();
+        } else {
+            console.warn('No audio source available for playback');
+            setError('No audio source available for playback');
         }
     };
-    
-    /**
-     * Plays TTS content using Speech Synthesis API
-     */
-    const playTTSContent = () => {
-        if (!window.speechSynthesis) {
-            setError('Speech synthesis not supported in this browser');
-            return;
-        }
-        
-        // Stop any existing speech
-        speechSynthesis.cancel();
-        
-        // Create new utterance
-        const utterance = new SpeechSynthesisUtterance(description);
-        utterance.rate = 0.9;
-        utterance.pitch = 1.0;
-        utterance.volume = 1.0;
-        
-        // Try to use a high-quality voice
-        const voices = speechSynthesis.getVoices();
-        const preferredVoice = voices.find(voice => 
-            voice.lang.startsWith('en') && 
-            (voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.localService === false)
-        ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
-        
-        if (preferredVoice) {
-            utterance.voice = preferredVoice;
-        }
-        
-        utterance.onstart = () => {
-            console.log('TTS playback started');
-            setIsPlaying(true);
-            setTtsStartTime(performance.now());
-            setError(null);
-            
-            // Start time tracking
-            startTTSTimeTracking();
-        };
-        
-        utterance.onend = () => {
-            console.log('TTS playback ended');
-            setIsPlaying(false);
-            setCurrentTime(0);
-            setCurrentKeyframe(0);
-            
-            // Reset to first keyframe
-            if (keyframes.length > 0) {
-                setAnimatedText(keyframes[0].text);
-            } else {
-                setAnimatedText(description);
-            }
-        };
-        
-        utterance.onerror = (event) => {
-            console.error('TTS error:', event);
-            setError('TTS playback failed: ' + event.error);
-            setIsPlaying(false);
-        };
-        
-        setTtsUtterance(utterance);
-        speechSynthesis.speak(utterance);
-    };
-    
-    /**
-     * Plays regular audio file
-     */
+
     const playRegularAudio = async () => {
         try {
             console.log('Attempting to play audio:', {
@@ -296,33 +253,13 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
             setIsPlaying(false);
         }
     };
-    
-    /**
-     * Starts time tracking for TTS playback
-     */
-    const startTTSTimeTracking = () => {
-        const trackTime = () => {
-            if (!isPlaying) return;
-            
-            const elapsed = (performance.now() - ttsStartTime) / 1000;
-            setCurrentTime(elapsed);
-            
-            if (isPlaying && speechSynthesis.speaking) {
-                requestAnimationFrame(trackTime);
-            }
-        };
-        
-        requestAnimationFrame(trackTime);
-    };
+
 
     /**
      * Handles pause button click
      */
     const handlePause = () => {
-        if (isUsingTTS) {
-            speechSynthesis.pause();
-            setIsPlaying(false);
-        } else if (audioRef.current) {
+        if (audioRef.current) {
             audioRef.current.pause();
             setIsPlaying(false);
         }
@@ -376,10 +313,7 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
      * Handles stop button click
      */
     const handleStop = () => {
-        if (isUsingTTS) {
-            speechSynthesis.cancel();
-            setIsPlaying(false);
-        } else if (audioRef.current) {
+        if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
             setIsPlaying(false);
@@ -433,21 +367,17 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
                 {error && <p className="error">{error}</p>}
                 {/* Debug Info */}
                 <div className="debug-info" style={{fontSize: '12px', color: '#666', marginTop: '5px'}}>
-                    <div>Mode: {isUsingTTS ? 'TTS Speech Synthesis' : 'Audio File'}</div>
+                    <div>Audio Type: {narrationUrl && narrationUrl.startsWith('blob:') ? 'Google Cloud TTS Generated' : 'Uploaded Audio File'}</div>
                     <div>Audio Source: {narrationUrl ? 'Available' : 'Missing'}</div>
-                    {!isUsingTTS && (
-                        <>
-                            <div>Ready State: {audioRef.current?.readyState || 'Not loaded'} (0=Empty, 1=Metadata, 2=Current, 3=Future, 4=Enough)</div>
-                            <div>Network State: {audioRef.current?.networkState || 'Unknown'}</div>
-                            <div>Duration: {audioRef.current?.duration || 'Unknown'}</div>
-                        </>
-                    )}
+                    <div>Ready State: {audioRef.current?.readyState || 'Not loaded'} (0=Empty, 1=Metadata, 2=Current, 3=Future, 4=Enough)</div>
+                    <div>Network State: {audioRef.current?.networkState || 'Unknown'}</div>
+                    <div>Duration: {audioRef.current?.duration || 'Unknown'}</div>
                     <div>Current Time: {currentTime.toFixed(2)}s</div>
                     {narrationUrl && (
-                        <div>URL Type: {narrationUrl.startsWith('blob:') ? 'Blob URL' : 'Regular URL'}</div>
+                        <div>URL Type: {narrationUrl.startsWith('blob:') ? 'Blob URL (Generated)' : 'Regular URL (Uploaded)'}</div>
                     )}
                     <div>Keyframes: {keyframes.length} loaded</div>
-                    {isUsingTTS && <div style={{color: '#16a34a'}}>Using live TTS speech synthesis for clear audio</div>}
+                    {narrationUrl && narrationUrl.startsWith('blob:') && <div style={{color: '#16a34a'}}>Using high-quality Google Cloud TTS audio with word-level timestamps</div>}
                 </div>
             </div>
 
@@ -499,10 +429,10 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
                 <button 
                     className="adm-button green" 
                     onClick={handlePlay} 
-                    disabled={isPlaying || (!narrationUrl && !isUsingTTS)}
-                    title={isUsingTTS ? "Play TTS speech synthesis" : !narrationUrl ? "No audio source available" : "Play audio"}
+                    disabled={isPlaying || !narrationUrl}
+                    title={!narrationUrl ? "No audio source available" : "Play audio with keyframe animation"}
                 >
-                    <FontAwesomeIcon icon={faPlay} /> Play {isUsingTTS ? 'TTS' : 'Audio'}
+                    <FontAwesomeIcon icon={faPlay} /> Play Audio
                 </button>
                 
                 <button 
@@ -516,13 +446,13 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
                 <button 
                     className="adm-button red" 
                     onClick={handleStop} 
-                    disabled={!narrationUrl && !isUsingTTS}
+                    disabled={!narrationUrl}
                 >
                     <FontAwesomeIcon icon={faStop} /> Stop
                 </button>
                 
                 {/* Alternative: Simulate keyframes without audio */}
-                {!narrationUrl && !isUsingTTS && keyframes.length > 0 && (
+                {!narrationUrl && keyframes.length > 0 && (
                     <button 
                         className="adm-button blue" 
                         onClick={() => simulateKeyframeAnimation()}
@@ -547,8 +477,10 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, onClose }) 
 
             {/* Instructions */}
             <div className="instructions">
-                <h4>Keyframe Format Instructions:</h4>
-                <p>Each line in your keyframes file should follow this format:</p>
+                <h4>Narration & Keyframe System:</h4>
+                <p><strong>Google Cloud TTS:</strong> Audio is generated using Google Cloud Text-to-Speech with English UK voice for high quality.</p>
+                <p><strong>Automatic Keyframes:</strong> Word-level timestamps are automatically generated for synchronized text animation.</p>
+                <p><strong>Manual Keyframes:</strong> You can also upload custom keyframe files with this format:</p>
                 <code>timestamp:text</code>
                 <p>Example:</p>
                 <pre>

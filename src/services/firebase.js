@@ -29,6 +29,8 @@ const functions = getFunctions(app);
 
 // Cloud Functions
 export const getMapDataSecurely = httpsCallable(functions, 'getMapDataSecurely');
+export const generateTTSFunction = httpsCallable(functions, 'generateTTS');
+export const generateTTSWithTimestampsFunction = httpsCallable(functions, 'generateTTSWithTimestamps');
 
 export const db = getFirestore(app);
 export { auth, storage, ref, uploadBytes, getDownloadURL, functions };

@@ -13,10 +13,11 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import NarrationPreview from './NarrationPreview';
+import { generateTTSWithTimestampsFunction } from '../../services/firebase';
 import './css/NarrationPreview.css';
 
 /**
- * WaypointEditor Component
+ * WaypointEditor Components
  * 
  * Advanced editor for waypoint details that allows administrators to add
  * rich content including images, audio, and animation data to waypoints.
@@ -46,6 +47,7 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
     const [isGeneratingTTS, setIsGeneratingTTS] = useState(false); // TTS generation in progress
     const [generatedTTSBlob, setGeneratedTTSBlob] = useState(null); // Generated TTS audio blob
     const [generatedKeyframesBlob, setGeneratedKeyframesBlob] = useState(null); // Generated keyframes blob
+    const [maxKeyframeTime, setMaxKeyframeTime] = useState(null); // Max keyframe time for scaling
     
     // ========== UI STATE ==========
     const [isSaving, setIsSaving] = useState(false);            // Prevent multiple save operations
@@ -175,7 +177,27 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
         const url = URL.createObjectURL(generatedTTSBlob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `waypoint-${waypointData.waypointIndex + 1}-narration.wav`;
+        link.download = `waypoint-${waypointData.waypointIndex + 1}-narration.mp3`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+    
+    /**
+     * Downloads the generated keyframes as text file
+     */
+    const downloadTTSKeyframes = () => {
+        if (!generatedKeyframesBlob) {
+            alert('No keyframes generated yet. Please generate TTS first.');
+            return;
+        }
+
+        // Create download link
+        const url = URL.createObjectURL(generatedKeyframesBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `waypoint-${waypointData.waypointIndex + 1}-keyframes.txt`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -183,123 +205,107 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
     };
 
     /**
-     * Generates TTS audio using Web Speech API and captures it as MP3
+     * Generates TTS audio using Firebase Cloud Function with Google Cloud Text-to-Speech
+     * Uses proper OAuth2 service account authentication on the server side
      * 
      * @param {string} text - Text to convert to speech
      */
-    const generateTTSAudio = (text) => {
-        return new Promise((resolve, reject) => {
-            // Create a proper audio tone that matches the speech timing
-            // This is a temporary solution - ideally you'd use a cloud TTS service
+    const generateTTSAudio = async (text) => {
+        try {
+            console.log('Generating TTS audio via Firebase Cloud Function...');
             
-            try {
-                // Calculate duration based on text length (roughly 3.5 words per second)
-                const wordCount = text.split(/\s+/).length;
-                const totalDuration = Math.max(wordCount / 3.5, 2); // Minimum 2 seconds
-                
-                console.log('Generating audio for duration:', totalDuration, 'words:', wordCount);
-                
-                // Create proper audio with Web Audio API
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const sampleRate = audioContext.sampleRate;
-                const frameCount = Math.floor(sampleRate * totalDuration);
-                
-                const audioBuffer = audioContext.createBuffer(1, frameCount, sampleRate);
-                const channelData = audioBuffer.getChannelData(0);
-                
-                // Generate audio with varying tones to simulate speech
-                for (let i = 0; i < frameCount; i++) {
-                    const time = i / sampleRate;
-                    const progress = time / totalDuration;
-                    
-                    // Create speech-like audio pattern
-                    const baseFreq = 150 + Math.sin(progress * Math.PI * 4) * 50;
-                    const envelope = Math.sin(progress * Math.PI) * 0.3; // Fade in/out
-                    const vibrato = 1 + Math.sin(time * 6) * 0.1; // Add some variation
-                    
-                    channelData[i] = Math.sin(2 * Math.PI * baseFreq * vibrato * time) * envelope;
+            // Call the Firebase Cloud Function for TTS with timestamps
+            const result = await generateTTSWithTimestampsFunction({
+                text: text,
+                voiceConfig: {
+                    languageCode: 'en-GB', // English UK
+                    name: 'en-GB-Neural2-C', // High-quality female neural voice
+                    ssmlGender: 'FEMALE' // NEUTRAL not supported by Google TTS
                 }
-                
-                // Convert to WAV blob
-                const wavBlob = audioBufferToWavBlob(audioBuffer);
-                setGeneratedTTSBlob(wavBlob);
-                
-                // Also speak the actual TTS (for real speech synthesis)
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.rate = 0.9;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-                
-                const voices = speechSynthesis.getVoices();
-                const preferredVoice = voices.find(voice => 
-                    voice.lang.startsWith('en') && 
-                    (voice.name.includes('Google') || voice.name.includes('Microsoft') || voice.localService === false)
-                ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
-                
-                if (preferredVoice) {
-                    utterance.voice = preferredVoice;
-                }
-                
-                utterance.onend = () => {
-                    console.log('TTS speech synthesis completed');
-                    resolve();
-                };
-                
-                utterance.onerror = (event) => {
-                    console.warn('TTS speech synthesis failed:', event.error);
-                    resolve(); // Still resolve as we have the generated audio
-                };
-                
-                speechSynthesis.speak(utterance);
-                audioContext.close();
-                
-            } catch (error) {
-                console.error('TTS generation failed:', error);
-                reject(error);
+            });
+            
+            const data = result.data;
+            console.log('TTS response received from Cloud Function:', data);
+            
+            if (!data.success) {
+                throw new Error('TTS generation failed on server');
             }
-        });
+            
+            // Convert base64 audio to blob
+            const audioBytes = atob(data.audioContent);
+            const audioArray = new Uint8Array(audioBytes.length);
+            for (let i = 0; i < audioBytes.length; i++) {
+                audioArray[i] = audioBytes.charCodeAt(i);
+            }
+            
+            const audioBlob = new Blob([audioArray], { type: 'audio/mpeg' });
+            setGeneratedTTSBlob(audioBlob);
+            
+            // Use keyframes from the Cloud Function response
+            if (data.keyframes && data.keyframes.length > 0) {
+                const keyframesText = data.keyframes.map(kf => `${kf.time.toFixed(2)}:${kf.text}`).join('\n');
+                const keyframesBlob = new Blob([keyframesText], { type: 'text/plain' });
+                setGeneratedKeyframesBlob(keyframesBlob);
+                // Store maxKeyframeTime for frontend scaling
+                setMaxKeyframeTime(data.maxKeyframeTime || data.keyframes[data.keyframes.length - 1].time);
+                console.log('Received keyframes from Cloud Function:', data.keyframes.length, 'maxTime:', data.maxKeyframeTime);
+            } else {
+                console.warn('No keyframes received from Cloud Function, generating fallback...');
+                // Fallback: generate basic keyframes
+                const fallbackKeyframes = generateFallbackKeyframes(text);
+                const keyframesText = fallbackKeyframes.map(kf => `${kf.time.toFixed(2)}:${kf.text}`).join('\n');
+                const keyframesBlob = new Blob([keyframesText], { type: 'text/plain' });
+                setGeneratedKeyframesBlob(keyframesBlob);
+            }
+            
+            console.log('TTS audio and keyframes generated successfully');
+            
+        } catch (error) {
+            console.error('Google Cloud TTS generation failed:', error);
+            
+            // Show user-friendly error message
+            let errorMessage = error.message || 'Unknown error';
+            if (error.code === 'functions/internal') {
+                errorMessage = 'Server error during TTS generation. Please try again.';
+            } else if (error.code === 'functions/unavailable') {
+                errorMessage = 'TTS service is temporarily unavailable. Please try again later.';
+            } else if (error.code === 'functions/permission-denied') {
+                errorMessage = 'Permission denied. Please check Firebase function permissions.';
+            }
+            
+            alert(`TTS Generation Failed:\n\n${errorMessage}\n\nYou can still upload audio manually using the file upload below.`);
+            throw error;
+        }
     };
     
     /**
-     * Converts AudioBuffer to WAV Blob with proper headers
+     * Generates fallback keyframes when no time offsets are available
+     * 
+     * @param {string} text - Original text
+     * @returns {Array} Array of keyframe objects
      */
-    const audioBufferToWavBlob = (audioBuffer) => {
-        const length = audioBuffer.length;
-        const sampleRate = audioBuffer.sampleRate;
-        const arrayBuffer = new ArrayBuffer(44 + length * 2);
-        const view = new DataView(arrayBuffer);
-        const channelData = audioBuffer.getChannelData(0);
+    const generateFallbackKeyframes = (text) => {
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        const avgWordsPerSecond = 3;
+        let currentTime = 0;
+        let currentText = '';
+        const keyframes = [];
         
-        // WAV file header
-        const writeString = (offset, string) => {
-            for (let i = 0; i < string.length; i++) {
-                view.setUint8(offset + i, string.charCodeAt(i));
-            }
-        };
+        sentences.forEach((sentence, index) => {
+            const wordCount = sentence.trim().split(/\s+/).length;
+            const duration = Math.max(wordCount / avgWordsPerSecond, 1);
+            
+            currentText += (index > 0 ? '. ' : '') + sentence.trim();
+            
+            keyframes.push({
+                time: currentTime,
+                text: currentText + (index < sentences.length - 1 ? '.' : '')
+            });
+            
+            currentTime += duration + 0.5;
+        });
         
-        writeString(0, 'RIFF');
-        view.setUint32(4, 36 + length * 2, true);
-        writeString(8, 'WAVE');
-        writeString(12, 'fmt ');
-        view.setUint32(16, 16, true);
-        view.setUint16(20, 1, true);
-        view.setUint16(22, 1, true);
-        view.setUint32(24, sampleRate, true);
-        view.setUint32(28, sampleRate * 2, true);
-        view.setUint16(32, 2, true);
-        view.setUint16(34, 16, true);
-        writeString(36, 'data');
-        view.setUint32(40, length * 2, true);
-        
-        // Convert audio data
-        let offset = 44;
-        for (let i = 0; i < length; i++) {
-            const sample = Math.max(-1, Math.min(1, channelData[i]));
-            view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-            offset += 2;
-        }
-        
-        return new Blob([arrayBuffer], { type: 'audio/wav' });
+        return keyframes;
     };
 
     /**
@@ -324,10 +330,10 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 images,              // New image files to upload
                 existingImageUrls,   // Previously uploaded image URLs to preserve
                 narration: ttsEnabled && generatedTTSBlob ? generatedTTSBlob : narration,           // Use TTS or uploaded audio
-                keyframes,                                                                              // Use uploaded keyframes only
+                keyframes: keyframes || (ttsEnabled && generatedKeyframesBlob ? generatedKeyframesBlob : null), // Use uploaded or generated keyframes
                 // Preserve existing narration and keyframes URLs if no new files are uploaded
                 narration_url: (ttsEnabled && generatedTTSBlob) || narration ? undefined : waypointData.waypoint.narration_url,
-                keyframes_url: keyframes ? undefined : waypointData.waypoint.keyframes_url
+                keyframes_url: (keyframes || (ttsEnabled && generatedKeyframesBlob)) ? undefined : waypointData.waypoint.keyframes_url
             };
 
             // Call parent save handler with compiled data
@@ -352,9 +358,11 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
             previewNarrationUrl = URL.createObjectURL(generatedTTSBlob);
         }
         
-        // Use uploaded keyframes if available
+        // Use uploaded keyframes if available, or generated keyframes from TTS
         if (keyframes) {
             previewKeyframesUrl = URL.createObjectURL(keyframes);
+        } else if (ttsEnabled && generatedKeyframesBlob) {
+            previewKeyframesUrl = URL.createObjectURL(generatedKeyframesBlob);
         }
         
         return (
@@ -362,6 +370,7 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 description={description}
                 narrationUrl={previewNarrationUrl}
                 keyframesUrl={previewKeyframesUrl}
+                maxKeyframeTime={ttsEnabled ? maxKeyframeTime : null}
                 onClose={() => {
                     setShowPreview(false);
                     // Clean up temporary URLs if they were created
@@ -469,8 +478,16 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                     {ttsEnabled && (
                         <div style={{ marginLeft: '10px' }}>
                             <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '10px' }}>
-                                This will generate audio narration from your description. You can download the audio file and create keyframes manually.
+                                This will generate audio narration from your description using Google Cloud Text-to-Speech with English UK voice.
                             </p>
+                            <div style={{ marginBottom: '10px', padding: '8px', backgroundColor: '#dcfce7', borderRadius: '4px', border: '1px solid #16a34a' }}>
+                                <p style={{ fontSize: '12px', color: '#15803d', margin: '0', fontWeight: '600' }}>
+                                    ✅ TTS Service Ready
+                                </p>
+                                <p style={{ fontSize: '11px', color: '#15803d', margin: '4px 0 0 0' }}>
+                                    Using Google Cloud TTS via Firebase Cloud Functions with automatic word-level timestamps for keyframe generation.
+                                </p>
+                            </div>
                             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                                 <button
                                     type="button"
@@ -501,35 +518,62 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                                 </button>
                                 
                                 {generatedTTSBlob && (
-                                    <button
-                                        type="button"
-                                        onClick={downloadTTSAudio}
-                                        style={{
-                                            padding: '8px 16px',
-                                            borderRadius: '6px',
-                                            border: 'none',
-                                            backgroundColor: '#16a34a',
-                                            color: 'white',
-                                            fontWeight: '600',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s ease',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.target.style.backgroundColor = '#15803d';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.target.style.backgroundColor = '#16a34a';
-                                        }}
-                                    >
-                                        📥 Save Audio
-                                    </button>
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={downloadTTSAudio}
+                                            style={{
+                                                padding: '8px 16px',
+                                                borderRadius: '6px',
+                                                border: 'none',
+                                                backgroundColor: '#16a34a',
+                                                color: 'white',
+                                                fontWeight: '600',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.backgroundColor = '#15803d';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.backgroundColor = '#16a34a';
+                                            }}
+                                        >
+                                            📥 Save Audio
+                                        </button>
+                                        
+                                        {generatedKeyframesBlob && (
+                                            <button
+                                                type="button"
+                                                onClick={downloadTTSKeyframes}
+                                                style={{
+                                                    padding: '8px 16px',
+                                                    borderRadius: '6px',
+                                                    border: 'none',
+                                                    backgroundColor: '#7c3aed',
+                                                    color: 'white',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.target.style.backgroundColor = '#6d28d9';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.target.style.backgroundColor = '#7c3aed';
+                                                }}
+                                            >
+                                                📄 Save Keyframes
+                                            </button>
+                                        )}
+                                    </>
                                 )}
                             </div>
                             
                             {generatedTTSBlob && (
                                 <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#dcfce7', borderRadius: '4px', border: '1px solid #16a34a' }}>
                                     <p style={{ fontSize: '14px', color: '#15803d', margin: '0' }}>
-                                        ✓ TTS audio generated successfully! Download the file and create keyframes manually, then upload them below.
+                                        ✓ TTS audio and keyframes generated successfully with Google Cloud AI! {generatedKeyframesBlob ? 'Both audio and keyframes are ready for download and preview.' : 'Audio is ready - keyframes generation in progress...'}
                                     </p>
                                 </div>
                             )}
@@ -602,7 +646,8 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 {((waypointData.waypoint.keyframes_url && waypointData.waypoint.narration_url) || 
                   (waypointData.waypoint.keyframes_url && ttsEnabled && generatedTTSBlob) ||
                   (keyframes && waypointData.waypoint.narration_url) ||
-                  (keyframes && ttsEnabled && generatedTTSBlob)) && (
+                  (keyframes && ttsEnabled && generatedTTSBlob) ||
+                  (generatedKeyframesBlob && ttsEnabled && generatedTTSBlob)) && (
                     <button className="adm-button blue" onClick={() => setShowPreview(true)}>
                         Preview Keyframes with Narration
                     </button>
