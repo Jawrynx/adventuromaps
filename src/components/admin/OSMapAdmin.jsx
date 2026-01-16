@@ -91,15 +91,20 @@ function RouteDisplay({ routes }) {
 
 /**
  * MapCenterController Component
- * Forces map to center on UK when component mounts
+ * Forces map to center on UK when component mounts and exposes map ref
  */
-function MapCenterController() {
+function MapCenterController({ mapRef }) {
     const map = useMap();
     
     useEffect(() => {
         // Center on Britain when component mounts
         map.setView([52.5, -1.5], 7);
-    }, [map]);
+        
+        // Expose map instance to parent via ref
+        if (mapRef) {
+            mapRef.current = map;
+        }
+    }, [map, mapRef]);
     
     return null;
 }
@@ -108,7 +113,7 @@ function MapCenterController() {
  * OSMapAdmin Component
  * Main OS Maps implementation for admin interface
  */
-function OSMapAdmin({ isDrawing, tempPath, mousePosition, routes, onAddPoint, onComplete, onMouseMove }) {
+function OSMapAdmin({ mapRef, isDrawing, tempPath, mousePosition, routes, onAddPoint, onComplete, onMouseMove }) {
     const OS_API_KEY = '2sTNADGPe2f2TPaVSrqNWzyGGGCcDWFS';
     
     // Default center on UK - centered on England
@@ -142,8 +147,8 @@ function OSMapAdmin({ isDrawing, tempPath, mousePosition, routes, onAddPoint, on
                     maxZoom={13}
                 />
                 
-                {/* Force center on UK */}
-                <MapCenterController />
+                {/* Force center on UK and expose map ref */}
+                <MapCenterController mapRef={mapRef} />
 
             {/* Drawing Handler */}
             <DrawingHandler

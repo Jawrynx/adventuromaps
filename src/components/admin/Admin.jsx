@@ -121,6 +121,7 @@ function Admin({ mapId }) {
 
     // Ref for search functionality
     const searchInputRef = useRef(null);
+    const leafletMapRef = useRef(null); // Ref for Leaflet map instance (OS Maps)
 
     // Ref to maintain current drawing state across async operations
     const drawingStateRef = useRef({ isDrawing, tempPath });
@@ -136,7 +137,18 @@ function Admin({ mapId }) {
         drawingStateRef.current.tempPath = tempPath;
     }, [isDrawing, tempPath]);
 
-
+    /**
+     * Always disable Google Maps double-click zoom and handle manually
+     * 
+     * Disables double-click zoom completely and implements manual zoom
+     * behavior when not in drawing mode.
+     */
+    useEffect(() => {
+        if (map && mapProvider === 'google') {
+            // Always disable built-in double-click zoom
+            map.setOptions({ disableDoubleClickZoom: true });
+        }
+    }, [map, mapProvider]);
 
     /**
      * Sets up interactive map event listeners for route drawing
@@ -158,24 +170,33 @@ function Admin({ mapId }) {
             }
         });
 
-        // Handle double-click to complete route drawing
-        const dblClickListener = map.addListener('dblclick', () => {
+        // Handle double-click to complete route drawing or zoom
+        const dblClickListener = map.addListener('dblclick', (e) => {
             const { isDrawing, tempPath } = drawingStateRef.current;
-            if (isDrawing && tempPath.length > 1) {
-                // Create new route with automatic start/end waypoints
-                const newRoute = {
-                    id: Date.now(),
-                    order: routes.length + 1,
-                    coordinates: tempPath,
-                    waypoints: [
-                        { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },
-                        { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 }
-                    ]
-                };
-                setRoutes(prevRoutes => [...(prevRoutes || []), newRoute]);
+            
+            if (isDrawing) {
+                // When drawing: complete the route and prevent any zoom
+                if (tempPath.length > 1) {
+                    // Create new route with automatic start/end waypoints
+                    const newRoute = {
+                        id: Date.now(),
+                        order: routes.length + 1,
+                        coordinates: tempPath,
+                        waypoints: [
+                            { name: 'Start Point', lat: tempPath[0].lat, lng: tempPath[0].lng, order: 1 },
+                            { name: 'End Point', lat: tempPath[tempPath.length - 1].lat, lng: tempPath[tempPath.length - 1].lng, order: 2 }
+                        ]
+                    };
+                    setRoutes(prevRoutes => [...(prevRoutes || []), newRoute]);
+                }
+                setIsDrawing(false);
+                setTempPath([]);
+            } else {
+                // When not drawing: manually handle zoom-in
+                const currentZoom = map.getZoom();
+                map.setZoom(currentZoom + 1);
+                map.panTo(e.latLng);
             }
-            setIsDrawing(false);
-            setTempPath([]);
         });
 
         // Handle mouse movement for live drawing preview
@@ -282,7 +303,11 @@ function Admin({ mapId }) {
     const handleSaveDraft = async (itemData, itemId) => {
         if (!itemId) {
             console.error("Cannot save routes: No item ID found.");
-            alert("Error: No item ID found. Please create an item first.");
+            setNotification({
+                isVisible: true,
+                message: 'Error: No item ID found. Please create an item first.',
+                type: 'error'
+            });
             return;
         }
 
@@ -393,7 +418,11 @@ function Admin({ mapId }) {
         // Update local state with Firestore IDs for future operations
         setRoutes(newRoutesWithIds);
 
-        alert("Routes and waypoints saved to Firestore successfully! 🎉");
+        setNotification({
+            isVisible: true,
+            message: 'Routes and waypoints saved successfully! 🎉',
+            type: 'success'
+        });
     };
 
     /**
@@ -408,7 +437,11 @@ function Admin({ mapId }) {
      */
     const handlePublish = async (itemData, itemId) => {
         if (!itemId) {
-            alert("Error: No item ID found. Please save a draft first");
+            setNotification({
+                isVisible: true,
+                message: 'Error: No item ID found. Please save a draft first',
+                type: 'error'
+            });
             return;
         }
 
@@ -418,10 +451,18 @@ function Admin({ mapId }) {
                 status: 'published',
                 publishedAt: new Date(),
             });
-            alert(`Item: ${itemId} has been published.`);
+            setNotification({
+                isVisible: true,
+                message: `Item: ${itemId} has been published.`,
+                type: 'success'
+            });
         } catch (error) {
             console.error("Error publishing item:", error);
-            alert("Error publishing item. Please try again.");
+            setNotification({
+                isVisible: true,
+                message: 'Error publishing item. Please try again.',
+                type: 'error'
+            });
         }
     }
 
@@ -552,17 +593,20 @@ function Admin({ mapId }) {
         // Check if input is coordinates
         const coords = parseCoordinates(searchValue);
         if (coords) {
-            // Handle coordinate input directly
-            if (map) {
+            // Handle coordinate input directly for both map providers
+            if (mapProvider === 'google' && map) {
                 map.setCenter({ lat: coords.lat, lng: coords.lng });
-                map.setZoom(14); // Zoom in for coordinate searches
-                setShowSuggestions(false);
-                setNotification({
-                    isVisible: true,
-                    message: `Centered on coordinates: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`,
-                    type: 'success'
-                });
+                map.setZoom(14);
+            } else if (mapProvider === 'osmap' && leafletMapRef.current) {
+                leafletMapRef.current.setView([coords.lat, coords.lng], 11);
             }
+            
+            setShowSuggestions(false);
+            setNotification({
+                isVisible: true,
+                message: `Centered on coordinates: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`,
+                type: 'success'
+            });
             return;
         }
 
@@ -643,7 +687,17 @@ function Admin({ mapId }) {
         setShowSuggestions(false);
 
         // Use PlacesService to get place details and location
-        const service = new window.google.maps.places.PlacesService(map);
+        if (!window.google?.maps?.places?.PlacesService) return;
+        
+        // For Google Maps, we can use the map instance directly
+        // For OS Maps, we need to create a hidden div for the service
+        let serviceMap = map;
+        if (mapProvider === 'osmap') {
+            const dummyDiv = document.createElement('div');
+            serviceMap = new window.google.maps.Map(dummyDiv);
+        }
+        
+        const service = new window.google.maps.places.PlacesService(serviceMap);
 
         service.getDetails({
             placeId: placeId,
@@ -657,10 +711,15 @@ function Admin({ mapId }) {
                 // Determine appropriate zoom level based on place type
                 const zoomLevel = getZoomLevelForPlaceType(place.types);
 
-                // Center the map on the selected location with adaptive zoom
-                if (map) {
+                // Center the appropriate map on the selected location
+                if (mapProvider === 'google' && map) {
                     map.setCenter({ lat, lng });
                     map.setZoom(zoomLevel);
+                } else if (mapProvider === 'osmap' && leafletMapRef.current) {
+                    // For Leaflet, convert Google zoom levels (lower = more zoomed out)
+                    // Leaflet zoom: 7 = country, 10 = city, 14 = neighborhood, 16 = street
+                    const leafletZoom = Math.max(7, Math.min(13, zoomLevel - 3));
+                    leafletMapRef.current.setView([lat, lng], leafletZoom);
                 }
             }
         });
@@ -816,7 +875,7 @@ function Admin({ mapId }) {
                         }}
                     >
                         <option value="google" style={{ background: '#0f1419', color: '#64c8ff' }}>Google Maps</option>
-                        <option value="osmap" style={{ background: '#0f1419', color: '#64c8ff' }}>OS Maps</option>
+                        <option value="osmap" style={{ background: '#0f1419', color: '#64c8ff' }}>OS Maps (UK Only)</option>
                     </select>
                 </div>
                 <div style={{
@@ -861,6 +920,7 @@ function Admin({ mapId }) {
                 </Map>
             ) : (
                 <OSMapAdmin
+                    mapRef={leafletMapRef}
                     isDrawing={isDrawing}
                     tempPath={tempPath}
                     mousePosition={mousePosition}
@@ -894,7 +954,7 @@ function Admin({ mapId }) {
             <div className="drawing-tool" style={{
                 position: 'absolute',
                 top: '0px',
-                right: '40px',
+                right: `${mapProvider === 'osmap' ? '-5px' : '40px'}`,
                 zIndex: 1000,
                 padding: '10px 20px',
                 borderRadius: '8px',
@@ -903,19 +963,102 @@ function Admin({ mapId }) {
                 gap: '10px'
             }}>
                 {!isCreatingItem ? (
-                    <button onClick={() => handleCreateItem()} style={{ marginRight: '5px', backgroundColor: 'green' }}>
+                    <button 
+                        onClick={() => handleCreateItem()} 
+                        style={{ 
+                            marginRight: '5px',
+                            padding: '10px 20px',
+                            height: '38px',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(100, 200, 255, 0.4)',
+                            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(21, 128, 61, 0.9) 100%)',
+                            color: '#fff',
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 8px rgba(100, 255, 150, 0.3)'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.target.style.background = 'linear-gradient(135deg, rgba(21, 128, 61, 0.9) 0%, rgba(16, 102, 49, 1) 100%)';
+                            e.target.style.borderColor = 'rgba(100, 200, 255, 0.6)';
+                            e.target.style.boxShadow = '0 4px 12px rgba(100, 255, 150, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.target.style.background = 'linear-gradient(135deg, rgba(34, 197, 94, 0.8) 0%, rgba(21, 128, 61, 0.9) 100%)';
+                            e.target.style.borderColor = 'rgba(100, 200, 255, 0.4)';
+                            e.target.style.boxShadow = '0 2px 8px rgba(100, 255, 150, 0.3)';
+                        }}
+                    >
                         Create Exploration/Adventure
                     </button>
                 ) : hasCreatedItemInfo ? (
                     <>
                         {!isDrawing ? (
-                            <button onClick={() => setIsDrawing(true)}>Start Drawing</button>
+                            <button 
+                                onClick={() => setIsDrawing(true)}
+                                style={{
+                                    padding: '10px 20px',
+                                    height: '38px',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(100, 200, 255, 0.4)',
+                                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.9) 100%)',
+                                    color: '#fff',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: '0 2px 8px rgba(100, 200, 255, 0.3)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.background = 'linear-gradient(135deg, rgba(37, 99, 235, 0.9) 0%, rgba(29, 78, 216, 1) 100%)';
+                                    e.target.style.borderColor = 'rgba(100, 200, 255, 0.6)';
+                                    e.target.style.boxShadow = '0 4px 12px rgba(100, 200, 255, 0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.8) 0%, rgba(37, 99, 235, 0.9) 100%)';
+                                    e.target.style.borderColor = 'rgba(100, 200, 255, 0.4)';
+                                    e.target.style.boxShadow = '0 2px 8px rgba(100, 200, 255, 0.3)';
+                                }}
+                            >
+                                Start Drawing
+                            </button>
                         ) : (
-                            <button onClick={handleStopDrawing}>Stop Drawing</button>
+                            <button 
+                                onClick={handleStopDrawing}
+                                style={{
+                                    padding: '10px 20px',
+                                    height: '38px',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(100, 200, 255, 0.4)',
+                                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(185, 28, 28, 0.9) 100%)',
+                                    color: '#fff',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.background = 'linear-gradient(135deg, rgba(185, 28, 28, 0.9) 0%, rgba(153, 27, 27, 1) 100%)';
+                                    e.target.style.borderColor = 'rgba(100, 200, 255, 0.6)';
+                                    e.target.style.boxShadow = '0 4px 12px rgba(255, 107, 107, 0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(185, 28, 28, 0.9) 100%)';
+                                    e.target.style.borderColor = 'rgba(100, 200, 255, 0.4)';
+                                    e.target.style.boxShadow = '0 2px 8px rgba(255, 107, 107, 0.3)';
+                                }}
+                            >
+                                Stop Drawing
+                            </button>
                         )}
 
-                        {/* Location search bar with autocomplete - Google Maps only */}
-                        {mapProvider === 'google' && (
+                        {/* Location search bar with autocomplete */}
+                        {
                             <div className="search-container" style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -1011,7 +1154,7 @@ function Admin({ mapId }) {
                                     <span>Search</span>
                                 </button>
                             </div>
-                        )}
+                        }
                     </>
                 ) : null}
             </div>
