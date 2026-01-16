@@ -65,6 +65,8 @@ import Notification from '../ui/Notification';
 import AdmTools from './AdmTools';
 import SuggestionsPortal from './SuggestionsPortal';
 import OSMapAdmin from './OSMapAdmin';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUndo } from '@fortawesome/free-solid-svg-icons';
 
 // Map Components
 import MapRoutes from '../map/MapRoutes';
@@ -286,6 +288,18 @@ function Admin({ mapId }) {
         // Reset drawing state
         setIsDrawing(false);
         setTempPath([]);
+    };
+
+    /**
+     * Undoes the last point added to the current drawing path
+     * 
+     * Removes the most recent coordinate from the temporary path,
+     * allowing users to correct mistakes while drawing a route.
+     */
+    const handleUndoLastPoint = () => {
+        if (isDrawing && tempPath.length > 0) {
+            setTempPath(prevPath => prevPath.slice(0, -1));
+        }
     };
 
     /**
@@ -1112,34 +1126,81 @@ function Admin({ mapId }) {
                                 Start Drawing
                             </button>
                         ) : (
-                            <button 
-                                onClick={handleStopDrawing}
-                                style={{
-                                    padding: '10px 20px',
-                                    height: '38px',
-                                    borderRadius: '8px',
-                                    border: '1px solid rgba(100, 200, 255, 0.4)',
-                                    background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(185, 28, 28, 0.9) 100%)',
-                                    color: '#fff',
-                                    fontSize: '14px',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
-                                    boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.target.style.background = 'linear-gradient(135deg, rgba(185, 28, 28, 0.9) 0%, rgba(153, 27, 27, 1) 100%)';
-                                    e.target.style.borderColor = 'rgba(100, 200, 255, 0.6)';
-                                    e.target.style.boxShadow = '0 4px 12px rgba(255, 107, 107, 0.4)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.target.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(185, 28, 28, 0.9) 100%)';
-                                    e.target.style.borderColor = 'rgba(100, 200, 255, 0.4)';
-                                    e.target.style.boxShadow = '0 2px 8px rgba(255, 107, 107, 0.3)';
-                                }}
-                            >
-                                Stop Drawing
-                            </button>
+                            <>
+                                {/* Undo button - appears when drawing */}
+                                <button 
+                                    onClick={handleUndoLastPoint}
+                                    disabled={tempPath.length === 0}
+                                    style={{
+                                        padding: '8px 12px',
+                                        height: '38px',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(100, 200, 255, 0.4)',
+                                        background: tempPath.length === 0 
+                                            ? 'linear-gradient(135deg, rgba(107, 114, 128, 0.4) 0%, rgba(75, 85, 99, 0.5) 100%)'
+                                            : 'linear-gradient(135deg, rgba(245, 158, 11, 0.8) 0%, rgba(217, 119, 6, 0.9) 100%)',
+                                        color: tempPath.length === 0 ? '#9CA3AF' : '#fff',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        cursor: tempPath.length === 0 ? 'not-allowed' : 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: tempPath.length === 0 
+                                            ? '0 2px 8px rgba(107, 114, 128, 0.2)'
+                                            : '0 2px 8px rgba(245, 158, 11, 0.3)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        if (tempPath.length > 0) {
+                                            e.target.style.background = 'linear-gradient(135deg, rgba(217, 119, 6, 0.9) 0%, rgba(180, 83, 9, 1) 100%)';
+                                            e.target.style.borderColor = 'rgba(100, 200, 255, 0.6)';
+                                            e.target.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.4)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (tempPath.length > 0) {
+                                            e.target.style.background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.8) 0%, rgba(217, 119, 6, 0.9) 100%)';
+                                            e.target.style.borderColor = 'rgba(100, 200, 255, 0.4)';
+                                            e.target.style.boxShadow = '0 2px 8px rgba(245, 158, 11, 0.3)';
+                                        }
+                                    }}
+                                    title={`Undo last point${tempPath.length > 0 ? ` (${tempPath.length} points)` : ' (no points to undo)'}`}
+                                >
+                                    <FontAwesomeIcon icon={faUndo} />
+                                    <span>Undo</span>
+                                </button>
+
+                                {/* Stop Drawing button */}
+                                <button 
+                                    onClick={handleStopDrawing}
+                                    style={{
+                                        padding: '10px 20px',
+                                        height: '38px',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(100, 200, 255, 0.4)',
+                                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(185, 28, 28, 0.9) 100%)',
+                                        color: '#fff',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: '0 2px 8px rgba(255, 107, 107, 0.3)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.background = 'linear-gradient(135deg, rgba(185, 28, 28, 0.9) 0%, rgba(153, 27, 27, 1) 100%)';
+                                        e.target.style.borderColor = 'rgba(100, 200, 255, 0.6)';
+                                        e.target.style.boxShadow = '0 4px 12px rgba(255, 107, 107, 0.4)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.8) 0%, rgba(185, 28, 28, 0.9) 100%)';
+                                        e.target.style.borderColor = 'rgba(100, 200, 255, 0.4)';
+                                        e.target.style.boxShadow = '0 2px 8px rgba(255, 107, 107, 0.3)';
+                                    }}
+                                >
+                                    Stop Drawing
+                                </button>
+                            </>
                         )}
 
                         {/* Location search bar with autocomplete */}
