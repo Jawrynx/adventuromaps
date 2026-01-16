@@ -10,6 +10,11 @@ body {
   color: white;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
 /* Adds extra margin to the next grid row when previous item is expanded */
 .grid-row-margin {
   margin-top: 100px;

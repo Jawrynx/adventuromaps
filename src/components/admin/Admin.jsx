@@ -71,7 +71,7 @@ import MapRoutes from '../map/MapRoutes';
 import { Polyline } from '../map/Polyline';
 
 // Firebase services
-import { collection, addDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, doc, updateDoc, getDocs, deleteDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 
 // Styles
@@ -293,6 +293,7 @@ function Admin({ mapId }) {
      * 
      * Handles the complex process of saving nested route and waypoint data:
      * - Updates existing routes/waypoints or creates new ones
+     * - Deletes routes that have been removed from the local state
      * - Maintains proper ordering and relationships
      * - Stores Firestore IDs for future updates
      * - Handles the hierarchical structure: item -> routes -> waypoints
@@ -311,118 +312,150 @@ function Admin({ mapId }) {
             return;
         }
 
-        // Process each route and save to Firestore with proper hierarchy
-        const newRoutesWithIds = await Promise.all(
-            routes.map(async (route, index) => {
-                let routeDocRef;
-                let newWaypointsWithIds = [];
-                const routeOrder = index + 1;
+        try {
+            // First, get all existing routes from Firestore to handle deletions
+            const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
+            const existingRoutesSnapshot = await getDocs(routesCollectionRef);
+            const existingRouteIds = existingRoutesSnapshot.docs.map(doc => doc.id);
+            const currentRouteIds = routes.filter(route => route.firestoreId).map(route => route.firestoreId);
 
-                // Update existing route or create new one
-                if (route.firestoreId) {
-                    routeDocRef = doc(db, itemData.type, itemId, 'routes', route.firestoreId);
-                    await updateDoc(routeDocRef, {
-                        coordinates: route.coordinates,
-                        order: routeOrder
-                    });
-                } else {
-                    const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
-                    routeDocRef = await addDoc(routesCollectionRef, {
-                        coordinates: route.coordinates,
-                        order: routeOrder
-                    });
+            // Delete routes that are no longer in the current routes array
+            const routesToDelete = existingRouteIds.filter(id => !currentRouteIds.includes(id));
+            
+            for (const routeIdToDelete of routesToDelete) {
+                // First delete all waypoints in the route
+                const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeIdToDelete, 'waypoints');
+                const waypointsSnapshot = await getDocs(waypointsCollectionRef);
+                
+                for (const waypointDoc of waypointsSnapshot.docs) {
+                    await deleteDoc(doc(db, itemData.type, itemId, 'routes', routeIdToDelete, 'waypoints', waypointDoc.id));
                 }
+                
+                // Then delete the route itself
+                await deleteDoc(doc(db, itemData.type, itemId, 'routes', routeIdToDelete));
+            }
 
-                // Process waypoints for this route
-                // Use the correct route ID for the waypoints collection
-                const routeIdForWaypoints = route.firestoreId || routeDocRef.id;
-                const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeIdForWaypoints, 'waypoints');
+            // Process each route and save to Firestore with proper hierarchy
+            const newRoutesWithIds = await Promise.all(
+                routes.map(async (route, index) => {
+                    let routeDocRef;
+                    let newWaypointsWithIds = [];
+                    const routeOrder = index + 1;
 
-                await Promise.all(
-                    route.waypoints.map(async (waypoint) => {
-                        // Remove firestoreId and sanitize data for Firestore
-                        const { firestoreId, ...waypointDataRaw } = waypoint;
-
-                        // Sanitize data: remove undefined values, File objects, and other invalid Firestore data
-                        const waypointDataToSave = {};
-
-                        Object.entries(waypointDataRaw).forEach(([key, value]) => {
-                            // Skip undefined, null, or internal fields
-                            if (value === undefined || value === null || key.startsWith('__') || key === 'id') {
-                                return;
-                            }
-
-                            // Skip File objects and other complex objects that can't be serialized
-                            if (value instanceof File || value instanceof FileList) {
-                                console.warn(`Skipping File object in field: ${key}`);
-                                return;
-                            }
-
-                            // Handle arrays - filter out any File objects or invalid entries
-                            if (Array.isArray(value)) {
-                                const cleanArray = value.filter(item =>
-                                    item !== undefined &&
-                                    item !== null &&
-                                    !(item instanceof File) &&
-                                    !(item instanceof FileList)
-                                );
-                                // Always include arrays, even if empty, to properly clear fields
-                                waypointDataToSave[key] = cleanArray;
-                                return;
-                            }
-
-                            // For primitive values and valid objects
-                            waypointDataToSave[key] = value;
+                    // Update existing route or create new one
+                    if (route.firestoreId) {
+                        routeDocRef = doc(db, itemData.type, itemId, 'routes', route.firestoreId);
+                        await updateDoc(routeDocRef, {
+                            coordinates: route.coordinates,
+                            order: routeOrder
                         });
+                    } else {
+                        const routesCollectionRef = collection(db, itemData.type, itemId, 'routes');
+                        routeDocRef = await addDoc(routesCollectionRef, {
+                            coordinates: route.coordinates,
+                            order: routeOrder
+                        });
+                    }
 
-                        // Debug: Log the data being saved
+                    // Process waypoints for this route
+                    // Use the correct route ID for the waypoints collection
+                    const routeIdForWaypoints = route.firestoreId || routeDocRef.id;
+                    const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeIdForWaypoints, 'waypoints');
 
-                        if (waypoint.firestoreId) {
-                            // Try to update existing waypoint
-                            try {
-                                const waypointDocRef = doc(waypointsCollectionRef, waypoint.firestoreId);
-                                await updateDoc(waypointDocRef, waypointDataToSave);
-                                newWaypointsWithIds.push(waypoint);
-                            } catch (error) {
-                                // If document doesn't exist, create a new one
+                    await Promise.all(
+                        route.waypoints.map(async (waypoint) => {
+                            // Remove firestoreId and sanitize data for Firestore
+                            const { firestoreId, ...waypointDataRaw } = waypoint;
+
+                            // Sanitize data: remove undefined values, File objects, and other invalid Firestore data
+                            const waypointDataToSave = {};
+
+                            Object.entries(waypointDataRaw).forEach(([key, value]) => {
+                                // Skip undefined, null, or internal fields
+                                if (value === undefined || value === null || key.startsWith('__') || key === 'id') {
+                                    return;
+                                }
+
+                                // Skip File objects and other complex objects that can't be serialized
+                                if (value instanceof File || value instanceof FileList) {
+                                    console.warn(`Skipping File object in field: ${key}`);
+                                    return;
+                                }
+
+                                // Handle arrays - filter out any File objects or invalid entries
+                                if (Array.isArray(value)) {
+                                    const cleanArray = value.filter(item =>
+                                        item !== undefined &&
+                                        item !== null &&
+                                        !(item instanceof File) &&
+                                        !(item instanceof FileList)
+                                    );
+                                    // Always include arrays, even if empty, to properly clear fields
+                                    waypointDataToSave[key] = cleanArray;
+                                    return;
+                                }
+
+                                // For primitive values and valid objects
+                                waypointDataToSave[key] = value;
+                            });
+
+                            // Debug: Log the data being saved
+
+                            if (waypoint.firestoreId) {
+                                // Try to update existing waypoint
+                                try {
+                                    const waypointDocRef = doc(waypointsCollectionRef, waypoint.firestoreId);
+                                    await updateDoc(waypointDocRef, waypointDataToSave);
+                                    newWaypointsWithIds.push(waypoint);
+                                } catch (error) {
+                                    // If document doesn't exist, create a new one
+                                    try {
+                                        const docRef = await addDoc(waypointsCollectionRef, waypointDataToSave);
+                                        newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
+                                    } catch (createError) {
+                                        console.error("Failed to create waypoint:", createError.message, "Data:", waypointDataToSave);
+                                        throw createError;
+                                    }
+                                }
+                            } else {
+                                // Create new waypoint
                                 try {
                                     const docRef = await addDoc(waypointsCollectionRef, waypointDataToSave);
                                     newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
                                 } catch (createError) {
-                                    console.error("Failed to create waypoint:", createError.message, "Data:", waypointDataToSave);
+                                    console.error("Failed to create new waypoint:", createError.message, "Data:", waypointDataToSave);
                                     throw createError;
                                 }
                             }
-                        } else {
-                            // Create new waypoint
-                            try {
-                                const docRef = await addDoc(waypointsCollectionRef, waypointDataToSave);
-                                newWaypointsWithIds.push({ ...waypoint, firestoreId: docRef.id });
-                            } catch (createError) {
-                                console.error("Failed to create new waypoint:", createError.message, "Data:", waypointDataToSave);
-                                throw createError;
-                            }
-                        }
-                    })
-                );
+                        })
+                    );
 
-                return {
-                    ...route,
-                    firestoreId: route.firestoreId || routeDocRef.id,
-                    order: routeOrder,
-                    waypoints: newWaypointsWithIds
-                };
-            })
-        );
+                    return {
+                        ...route,
+                        firestoreId: route.firestoreId || routeDocRef.id,
+                        order: routeOrder,
+                        waypoints: newWaypointsWithIds
+                    };
+                })
+            );
 
-        // Update local state with Firestore IDs for future operations
-        setRoutes(newRoutesWithIds);
+            // Update local state with Firestore IDs for future operations
+            setRoutes(newRoutesWithIds);
 
-        setNotification({
-            isVisible: true,
-            message: 'Routes and waypoints saved successfully! 🎉',
-            type: 'success'
-        });
+            setNotification({
+                isVisible: true,
+                message: 'Routes and waypoints saved successfully! 🎉',
+                type: 'success'
+            });
+
+        } catch (error) {
+            console.error("Error saving draft:", error);
+            setNotification({
+                isVisible: true,
+                message: 'Error saving draft. Please try again.',
+                type: 'error'
+            });
+        }
     };
 
     /**
@@ -852,6 +885,9 @@ function Admin({ mapId }) {
     } else if (mapTheme === 'gm-dark') {
         effectiveMapId = '8a2ac04064bf383366ad6b1e';
         colorScheme = 'DARK';
+    } else if (mapTheme === 'adventure') {
+        effectiveMapId = '8a2ac04064bf383360bc1cbc';
+        colorScheme = 'LIGHT';
     }
 
     // Get scale bar and compass settings

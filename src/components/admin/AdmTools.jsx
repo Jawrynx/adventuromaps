@@ -15,6 +15,7 @@ import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 // UI Components
 import LoadingSpinner from '../ui/LoadingSpinner';
+import AdvancedLoadingScreen from '../ui/AdvancedLoadingScreen';
 import WaypointEditor from './WaypointEditor';
 import CreateItemForm from './CreateItemForm';
 
@@ -454,9 +455,10 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             {isCreatingItem ? (
                 <>
                     {loadingItems ? (
-                        <div className='loading-spinner'>
-                            <LoadingSpinner />
-                        </div>
+                        <AdvancedLoadingScreen 
+                            text="Loading routes..."
+                            style={{ height: '400px', borderRadius: '12px' }}
+                        />
                     ) : hasCreatedItemInfo ? (
                         <>
                             <h3 style={{ margin: '5px 0', backgroundColor: '#444', width: 'fit-content', alignSelf: 'center', textAlign: 'center', padding: '10px', borderRadius: '10px' }}>
@@ -501,7 +503,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                                             </td>
                                                             <td>{route.waypoints[0].lat.toFixed(6)}</td>
                                                             <td>{route.waypoints[0].lng.toFixed(6)}</td>
-                                                            <td rowSpan="1">
+                                                            <td rowSpan="2">
                                                                 <button
                                                                     className='warning-button red'
                                                                     onClick={() => onRemoveRoute(route.id)}
@@ -530,14 +532,6 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                                             </td>
                                                             <td>{route.waypoints[1].lat.toFixed(6)}</td>
                                                             <td>{route.waypoints[1].lng.toFixed(6)}</td>
-                                                            <td rowSpan="1">
-                                                                <button
-                                                                    className='warning-button red'
-                                                                    onClick={() => onRemoveRoute(route.id)}
-                                                                >
-                                                                    <FontAwesomeIcon icon={faTrash} />
-                                                                </button>
-                                                            </td>
                                                             <td rowSpan="1">
                                                                 <button
                                                                     className='info-button blue'
@@ -586,10 +580,10 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
                                 />
                             </div>
                         ) : loadingItems ? (
-                            <div className="loading-container">
-                                <div className="loading-spinner"></div>
-                                <p>Loading draft items...</p>
-                            </div>
+                            <AdvancedLoadingScreen 
+                                text="Loading draft items..."
+                                style={{ height: '300px', borderRadius: '12px' }}
+                            />
                         ) : itemsToLoad.length > 0 ? (
                             <div className="load-items-list">
                                 <h3>Select a Draft Item to Load:</h3>

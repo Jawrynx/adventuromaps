@@ -12,6 +12,7 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import { SettingsProvider } from '../../services/SettingsContext.jsx';
 import { getMapDataSecurely } from '../../services/firebase.js';
 import MainContent from './MainContent';
+import AdvancedLoadingScreen from '../../components/ui/AdvancedLoadingScreen';
 import '../../styles/index.css';
 import '../../components/ui/css/Buttons.css';
 
@@ -84,21 +85,11 @@ const App = () => {
                     </div>
                 )}
 
-                <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(180deg, #0f1419 0%, #16213e 100%)', paddingTop: 32}}>
-                    <div style={{textAlign: 'center', color: '#bfefff'}}>
-                        <div style={{
-                            width: 88,
-                            height: 88,
-                            borderRadius: '50%',
-                            border: '6px solid rgba(255,255,255,0.06)',
-                            borderTopColor: '#64c8ff',
-                            margin: '0 auto',
-                            animation: 'am-spinner 1s linear infinite'
-                        }} />
-                        <div style={{marginTop: 14, fontSize: 16, opacity: 0.95}}>Loading map data…</div>
-                    </div>
-                    <style>{`@keyframes am-spinner { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-                </div>
+                <AdvancedLoadingScreen 
+                    text="Loading map data…" 
+                    fullScreen={true}
+                    style={{ paddingTop: typeof window !== 'undefined' && window.electron ? 32 : 0 }}
+                />
             </>
         );
     }
