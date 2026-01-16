@@ -48,7 +48,7 @@ import './css/Admin.css';
  * @param {Function} onHasCreatedItemInfoChange - Handler to update item info state
  * @returns {JSX.Element} The admin tools interface
  */
-function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish, hasCreatedItemInfo, onHasCreatedItemInfoChange }) {
+function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish, hasCreatedItemInfo, onHasCreatedItemInfoChange, onCenterMapOverRoutes }) {
     // ========== WAYPOINT EDITING STATE ==========
     const [editingWaypoint, setEditingWaypoint] = useState(null); // Currently editing waypoint data
     
@@ -332,6 +332,14 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         setItemsToLoad([]);
         onSetCreatingItem(true);
         onHasCreatedItemInfoChange(true);      // Enable route editing
+        
+        // Center the map over the loaded routes
+        if (onCenterMapOverRoutes && routesToSet.length > 0) {
+            // Small delay to ensure routes are rendered before centering
+            setTimeout(() => {
+                onCenterMapOverRoutes(routesToSet);
+            }, 100);
+        }
     };
 
     const handleCancelCreation = () => {

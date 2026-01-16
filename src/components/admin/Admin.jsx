@@ -779,6 +779,55 @@ function Admin({ mapId }) {
     };
 
     /**
+     * Centers the map over all route coordinates
+     * 
+     * Calculates bounds from all coordinates in all routes and uses fitBounds
+     * to center the map view over the entire route collection.
+     * 
+     * @param {Array} routes - Array of route objects with coordinates
+     */
+    const centerMapOverRoutes = (routes) => {
+        if (!map || !routes || routes.length === 0 || mapProvider !== 'google') {
+            return;
+        }
+
+        // Collect all coordinates from all routes
+        const allCoordinates = [];
+        routes.forEach(route => {
+            if (route.coordinates && Array.isArray(route.coordinates)) {
+                route.coordinates.forEach(coord => {
+                    // Handle both {lat, lng} objects and geopoint objects
+                    const lat = coord.lat || coord.latitude;
+                    const lng = coord.lng || coord.longitude;
+                    if (lat !== undefined && lng !== undefined) {
+                        allCoordinates.push({ lat, lng });
+                    }
+                });
+            }
+        });
+
+        if (allCoordinates.length === 0) {
+            return;
+        }
+
+        // Calculate bounds
+        const bounds = new window.google.maps.LatLngBounds();
+        allCoordinates.forEach(coord => {
+            bounds.extend(new window.google.maps.LatLng(coord.lat, coord.lng));
+        });
+
+        // Fit the map to the bounds with some padding
+        map.fitBounds(bounds, {
+            padding: {
+                top: 50,
+                right: 50,
+                bottom: 50,
+                left: 50
+            }
+        });
+    };
+
+    /**
      * Initiates the item creation workflow
      * 
      * Opens the item creation modal and resets the creation state
@@ -1186,6 +1235,7 @@ function Admin({ mapId }) {
                     onHasCreatedItemInfoChange={(value) => {
                         setHasCreatedItemInfo(value);
                     }}
+                    onCenterMapOverRoutes={centerMapOverRoutes}
                 />
             </Modal>
 
