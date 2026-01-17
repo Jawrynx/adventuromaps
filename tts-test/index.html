@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS & Timestamp Debugger</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #64b5f6;
+            font-size: 2rem;
+        }
+
+        .section {
+            background: #1e1e2f;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .section h2 {
+            color: #81c784;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #81c784;
+            border-radius: 2px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b0b0b0;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #252538;
+            color: #e0e0e0;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #64b5f6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .description-display {
+            min-height: 100px;
+            padding: 20px;
+            background: #252538;
+            border-radius: 8px;
+            border: 2px solid #333;
+            font-size: 18px;
+            line-height: 1.8;
+            transition: all 0.3s ease;
+        }
+
+        .description-display.playing {
+            border-color: #64b5f6;
+            background: linear-gradient(135deg, #1e3a5f 0%, #1e2a3f 100%);
+        }
+
+        .highlighted-word {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .progress-container {
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 4px;
+            transition: width 0.1s linear;
+            width: 0%;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #888;
+            font-family: 'Consolas', monospace;
+        }
+
+        .timestamps-container {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #0d0d15;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+        }
+
+        .timestamp-row {
+            display: grid;
+            grid-template-columns: 100px 100px 80px 100px 1fr;
+            gap: 15px;
+            padding: 8px 10px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+
+        .timestamp-row:nth-child(odd) {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .timestamp-row.active {
+            background: rgba(59, 130, 246, 0.3);
+            border-left: 3px solid #3b82f6;
+        }
+
+        .timestamp-row.passed {
+            opacity: 0.5;
+        }
+
+        .timestamp-time {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .timestamp-scaled {
+            color: #22d3ee;
+            font-weight: 600;
+        }
+
+        .timestamp-duration {
+            color: #a78bfa;
+        }
+
+        .timestamp-word {
+            color: #e0e0e0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: #252538;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #64b5f6;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #888;
+        }
+
+        .loading::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border: 3px solid #333;
+            border-top-color: #64b5f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .info-message {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+            color: #93c5fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .header-row {
+            display: grid;
+            grid-template-columns: 100px 100px 80px 100px 1fr;
+            gap: 15px;
+            padding: 8px 10px;
+            background: #1a1a28;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .timeline-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #0d0d15;
+            border-radius: 8px;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .timeline-track {
+            position: relative;
+            height: 60px;
+            background: #1a1a28;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(251, 191, 36, 0.6);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .timeline-marker:hover {
+            background: #fbbf24;
+        }
+
+        .timeline-marker::after {
+            content: attr(data-word);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 10px;
+            color: #fbbf24;
+            opacity: 0;
+            transition: opacity 0.2s;
+            padding: 2px 4px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 2px;
+        }
+
+        .timeline-marker:hover::after {
+            opacity: 1;
+        }
+
+        .timeline-playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #ef4444;
+            z-index: 10;
+            transition: left 0.05s linear;
+        }
+
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .raw-data {
+            margin-top: 15px;
+            padding: 15px;
+            background: #0d0d15;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #888;
+        }
+
+        .config-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .config-item label {
+            font-size: 13px;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 6px;
+            background: #252538;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #64b5f6;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ TTS & Timestamp Debugger</h1>
+
+        <!-- Input Section -->
+        <div class="section">
+            <h2>Text Input</h2>
+            <label for="description">Enter description text:</label>
+            <textarea id="description" placeholder="Enter your description text here to test TTS generation and timestamp synchronization...">Welcome to the Lake District National Park. This stunning location offers breathtaking views of the surrounding mountains and valleys. Take a moment to appreciate the natural beauty around you.</textarea>
+            
+            <div class="config-section" style="margin-top: 15px;">
+                <div class="config-item">
+                    <label for="voice">Voice:</label>
+                    <select id="voice">
+                        <option value="en-GB-Neural2-C">en-GB-Neural2-C (Female)</option>
+                        <option value="en-GB-Neural2-B">en-GB-Neural2-B (Male)</option>
+                        <option value="en-GB-Neural2-A">en-GB-Neural2-A (Female)</option>
+                        <option value="en-GB-Neural2-D">en-GB-Neural2-D (Male)</option>
+                        <option value="en-US-Neural2-C">en-US-Neural2-C (Female)</option>
+                        <option value="en-US-Neural2-D">en-US-Neural2-D (Male)</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label for="speakingRate">Speaking Rate:</label>
+                    <input type="number" id="speakingRate" value="0.9" min="0.5" max="2.0" step="0.1">
+                </div>
+            </div>
+            
+            <div class="config-section">
+                <div class="config-item">
+                    <label for="trailingSilence">Trailing Silence Compensation (seconds):</label>
+                    <input type="number" id="trailingSilence" value="0.8" min="0" max="3.0" step="0.1">
+                </div>
+                <div class="config-item">
+                    <label for="minScaleFactor">Min Scale Factor (%):</label>
+                    <input type="number" id="minScaleFactor" value="90" min="50" max="100" step="5">
+                </div>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" id="showRawData" checked>
+                <label for="showRawData">Show raw API response data</label>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" id="generateBtn" onclick="generateTTS()">
+                    🎤 Generate TTS & Timestamps
+                </button>
+                <button class="btn-warning" id="recalculateBtn" onclick="recalculateScaling()" disabled>
+                    🔄 Recalculate Scaling
+                </button>
+            </div>
+
+            <div id="errorContainer"></div>
+            <div id="infoContainer"></div>
+        </div>
+
+        <!-- Audio & Description Display Section -->
+        <div class="section">
+            <h2>Audio Player & Text Display</h2>
+            
+            <div id="descriptionDisplay" class="description-display">
+                <span style="color: #666;">Generated text will appear here with word highlighting...</span>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00.000</span>
+                    <span id="totalTime">0:00.000</span>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-success" id="playBtn" onclick="playAudio()" disabled>
+                    ▶️ Play
+                </button>
+                <button class="btn-warning" id="pauseBtn" onclick="pauseAudio()" disabled>
+                    ⏸️ Pause
+                </button>
+                <button class="btn-danger" id="stopBtn" onclick="stopAudio()" disabled>
+                    ⏹️ Stop
+                </button>
+            </div>
+
+            <div class="stats-grid" id="statsGrid" style="display: none;">
+                <div class="stat-box">
+                    <div class="stat-value" id="statDuration">-</div>
+                    <div class="stat-label">Audio Duration</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statKeyframes">-</div>
+                    <div class="stat-label">Total Keyframes</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statMaxTime">-</div>
+                    <div class="stat-label">Max Keyframe Time</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="statScaleFactor">-</div>
+                    <div class="stat-label">Scale Factor</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timestamps Section -->
+        <div class="section">
+            <h2>Timestamp Analysis</h2>
+            
+            <!-- Visual Timeline -->
+            <div class="timeline-container" id="timelineContainer" style="display: none;">
+                <div class="timeline-header">
+                    <span>Visual Timeline (Raw vs Scaled)</span>
+                    <span id="timelineInfo">-</span>
+                </div>
+                <div class="timeline-track" id="timelineTrack">
+                    <div class="timeline-playhead" id="timelinePlayhead" style="left: 0;"></div>
+                </div>
+                <div class="timeline-labels">
+                    <span>0s</span>
+                    <span id="timelineMid">-</span>
+                    <span id="timelineEnd">-</span>
+                </div>
+            </div>
+            
+            <div class="header-row" style="margin-top: 15px;">
+                <span>Raw Time</span>
+                <span>Scaled Time</span>
+                <span>Duration</span>
+                <span>Word</span>
+                <span>Accumulated Text</span>
+            </div>
+            
+            <div id="timestampsContainer" class="timestamps-container">
+                <div style="color: #666; text-align: center; padding: 20px;">
+                    Generate TTS to see timestamp data...
+                </div>
+            </div>
+
+            <div id="rawDataContainer" class="raw-data" style="display: none;">
+                Raw API response will appear here...
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-functions-compat.js"></script>
+
+    <script>
+        // ========== STATE ==========
+        let audioContext = null;
+        let audioBuffer = null;
+        let audioSource = null;
+        let audioElement = null;
+        let keyframes = [];
+        let scaledKeyframes = [];
+        let isPlaying = false;
+        let startTime = 0;
+        let pausedTime = 0;
+        let animationFrame = null;
+        let audioDuration = 0;
+        let maxKeyframeTime = 0;
+        let scaleFactor = 1;
+
+        // ========== INITIALIZATION ==========
+        let functionsInstance = null;
+        
+        async function initFirebase() {
+            try {
+                // Fetch Firebase config from server (which reads from .env)
+                const response = await fetch('/api/firebase-config');
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to load Firebase config');
+                }
+                
+                const config = await response.json();
+                console.log('Firebase config loaded:', { projectId: config.projectId });
+                
+                firebase.initializeApp(config);
+                functionsInstance = firebase.functions();
+                
+                showInfo(`✅ Firebase initialized (Project: ${config.projectId}). Ready to generate TTS.`);
+                return true;
+            } catch (e) {
+                console.warn('Could not initialize Firebase:', e);
+                showInfo(`⚠️ Firebase not configured: ${e.message}. Using MOCK mode for testing.`);
+                return false;
+            }
+        }
+
+        initFirebase();
+
+        // ========== TTS GENERATION ==========
+        async function generateTTS() {
+            const description = document.getElementById('description').value.trim();
+            if (!description) {
+                showError('Please enter some text first.');
+                return;
+            }
+
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '⏳ Generating...';
+            
+            clearError();
+            clearInfo();
+
+            try {
+                let result;
+                
+                if (functionsInstance) {
+                    // Use real Firebase function
+                    const generateTTSWithTimestampsFunction = functionsInstance.httpsCallable('generateTTSWithTimestamps');
+                    
+                    const voice = document.getElementById('voice').value;
+                    const speakingRate = parseFloat(document.getElementById('speakingRate').value);
+                    
+                    result = await generateTTSWithTimestampsFunction({
+                        text: description,
+                        voiceConfig: {
+                            languageCode: voice.startsWith('en-GB') ? 'en-GB' : 'en-US',
+                            name: voice,
+                            ssmlGender: voice.includes('-C') || voice.includes('-A') ? 'FEMALE' : 'MALE'
+                        },
+                        audioConfig: {
+                            speakingRate: speakingRate
+                        }
+                    });
+                    
+                    result = result.data;
+                } else {
+                    // Mock mode for testing without Firebase
+                    result = generateMockTTS(description);
+                    showInfo('Using MOCK TTS data for testing. Connect Firebase for real TTS.');
+                }
+
+                if (!result.success) {
+                    throw new Error('TTS generation failed');
+                }
+
+                // Process audio
+                const audioBytes = atob(result.audioContent);
+                const audioArray = new Uint8Array(audioBytes.length);
+                for (let i = 0; i < audioBytes.length; i++) {
+                    audioArray[i] = audioBytes.charCodeAt(i);
+                }
+                
+                const audioBlob = new Blob([audioArray], { type: 'audio/mpeg' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                // Create audio element
+                if (audioElement) {
+                    audioElement.pause();
+                    URL.revokeObjectURL(audioElement.src);
+                }
+                
+                audioElement = new Audio(audioUrl);
+                audioElement.addEventListener('loadedmetadata', () => {
+                    audioDuration = audioElement.duration;
+                    processKeyframes(result.keyframes, result.maxKeyframeTime);
+                    updateStats();
+                    enablePlayback();
+                });
+                
+                audioElement.addEventListener('ended', () => {
+                    stopAudio();
+                });
+
+                // Store keyframes
+                keyframes = result.keyframes || [];
+                maxKeyframeTime = result.maxKeyframeTime || 0;
+
+                // Show raw data if enabled
+                if (document.getElementById('showRawData').checked) {
+                    document.getElementById('rawDataContainer').style.display = 'block';
+                    document.getElementById('rawDataContainer').textContent = JSON.stringify({
+                        keyframes: keyframes.slice(0, 20),
+                        maxKeyframeTime: maxKeyframeTime,
+                        totalKeyframes: keyframes.length,
+                        note: keyframes.length > 20 ? `... and ${keyframes.length - 20} more` : ''
+                    }, null, 2);
+                }
+
+                // Display timestamps
+                displayTimestamps(keyframes);
+                
+                // Setup initial text display
+                setupTextDisplay(description);
+
+            } catch (error) {
+                console.error('TTS Generation failed:', error);
+                showError(`TTS Generation failed: ${error.message}`);
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '🎤 Generate TTS & Timestamps';
+            }
+        }
+
+        // ========== MOCK TTS FOR TESTING ==========
+        function generateMockTTS(text) {
+            const words = text.split(/\s+/);
+            const avgWordDuration = 0.35; // Average duration per word in seconds
+            let currentTime = 0;
+            
+            const mockKeyframes = words.map((word, index) => {
+                const duration = (word.length * 0.05) + 0.15; // Rough estimate based on word length
+                const keyframe = {
+                    time: currentTime,
+                    text: word,
+                    duration: duration
+                };
+                currentTime += duration + 0.1; // Add small gap between words
+                return keyframe;
+            });
+
+            // Generate mock audio (silent MP3 header)
+            const mockAudioBase64 = generateSilentMP3Base64(currentTime);
+
+            return {
+                success: true,
+                audioContent: mockAudioBase64,
+                keyframes: mockKeyframes,
+                maxKeyframeTime: currentTime
+            };
+        }
+
+        function generateSilentMP3Base64(durationSeconds) {
+            // This is a minimal valid MP3 frame (silent) - for testing only
+            // In real usage, the Firebase function provides actual audio
+            const silentFrame = 'SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYNNEVIAAAAAAD/+1DEAAAGAAGn9AAAIkWJq/00IAAAAAA0gAAAAAAAANIAAAAAAAAA0gAAAAAAAADSAAAAAAAAANIAAABMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQxB4AAADSAAAAAAAAANIAAAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+            return silentFrame;
+        }
+
+        // ========== KEYFRAME PROCESSING ==========
+        function processKeyframes(kfs, maxTime) {
+            if (!kfs || kfs.length === 0) return;
+
+            // Get configurable values
+            const TRAILING_SILENCE = parseFloat(document.getElementById('trailingSilence').value) || 0.8;
+            const MIN_SCALE_PERCENT = parseFloat(document.getElementById('minScaleFactor').value) || 90;
+            
+            // Calculate effective duration (accounting for trailing silence in MP3)
+            const effectiveDuration = Math.max(
+                audioDuration - TRAILING_SILENCE, 
+                audioDuration * (MIN_SCALE_PERCENT / 100)
+            );
+            
+            scaleFactor = effectiveDuration / maxTime;
+            
+            console.log('Keyframe processing:', {
+                audioDuration,
+                maxKeyframeTime: maxTime,
+                trailingSilence: TRAILING_SILENCE,
+                minScalePercent: MIN_SCALE_PERCENT,
+                effectiveDuration,
+                scaleFactor,
+                keyframeCount: kfs.length
+            });
+
+            // Scale keyframes
+            scaledKeyframes = kfs.map(kf => ({
+                ...kf,
+                scaledTime: kf.time * scaleFactor,
+                originalTime: kf.time
+            }));
+            
+            // Log first and last few keyframes for debugging
+            console.log('First 3 keyframes:', scaledKeyframes.slice(0, 3));
+            console.log('Last 3 keyframes:', scaledKeyframes.slice(-3));
+        }
+
+        function displayTimestamps(kfs) {
+            const container = document.getElementById('timestampsContainer');
+            
+            if (!kfs || kfs.length === 0) {
+                container.innerHTML = '<div style="color: #666; text-align: center; padding: 20px;">No keyframes available</div>';
+                return;
+            }
+
+            let html = '';
+            kfs.forEach((kf, index) => {
+                const scaledTime = scaledKeyframes[index]?.scaledTime ?? kf.time;
+                const duration = kf.duration ? kf.duration.toFixed(3) : '-';
+                const word = kf.word || '-';
+                
+                html += `
+                    <div class="timestamp-row" id="timestamp-${index}">
+                        <span class="timestamp-time">${kf.time.toFixed(3)}s</span>
+                        <span class="timestamp-scaled">${scaledTime.toFixed(3)}s</span>
+                        <span class="timestamp-duration">${duration}s</span>
+                        <span class="timestamp-word" style="color: #fbbf24; font-weight: 600;">${escapeHtml(word)}</span>
+                        <span class="timestamp-word" title="${escapeHtml(kf.text)}">${escapeHtml(kf.text.substring(0, 50))}${kf.text.length > 50 ? '...' : ''}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            
+            // Build timeline visualization
+            buildTimeline(kfs);
+        }
+        
+        function buildTimeline(kfs) {
+            if (!kfs || kfs.length === 0 || !audioDuration) return;
+            
+            const container = document.getElementById('timelineContainer');
+            const track = document.getElementById('timelineTrack');
+            
+            container.style.display = 'block';
+            
+            // Clear existing markers (keep playhead)
+            const playhead = document.getElementById('timelinePlayhead');
+            track.innerHTML = '';
+            track.appendChild(playhead);
+            
+            // Add markers for each keyframe
+            kfs.forEach((kf, index) => {
+                const scaledTime = scaledKeyframes[index]?.scaledTime ?? kf.time;
+                const position = (scaledTime / audioDuration) * 100;
+                
+                // Get last word for label
+                const words = kf.text.split(' ');
+                const lastWord = words[words.length - 1];
+                
+                const marker = document.createElement('div');
+                marker.className = 'timeline-marker';
+                marker.style.left = `${position}%`;
+                marker.setAttribute('data-word', `${lastWord} (${scaledTime.toFixed(2)}s)`);
+                marker.id = `timeline-marker-${index}`;
+                
+                // Click to seek
+                marker.addEventListener('click', () => {
+                    if (audioElement) {
+                        audioElement.currentTime = scaledTime;
+                        updateTextHighlight(scaledTime);
+                    }
+                });
+                
+                track.appendChild(marker);
+            });
+            
+            // Update labels
+            document.getElementById('timelineMid').textContent = `${(audioDuration / 2).toFixed(1)}s`;
+            document.getElementById('timelineEnd').textContent = `${audioDuration.toFixed(1)}s`;
+            document.getElementById('timelineInfo').textContent = `${kfs.length} keyframes | Max raw: ${maxKeyframeTime.toFixed(2)}s | Audio: ${audioDuration.toFixed(2)}s`;
+        }
+
+        // ========== TEXT DISPLAY ==========
+        function setupTextDisplay(text) {
+            const display = document.getElementById('descriptionDisplay');
+            
+            if (scaledKeyframes.length > 0) {
+                // Create word spans for highlighting
+                const words = text.split(/(\s+)/);
+                let wordIndex = 0;
+                
+                let html = '';
+                words.forEach(segment => {
+                    if (segment.trim()) {
+                        html += `<span id="word-${wordIndex}" class="word">${escapeHtml(segment)}</span>`;
+                        wordIndex++;
+                    } else {
+                        html += segment; // Keep whitespace
+                    }
+                });
+                
+                display.innerHTML = html;
+            } else {
+                display.textContent = text;
+            }
+        }
+
+        function updateTextHighlight(currentTime) {
+            // Find current keyframe
+            let activeIndex = 0;
+            for (let i = scaledKeyframes.length - 1; i >= 0; i--) {
+                if (currentTime >= scaledKeyframes[i].scaledTime) {
+                    activeIndex = i;
+                    break;
+                }
+            }
+
+            // Update word highlighting
+            document.querySelectorAll('.word').forEach((el, idx) => {
+                el.classList.remove('highlighted-word');
+                if (idx === activeIndex) {
+                    el.classList.add('highlighted-word');
+                }
+            });
+
+            // Update timestamp rows
+            document.querySelectorAll('.timestamp-row').forEach((el, idx) => {
+                el.classList.remove('active', 'passed');
+                if (idx === activeIndex) {
+                    el.classList.add('active');
+                    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else if (idx < activeIndex) {
+                    el.classList.add('passed');
+                }
+            });
+            
+            // Update timeline markers
+            document.querySelectorAll('.timeline-marker').forEach((el, idx) => {
+                el.style.background = idx <= activeIndex 
+                    ? '#22c55e' 
+                    : 'rgba(251, 191, 36, 0.6)';
+                el.style.width = idx === activeIndex ? '4px' : '2px';
+            });
+        }
+
+        // ========== AUDIO PLAYBACK ==========
+        function playAudio() {
+            if (!audioElement) return;
+
+            audioElement.play();
+            isPlaying = true;
+            
+            document.getElementById('descriptionDisplay').classList.add('playing');
+            document.getElementById('playBtn').disabled = true;
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = false;
+
+            updatePlayback();
+        }
+
+        function pauseAudio() {
+            if (!audioElement) return;
+
+            audioElement.pause();
+            isPlaying = false;
+            
+            document.getElementById('playBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
+        }
+
+        function stopAudio() {
+            if (!audioElement) return;
+
+            audioElement.pause();
+            audioElement.currentTime = 0;
+            isPlaying = false;
+            
+            document.getElementById('descriptionDisplay').classList.remove('playing');
+            document.getElementById('playBtn').disabled = false;
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('progressFill').style.width = '0%';
+            document.getElementById('currentTime').textContent = '0:00.000';
+
+            // Reset highlights
+            document.querySelectorAll('.word').forEach(el => el.classList.remove('highlighted-word'));
+            document.querySelectorAll('.timestamp-row').forEach(el => el.classList.remove('active', 'passed'));
+
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+            }
+        }
+
+        function updatePlayback() {
+            if (!isPlaying || !audioElement) return;
+
+            const currentTime = audioElement.currentTime;
+            const duration = audioElement.duration;
+
+            // Update progress bar
+            const progress = (currentTime / duration) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('currentTime').textContent = formatTime(currentTime);
+
+            // Update timeline playhead
+            const playhead = document.getElementById('timelinePlayhead');
+            if (playhead) {
+                playhead.style.left = `${progress}%`;
+            }
+
+            // Update text highlighting
+            updateTextHighlight(currentTime);
+
+            animationFrame = requestAnimationFrame(updatePlayback);
+        }
+
+        function enablePlayback() {
+            document.getElementById('playBtn').disabled = false;
+            document.getElementById('recalculateBtn').disabled = false;
+            document.getElementById('totalTime').textContent = formatTime(audioDuration);
+            document.getElementById('statsGrid').style.display = 'grid';
+        }
+
+        function updateStats() {
+            document.getElementById('statDuration').textContent = audioDuration.toFixed(2) + 's';
+            document.getElementById('statKeyframes').textContent = keyframes.length;
+            document.getElementById('statMaxTime').textContent = maxKeyframeTime.toFixed(2) + 's';
+            document.getElementById('statScaleFactor').textContent = scaleFactor.toFixed(4);
+        }
+        
+        function recalculateScaling() {
+            if (keyframes.length === 0 || !audioDuration) {
+                showError('No keyframes to recalculate. Generate TTS first.');
+                return;
+            }
+            
+            // Reprocess keyframes with new settings
+            processKeyframes(keyframes, maxKeyframeTime);
+            
+            // Update display
+            displayTimestamps(keyframes);
+            updateStats();
+            
+            // Reset text display
+            const description = document.getElementById('description').value.trim();
+            setupTextDisplay(description);
+            
+            showInfo('Scaling recalculated with new parameters.');
+        }
+
+        // ========== UTILITIES ==========
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00.000';
+            const mins = Math.floor(seconds / 60);
+            const secs = (seconds % 60).toFixed(3);
+            return `${mins}:${secs.padStart(6, '0')}`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(message) {
+            document.getElementById('errorContainer').innerHTML = `
+                <div class="error-message">❌ ${escapeHtml(message)}</div>
+            `;
+        }
+
+        function clearError() {
+            document.getElementById('errorContainer').innerHTML = '';
+        }
+
+        function showInfo(message) {
+            document.getElementById('infoContainer').innerHTML = `
+                <div class="info-message">ℹ️ ${escapeHtml(message)}</div>
+            `;
+        }
+
+        function clearInfo() {
+            document.getElementById('infoContainer').innerHTML = '';
+        }
+    </script>
+</body>
+</html>

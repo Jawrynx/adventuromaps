@@ -282,15 +282,13 @@
 
     /* Text Highlighting - Yellow glow for current word being spoken */
     .text-highlight {
-        background-color: rgba(255, 255, 0, 0.4);
-        background: linear-gradient(90deg, rgba(255, 255, 0, 0.5), rgba(255, 215, 0, 0.4));
-        color: #fff;
+        background-color: rgba(255, 255, 0, 0);
+        color: #eeff00;
         padding: 2px 6px;
         margin: 0 2px;
         border-radius: 4px;
         font-weight: 600;
         text-shadow: 0 0 10px rgba(255, 255, 0, 0.8);
-        box-shadow: 0 0 12px rgba(255, 255, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
         animation: highlightGlow 0.3s ease-out;
     }
 

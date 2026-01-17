@@ -107,13 +107,13 @@ exports.generateTTS = onCall({
 
 /**
  * Cloud Function to generate TTS with word-level timestamps
- * Uses SSML to get precise timing for each word
+ * Uses intelligent timing estimation based on word characteristics
  */
 exports.generateTTSWithTimestamps = onCall({
     enforceAppCheck: false,
     cors: true
 }, async (request) => {
-    const { text, voiceConfig } = request.data;
+    const { text, voiceConfig, audioConfig } = request.data;
     
     if (!text) {
         throw new Error('Text is required for TTS generation');
@@ -124,75 +124,41 @@ exports.generateTTSWithTimestamps = onCall({
     try {
         const client = new textToSpeech.TextToSpeechClient();
         
-        // Split text into words and create SSML with marks
-        const words = text.split(/\s+/);
-        let ssml = '<speak>';
-        words.forEach((word, index) => {
-            ssml += `<mark name="word${index}"/>${word} `;
-        });
-        ssml += '</speak>';
+        // Default speaking rate 1.0 for optimal timestamp synchronization
+        const speakingRate = audioConfig?.speakingRate || 1.0;
         
+        // Generate plain audio first (SSML marks don't give accurate word timing)
         const ttsRequest = {
-            input: { ssml: ssml },
+            input: { text: text },
             voice: {
                 languageCode: voiceConfig?.languageCode || 'en-GB',
-                name: voiceConfig?.name || 'en-GB-Neural2-C', // Female neural voice
-                ssmlGender: voiceConfig?.ssmlGender || 'FEMALE' // NEUTRAL not supported, use FEMALE
+                name: voiceConfig?.name || 'en-GB-Neural2-C',
+                ssmlGender: voiceConfig?.ssmlGender || 'FEMALE'
             },
             audioConfig: {
                 audioEncoding: 'MP3',
-                speakingRate: 0.9,
+                speakingRate: speakingRate,
                 pitch: 0,
                 volumeGainDb: 0
-            },
-            enableTimePointing: ['SSML_MARK']
+            }
         };
         
         const [response] = await client.synthesizeSpeech(ttsRequest);
         
-        // Generate keyframes from timepoints (raw timestamps - frontend will scale)
-        const keyframes = [];
-        let accumulatedText = '';
+        // Estimate word timing based on phonetic characteristics
+        const keyframes = estimateWordTimings(text, speakingRate);
         
-        if (response.timepoints && response.timepoints.length > 0) {
-            response.timepoints.forEach((tp, index) => {
-                const wordIndex = parseInt(tp.markName.replace('word', ''));
-                if (wordIndex < words.length) {
-                    accumulatedText += (accumulatedText ? ' ' : '') + words[wordIndex];
-                    const rawTime = parseFloat(tp.timeSeconds) || 0;
-                    keyframes.push({
-                        time: rawTime,
-                        text: accumulatedText
-                    });
-                }
-            });
-        } else {
-            // Fallback: generate estimated keyframes
-            const wordsPerSecond = 2.5;
-            let currentTime = 0;
-            words.forEach((word, index) => {
-                accumulatedText += (accumulatedText ? ' ' : '') + word;
-                keyframes.push({
-                    time: currentTime,
-                    text: accumulatedText
-                });
-                currentTime += 1 / wordsPerSecond;
-            });
-        }
-        
-        // Get the max keyframe time for frontend scaling
         const maxKeyframeTime = keyframes.length > 0 ? keyframes[keyframes.length - 1].time : 0;
-        logger.info("Keyframes generated", { count: keyframes.length, maxKeyframeTime });
-        
-        logger.info("TTS with timestamps completed", { 
-            keyframeCount: keyframes.length,
-            audioLength: response.audioContent ? response.audioContent.length : 0
+        logger.info("Keyframes generated", { 
+            count: keyframes.length, 
+            maxKeyframeTime,
+            speakingRate 
         });
         
         return {
             audioContent: response.audioContent.toString('base64'),
             keyframes: keyframes,
-            maxKeyframeTime: maxKeyframeTime, // For frontend scaling
+            maxKeyframeTime: maxKeyframeTime,
             success: true
         };
         
@@ -201,6 +167,84 @@ exports.generateTTSWithTimestamps = onCall({
         throw new Error(`TTS generation failed: ${error.message}`);
     }
 });
+
+/**
+ * Estimates word timings based on phonetic characteristics
+ * This provides more accurate timing than uniform distribution
+ * 
+ * @param {string} text - The input text
+ * @param {number} speakingRate - TTS speaking rate (default 1.0)
+ * @returns {Array} Array of keyframe objects with time and accumulated text
+ */
+function estimateWordTimings(text, speakingRate = 1.0) {
+    // Split into tokens while preserving punctuation info
+    const tokens = text.match(/[\w']+[.,!?;:]*|\s+/g) || [];
+    const words = tokens.filter(t => /\w/.test(t));
+    
+    const keyframes = [];
+    let currentTime = 0;
+    let accumulatedText = '';
+    
+    // Base timing constants (calibrated for Neural2 voices at rate 1.0)
+    const BASE_WORD_DURATION = 0.28;  // Base duration per word
+    const CHAR_DURATION = 0.035;       // Additional time per character
+    const SYLLABLE_BONUS = 0.08;       // Bonus for estimated syllables
+    
+    // Punctuation pauses
+    const PAUSE_PERIOD = 0.45;         // Full stop, question mark, exclamation
+    const PAUSE_COMMA = 0.25;          // Comma, semicolon
+    const PAUSE_COLON = 0.35;          // Colon
+    
+    // Vowel pattern for syllable estimation
+    const vowelPattern = /[aeiouy]+/gi;
+    
+    words.forEach((token, index) => {
+        // Extract word and trailing punctuation
+        const wordMatch = token.match(/^([\w']+)([.,!?;:]*)/);
+        if (!wordMatch) return;
+        
+        const word = wordMatch[1];
+        const punctuation = wordMatch[2] || '';
+        
+        // Add to accumulated text
+        accumulatedText += (accumulatedText ? ' ' : '') + token;
+        
+        // Estimate syllables (count vowel groups)
+        const syllables = (word.match(vowelPattern) || []).length || 1;
+        
+        // Calculate word duration based on characteristics
+        let wordDuration = BASE_WORD_DURATION;
+        wordDuration += Math.max(0, (word.length - 4) * CHAR_DURATION); // Longer words
+        wordDuration += Math.max(0, (syllables - 1) * SYLLABLE_BONUS);  // Multi-syllable bonus
+        
+        // Adjust for speaking rate
+        wordDuration /= speakingRate;
+        
+        // Add keyframe at the START of this word
+        keyframes.push({
+            time: currentTime,
+            text: accumulatedText,
+            word: word,
+            duration: wordDuration
+        });
+        
+        // Advance time by word duration
+        currentTime += wordDuration;
+        
+        // Add pause for punctuation
+        if (punctuation) {
+            if (/[.!?]/.test(punctuation)) {
+                currentTime += PAUSE_PERIOD / speakingRate;
+            } else if (/[,;]/.test(punctuation)) {
+                currentTime += PAUSE_COMMA / speakingRate;
+            } else if (/:/.test(punctuation)) {
+                currentTime += PAUSE_COLON / speakingRate;
+            }
+        }
+    });
+    
+    return keyframes;
+}
 
 /**
  * Cloud Function to set admin custom claim on a user

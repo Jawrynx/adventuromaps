@@ -218,12 +218,16 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
             console.log('Generating TTS audio via Firebase Cloud Function...');
             
             // Call the Firebase Cloud Function for TTS with timestamps
+            // Optimal settings from testing: speaking rate 1.0 for best timestamp accuracy
             const result = await generateTTSWithTimestampsFunction({
                 text: text,
                 voiceConfig: {
                     languageCode: 'en-GB', // English UK
                     name: 'en-GB-Neural2-C', // High-quality female neural voice
                     ssmlGender: 'FEMALE' // NEUTRAL not supported by Google TTS
+                },
+                audioConfig: {
+                    speakingRate: 1.0 // Optimal for timestamp synchronization
                 }
             });
             

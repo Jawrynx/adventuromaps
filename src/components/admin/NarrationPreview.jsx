@@ -113,13 +113,27 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, maxKeyframe
     useEffect(() => {
         if (!maxKeyframeTime || !duration || rawKeyframes.length === 0) return;
         
-        // Account for trailing silence in MP3 (Google TTS adds ~0.8s silence at end)
-        const TRAILING_SILENCE = 2; // seconds of silence at end of MP3
-        const effectiveDuration = Math.max(duration - TRAILING_SILENCE, duration * 0.86); // Don't reduce by more than 10%
+        // Optimal settings from TTS testing:
+        // - Trailing silence: 1.7 seconds (MP3 encoding adds silence at end)
+        // - Min scale factor: 90% (don't compress timing more than 10%)
+        const TRAILING_SILENCE = 1.7;
+        const MIN_SCALE_PERCENT = 0.70;
+        
+        // Calculate effective duration accounting for trailing silence
+        const effectiveDuration = Math.max(
+            duration - TRAILING_SILENCE,
+            duration * MIN_SCALE_PERCENT
+        );
         
         // Calculate scale factor to fit keyframes within effective audio duration
         const scaleFactor = effectiveDuration / maxKeyframeTime;
-        console.log('Scaling keyframes:', { maxKeyframeTime, audioDuration: duration, effectiveDuration, scaleFactor });
+        console.log('Scaling keyframes:', { 
+            maxKeyframeTime, 
+            audioDuration: duration, 
+            trailingSilence: TRAILING_SILENCE,
+            effectiveDuration, 
+            scaleFactor 
+        });
         
         const scaledKeyframes = rawKeyframes.map(kf => ({
             time: kf.time * scaleFactor,
