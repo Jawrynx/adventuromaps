@@ -117,7 +117,7 @@ function NarrationPreview({ description, narrationUrl, keyframesUrl, maxKeyframe
         // - Trailing silence: 1.7 seconds (MP3 encoding adds silence at end)
         // - Min scale factor: 90% (don't compress timing more than 10%)
         const TRAILING_SILENCE = 1.7;
-        const MIN_SCALE_PERCENT = 0.70;
+        const MIN_SCALE_PERCENT = 0.9;
         
         // Calculate effective duration accounting for trailing silence
         const effectiveDuration = Math.max(

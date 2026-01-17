@@ -51,6 +51,19 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
     const [generatedTTSBlob, setGeneratedTTSBlob] = useState(null); // Generated TTS audio blob
     const [generatedKeyframesBlob, setGeneratedKeyframesBlob] = useState(null); // Generated keyframes blob
     const [maxKeyframeTime, setMaxKeyframeTime] = useState(null); // Max keyframe time for scaling
+    const [selectedVoice, setSelectedVoice] = useState('en-GB-Neural2-C'); // Selected TTS voice
+    
+    // Available TTS voices
+    const TTS_VOICES = [
+        { id: 'en-GB-Neural2-C', name: 'English UK - Female (Clara)', gender: 'FEMALE', lang: 'en-GB' },
+        { id: 'en-GB-Neural2-A', name: 'English UK - Female (Amy)', gender: 'FEMALE', lang: 'en-GB' },
+        { id: 'en-GB-Neural2-B', name: 'English UK - Male (Brian)', gender: 'MALE', lang: 'en-GB' },
+        { id: 'en-GB-Neural2-D', name: 'English UK - Male (Daniel)', gender: 'MALE', lang: 'en-GB' },
+        { id: 'en-US-Neural2-C', name: 'English US - Female (Chloe)', gender: 'FEMALE', lang: 'en-US' },
+        { id: 'en-US-Neural2-E', name: 'English US - Female (Emily)', gender: 'FEMALE', lang: 'en-US' },
+        { id: 'en-US-Neural2-D', name: 'English US - Male (David)', gender: 'MALE', lang: 'en-US' },
+        { id: 'en-US-Neural2-J', name: 'English US - Male (James)', gender: 'MALE', lang: 'en-US' },
+    ];
     
     // ========== UI STATE ==========
     const [isSaving, setIsSaving] = useState(false);            // Prevent multiple save operations
@@ -217,14 +230,17 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
         try {
             console.log('Generating TTS audio via Firebase Cloud Function...');
             
+            // Get selected voice configuration
+            const voice = TTS_VOICES.find(v => v.id === selectedVoice) || TTS_VOICES[0];
+            
             // Call the Firebase Cloud Function for TTS with timestamps
             // Optimal settings from testing: speaking rate 1.0 for best timestamp accuracy
             const result = await generateTTSWithTimestampsFunction({
                 text: text,
                 voiceConfig: {
-                    languageCode: 'en-GB', // English UK
-                    name: 'en-GB-Neural2-C', // High-quality female neural voice
-                    ssmlGender: 'FEMALE' // NEUTRAL not supported by Google TTS
+                    languageCode: voice.lang,
+                    name: voice.id,
+                    ssmlGender: voice.gender
                 },
                 audioConfig: {
                     speakingRate: 1.0 // Optimal for timestamp synchronization
@@ -487,8 +503,53 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                     {ttsEnabled && (
                         <div style={{ marginLeft: '10px' }}>
                             <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '10px' }}>
-                                This will generate audio narration from your description using Google Cloud Text-to-Speech with English UK voice.
+                                This will generate audio narration from your description using Google Cloud Text-to-Speech.
                             </p>
+                            
+                            {/* Voice Selection */}
+                            <div style={{ marginBottom: '15px' }}>
+                                <label htmlFor="voice-select" style={{ 
+                                    display: 'block', 
+                                    fontSize: '13px', 
+                                    fontWeight: '600', 
+                                    color: '#374151', 
+                                    marginBottom: '5px' 
+                                }}>
+                                    Select Voice:
+                                </label>
+                                <select
+                                    id="voice-select"
+                                    value={selectedVoice}
+                                    onChange={(e) => setSelectedVoice(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        maxWidth: '300px',
+                                        padding: '8px 12px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #d1d5db',
+                                        backgroundColor: 'white',
+                                        fontSize: '14px',
+                                        color: '#374151',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <optgroup style={{color: 'black'}} label="English UK">
+                                        {TTS_VOICES.filter(v => v.lang === 'en-GB').map(voice => (
+                                            <option key={voice.id} value={voice.id} style={{color: 'black'}}>
+                                                {voice.name}
+                                            </option>
+                                        ))}
+                                    </optgroup>
+                                    <optgroup style={{color: 'black'}} label="English US">
+                                        {TTS_VOICES.filter(v => v.lang === 'en-US').map(voice => (
+                                            <option key={voice.id} value={voice.id} style={{color: 'black'}}>
+                                                {voice.name}
+                                            </option>
+                                        ))}
+                                    </optgroup>
+                                </select>
+                            </div>
+                            
                             <div style={{ marginBottom: '10px', padding: '8px', backgroundColor: '#dcfce7', borderRadius: '4px', border: '1px solid #16a34a' }}>
                                 <p style={{ fontSize: '12px', color: '#15803d', margin: '0', fontWeight: '600' }}>
                                     ✅ TTS Service Ready
