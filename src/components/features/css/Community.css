@@ -1,0 +1,772 @@
+/**
+ * Community.css - Styles for community hub page
+ * 
+ * Comprehensive styling for the community interface including
+ * post cards, search/filter functionality, and responsive design.
+ * Consistent with Guides.css and Profile.css styling.
+ */
+
+#community {
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 35, 1) 100%);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Geometric Grid Background */
+.geometric-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.1;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.grid-pattern {
+    width: 120%;
+    height: 120%;
+    background-image:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+        linear-gradient(rgba(0, 122, 255, 0.2) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 10s linear infinite;
+}
+
+@keyframes gridMove {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(20px, 20px);
+    }
+}
+
+/* Header Section */
+.community-header {
+    padding: 30px 40px;
+    position: relative;
+    z-index: 1;
+    border-bottom: 1px solid rgba(100, 200, 255, 0.1);
+}
+
+.community-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.community-title-section h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 200;
+    background: linear-gradient(135deg, #64c8ff 0%, #64ff96 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(100, 200, 255, 0.3);
+    letter-spacing: 1px;
+}
+
+.community-subtitle {
+    color: #9bb3c8;
+    font-size: 1rem;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+}
+
+.new-post-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, rgba(100, 255, 150, 0.25) 0%, rgba(80, 200, 150, 0.2) 100%);
+    color: #64ff96;
+    border: 1px solid rgba(100, 255, 150, 0.4);
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.new-post-btn:hover {
+    background: linear-gradient(135deg, rgba(100, 255, 150, 0.4) 0%, rgba(80, 200, 150, 0.3) 100%);
+    border-color: rgba(100, 255, 150, 0.6);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(100, 255, 150, 0.2), 0 0 20px rgba(100, 255, 150, 0.15);
+}
+
+.new-post-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Search and Filter Bar */
+.community-controls {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.search-container {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-radius: 10px;
+    color: #64c8ff;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.search-container input::placeholder {
+    color: rgba(100, 200, 255, 0.4);
+}
+
+.search-container input:focus {
+    outline: none;
+    background: linear-gradient(135deg, rgba(80, 130, 200, 0.35) 0%, rgba(100, 80, 180, 0.25) 100%);
+    border-color: rgba(100, 200, 255, 0.6);
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.3);
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(100, 200, 255, 0.5);
+    font-size: 14px;
+}
+
+.filter-container {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-radius: 10px;
+    color: #64c8ff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 140px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: rgba(100, 200, 255, 0.6);
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.3);
+}
+
+.filter-select option {
+    background: rgba(30, 30, 40, 0.98);
+    color: #64c8ff;
+}
+
+/* Main Content Area */
+.community-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px 40px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Posts Grid */
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 24px;
+}
+
+/* Post Card */
+.post-card {
+    background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
+    border: 1px solid rgba(100, 200, 255, 0.15);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.post-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(100, 200, 255, 0.4);
+    box-shadow: 0 16px 48px rgba(100, 200, 255, 0.15), 0 0 30px rgba(100, 200, 255, 0.1);
+}
+
+.post-card.featured {
+    border-color: rgba(255, 200, 100, 0.4);
+    box-shadow: 0 8px 32px rgba(255, 200, 100, 0.15);
+}
+
+.post-card.featured:hover {
+    border-color: rgba(255, 200, 100, 0.6);
+    box-shadow: 0 16px 48px rgba(255, 200, 100, 0.25);
+}
+
+/* Post Image */
+.post-card-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    position: relative;
+}
+
+.post-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.post-card:hover .post-card-image img {
+    transform: scale(1.05);
+}
+
+.featured-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, rgba(255, 200, 100, 0.9) 0%, rgba(255, 180, 80, 0.9) 100%);
+    color: #1a1a24;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Post Card Content */
+.post-card-content {
+    padding: 20px;
+}
+
+.post-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.post-category-badge {
+    padding: 4px 10px;
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(80, 150, 255, 0.15) 100%);
+    color: #64c8ff;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: 1px solid rgba(100, 200, 255, 0.3);
+}
+
+.post-card-title {
+    margin: 0 0 10px 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #ffffff;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.post-card-excerpt {
+    margin: 0 0 16px 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Post Tags */
+.post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.post-tag {
+    padding: 3px 8px;
+    background: rgba(100, 200, 255, 0.1);
+    color: rgba(100, 200, 255, 0.8);
+    font-size: 11px;
+    border-radius: 12px;
+    border: 1px solid rgba(100, 200, 255, 0.2);
+}
+
+/* Post Card Footer */
+.post-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(100, 200, 255, 0.1);
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.author-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(100, 200, 255, 0.8) 0%, rgba(80, 150, 200, 0.7) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    overflow: hidden;
+    border: 1px solid rgba(100, 200, 255, 0.3);
+}
+
+.author-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.author-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.post-date {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Post Stats */
+.post-stats {
+    display: flex;
+    gap: 16px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 13px;
+}
+
+.stat-item svg {
+    font-size: 12px;
+    color: rgba(100, 200, 255, 0.7);
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 40px;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 64px;
+    color: rgba(100, 200, 255, 0.3);
+    margin-bottom: 24px;
+}
+
+.empty-state h3 {
+    margin: 0 0 12px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #64c8ff;
+}
+
+.empty-state p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 15px;
+    max-width: 400px;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 40px;
+    color: #64c8ff;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(100, 200, 255, 0.2);
+    border-top-color: #64c8ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 40px;
+    padding-bottom: 20px;
+}
+
+.pagination-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-radius: 10px;
+    color: #64c8ff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(80, 130, 200, 0.35) 0%, rgba(100, 80, 180, 0.25) 100%);
+    border-color: rgba(100, 200, 255, 0.5);
+}
+
+.pagination-btn.active {
+    background: linear-gradient(135deg, rgba(100, 150, 255, 0.6) 0%, rgba(120, 80, 200, 0.5) 100%);
+    border-color: rgba(100, 200, 255, 0.6);
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.3);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Create Post Modal */
+.create-post-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.create-post-content {
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 35, 1) 100%);
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.5);
+}
+
+.create-post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid rgba(100, 200, 255, 0.1);
+}
+
+.create-post-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #64c8ff;
+}
+
+.close-modal-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-modal-btn:hover {
+    background: rgba(255, 100, 100, 0.2);
+    border-color: rgba(255, 100, 100, 0.4);
+    color: #ff6464;
+}
+
+.create-post-form {
+    padding: 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #64c8ff;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-radius: 10px;
+    color: #64c8ff;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: rgba(100, 200, 255, 0.4);
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    background: linear-gradient(135deg, rgba(80, 130, 200, 0.35) 0%, rgba(100, 80, 180, 0.25) 100%);
+    border-color: rgba(100, 200, 255, 0.6);
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.3);
+}
+
+.form-group textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 10px;
+}
+
+.btn-cancel {
+    padding: 12px 24px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(100, 200, 255, 0.2);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background: rgba(100, 200, 255, 0.1);
+    border-color: rgba(100, 200, 255, 0.4);
+    color: #64c8ff;
+}
+
+.btn-submit {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, rgba(100, 255, 150, 0.25) 0%, rgba(80, 200, 150, 0.2) 100%);
+    color: #64ff96;
+    border: 1px solid rgba(100, 255, 150, 0.4);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(100, 255, 150, 0.4) 0%, rgba(80, 200, 150, 0.3) 100%);
+    border-color: rgba(100, 255, 150, 0.6);
+}
+
+.btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Image Upload Preview */
+.image-upload-area {
+    border: 2px dashed rgba(100, 200, 255, 0.3);
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.image-upload-area:hover {
+    border-color: rgba(100, 200, 255, 0.6);
+    background: rgba(100, 200, 255, 0.05);
+}
+
+.image-upload-area.has-image {
+    padding: 10px;
+}
+
+.image-upload-area input[type="file"] {
+    display: none;
+}
+
+.upload-placeholder {
+    color: rgba(100, 200, 255, 0.6);
+}
+
+.upload-placeholder svg {
+    font-size: 32px;
+    margin-bottom: 12px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .community-header {
+        padding: 20px;
+    }
+
+    .community-title-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .community-title-section h1 {
+        font-size: 1.8rem;
+    }
+
+    .new-post-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .community-controls {
+        flex-direction: column;
+    }
+
+    .search-container {
+        min-width: 100%;
+    }
+
+    .filter-container {
+        width: 100%;
+    }
+
+    .filter-select {
+        flex: 1;
+    }
+
+    .community-content {
+        padding: 20px;
+    }
+
+    .posts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .post-card-footer {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .post-stats {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .community-header {
+        padding: 16px;
+    }
+
+    .community-title-section h1 {
+        font-size: 1.5rem;
+    }
+
+    .community-content {
+        padding: 16px;
+    }
+
+    .post-card-content {
+        padding: 16px;
+    }
+
+    .create-post-content {
+        margin: 10px;
+    }
+
+    .create-post-header,
+    .create-post-form {
+        padding: 16px;
+    }
+}

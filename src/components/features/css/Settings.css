@@ -1,5 +1,5 @@
 #settings {
-    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 50%, #151d2f 100%);
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 35, 1) 100%);
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -27,7 +27,7 @@
     text-align: center;
     padding: 40px 20px 30px 20px;
     background: linear-gradient(135deg, rgba(50, 80, 150, 0.3) 0%, rgba(80, 50, 150, 0.2) 100%);
-    border-bottom: 2px solid rgba(100, 200, 255, 0.3);
+    border-bottom: 1px solid rgba(100, 200, 255, 0.3);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(100, 200, 255, 0.2);
     position: relative;
     z-index: 1;
@@ -73,7 +73,7 @@
     
     .tab-button {
         background: linear-gradient(135deg, rgba(60, 100, 180, 0.4) 0%, rgba(80, 60, 150, 0.3) 100%);
-        border: 2px solid rgba(100, 200, 255, 0.2);
+        border: 1px solid rgba(100, 200, 255, 0.2);
         color: rgba(255, 255, 255, 0.7);
         padding: 14px 24px;
         border-radius: 12px;
@@ -139,7 +139,7 @@
             margin: 0 0 30px 0;
             font-size: 2rem;
             color: #64c8ff;
-            border-bottom: 3px solid rgba(100, 200, 255, 0.3);
+            border-bottom: 2px solid rgba(100, 200, 255, 0.3);
             padding-bottom: 15px;
             text-shadow: 0 0 12px rgba(100, 200, 255, 0.2);
             font-weight: 700;
@@ -172,7 +172,7 @@
         padding: 20px;
         margin-bottom: 12px;
         background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
-        border: 2px solid rgba(100, 200, 255, 0.15);
+        border: 1px solid rgba(100, 200, 255, 0.15);
         border-radius: 14px;
         cursor: pointer;
         transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -221,7 +221,7 @@
             height: 22px;
             cursor: pointer;
             accent-color: #64c8ff;
-            border: 2px solid rgba(100, 200, 255, 0.4);
+            border: 1px solid rgba(100, 200, 255, 0.4);
             border-radius: 6px;
             transition: all 0.3s ease;
             
@@ -245,7 +245,7 @@
         
         select {
             background: linear-gradient(135deg, rgba(60, 100, 180, 0.3) 0%, rgba(80, 60, 150, 0.2) 100%);
-            border: 2px solid rgba(100, 200, 255, 0.3);
+            border: 1px solid rgba(100, 200, 255, 0.3);
             color: #64c8ff;
             padding: 10px 14px;
             border-radius: 10px;
@@ -273,7 +273,7 @@
 .about-section {
     .app-info {
         background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
-        border: 2px solid rgba(100, 200, 255, 0.15);
+        border: 1px solid rgba(100, 200, 255, 0.15);
         padding: 25px;
         border-radius: 14px;
         margin-bottom: 25px;
@@ -309,7 +309,7 @@
     
     .credits-section {
         background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
-        border: 2px solid rgba(100, 200, 255, 0.15);
+        border: 1px solid rgba(100, 200, 255, 0.15);
         padding: 25px;
         border-radius: 14px;
         margin-bottom: 25px;
@@ -347,7 +347,7 @@
     .links-section {
         .link-button {
             background: linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(80, 150, 255, 0.1) 100%);
-            border: 2px solid rgba(100, 200, 255, 0.3);
+            border: 1px solid rgba(100, 200, 255, 0.3);
             color: #64c8ff;
             padding: 14px 24px;
             border-radius: 10px;
@@ -395,7 +395,7 @@
     align-items: center;
     gap: 18px;
     padding: 30px 0;
-    border-top: 2px solid rgba(100, 200, 255, 0.15);
+    border-top: 1px solid rgba(100, 200, 255, 0.15);
     margin-top: auto;
     flex-wrap: wrap;
     
@@ -404,7 +404,7 @@
         align-items: center;
         padding: 12px 18px;
         background: linear-gradient(135deg, rgba(255, 100, 100, 0.15) 0%, rgba(255, 80, 80, 0.1) 100%);
-        border: 2px solid rgba(255, 100, 100, 0.3);
+        border: 1px solid rgba(255, 100, 100, 0.3);
         border-radius: 10px;
         animation: pulse 2s ease-in-out infinite;
         
@@ -427,7 +427,7 @@
     
     .btn-primary, .btn-secondary {
         padding: 14px 32px;
-        border: 2px solid transparent;
+        border: 1px solid transparent;
         border-radius: 10px;
         font-size: 1.05rem;
         font-weight: 700;
@@ -587,7 +587,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 0 12px rgba(100, 200, 255, 0.5), 0 0 24px rgba(100, 200, 255, 0.3);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             
             &:hover {
                 background: linear-gradient(135deg, #74d8ff 0%, #5db8e8 100%);
@@ -602,7 +602,7 @@
             background: linear-gradient(135deg, #64c8ff 0%, #4da8d8 100%);
             border-radius: 50%;
             cursor: pointer;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.3s ease;
             box-shadow: 0 0 12px rgba(100, 200, 255, 0.5), 0 0 24px rgba(100, 200, 255, 0.3);
             

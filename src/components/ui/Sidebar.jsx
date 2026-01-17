@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import './css/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools, faBars, faTimes, faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools, faBars, faTimes, faUser, faSignOutAlt, faUsers } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Sidebar Component
@@ -102,6 +102,13 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, userDocume
                 >
                     <FontAwesomeIcon icon={faBook} />
                     {isOpen && <p>Guides/Safety</p>}
+                </div>
+                <div
+                    className={`sidebar-link ${location.pathname === '/community' || location.pathname.startsWith('/community/') ? 'active' : ''}`}
+                    onClick={() => handleSidebarClick('community', '/community')}
+                >
+                    <FontAwesomeIcon icon={faUsers} />
+                    {isOpen && <p>Community</p>}
                 </div>
                 {/* Admin Tools - only show for admin users */}
                 {userDocument?.userType === 'admin' && (

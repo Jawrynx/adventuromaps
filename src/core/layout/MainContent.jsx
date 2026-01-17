@@ -35,6 +35,8 @@ import Settings from '../../components/features/Settings';
 import Help from '../../components/features/Help';
 import Auth from '../../components/features/Auth';
 import Profile from '../../components/features/Profile';
+import Community from '../../components/features/Community';
+import CommunityPost from '../../components/features/CommunityPost';
 
 // Admin Components
 import Admin from '../../components/admin/Admin';
@@ -554,6 +556,8 @@ const MainContent = () => {
                 <Routes>
                     <Route path="/" element={<MainMap {...mapProps} onSmoothPanReady={handleSmoothPanReady} />} />
                     <Route path="/guides" element={<Guides user={user} />} />
+                    <Route path="/community" element={<Community user={user} userDocument={userDocument} />} />
+                    <Route path="/community/:postId" element={<CommunityPost user={user} userDocument={userDocument} />} />
                     <Route path="/profile" element={user ? <Profile user={user} /> : <div>Please log in to view your profile.</div>} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/help" element={<Help />} />
