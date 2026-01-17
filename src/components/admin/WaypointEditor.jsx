@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import NarrationPreview from './NarrationPreview';
 import { generateTTSWithTimestampsFunction } from '../../services/firebase';
+import useAlert from '../../hooks/useAlert';
 import './css/NarrationPreview.css';
 
 /**
@@ -29,6 +30,8 @@ import './css/NarrationPreview.css';
  * @returns {JSX.Element} The waypoint editing interface
  */
 function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
+    const { showAlert, AlertComponent } = useAlert();
+    
     // ========== TEXT CONTENT STATE ==========
     const [description, setDescription] = useState(waypointData.waypoint.description || '');
     const [instructions, setInstructions] = useState(waypointData.waypoint.instructions || '');
@@ -141,12 +144,12 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
      */
     const generateTTS = async () => {
         if (!description.trim()) {
-            alert('Please enter a description first before generating TTS.');
+            showAlert('Please enter a description first before generating TTS.', 'Notice', 'warning');
             return;
         }
 
         if (!window.speechSynthesis) {
-            alert('Text-to-Speech is not supported in your browser.');
+            showAlert('Text-to-Speech is not supported in your browser.', 'Error', 'error');
             return;
         }
 
@@ -158,7 +161,7 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
 
         } catch (error) {
             console.error('TTS Generation failed:', error);
-            alert('Failed to generate TTS. Please try again.');
+            showAlert('Failed to generate TTS. Please try again.', 'Error', 'error');
         } finally {
             setIsGeneratingTTS(false);
         }
@@ -169,7 +172,7 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
      */
     const downloadTTSAudio = () => {
         if (!generatedTTSBlob) {
-            alert('No TTS audio generated yet. Please generate TTS first.');
+            showAlert('No TTS audio generated yet. Please generate TTS first.', 'Notice', 'warning');
             return;
         }
 
@@ -189,7 +192,7 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
      */
     const downloadTTSKeyframes = () => {
         if (!generatedKeyframesBlob) {
-            alert('No keyframes generated yet. Please generate TTS first.');
+            showAlert('No keyframes generated yet. Please generate TTS first.', 'Notice', 'warning');
             return;
         }
 
@@ -273,7 +276,7 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 errorMessage = 'Permission denied. Please check Firebase function permissions.';
             }
             
-            alert(`TTS Generation Failed:\n\n${errorMessage}\n\nYou can still upload audio manually using the file upload below.`);
+            showAlert(`TTS Generation Failed:\n\n${errorMessage}\n\nYou can still upload audio manually using the file upload below.`, 'TTS Error', 'error');
             throw error;
         }
     };
@@ -341,7 +344,7 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
             onClose(); // Close editor after successful save
         } catch (error) {
             console.error('Failed to save waypoint:', error);
-            alert('Failed to save waypoint. Please try again.');
+            showAlert('Failed to save waypoint. Please try again.', 'Error', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -388,8 +391,10 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
     }
 
     return (
-        <div className="waypoint-editor">
-            <h3>{waypointData.waypoint.name}</h3>
+        <>
+            {AlertComponent}
+            <div className="waypoint-editor">
+                <h3>{waypointData.waypoint.name}</h3>
             <p>Lat: {waypointData.waypoint.lat.toFixed(6)}</p>
             <p>Long: {waypointData.waypoint.lng.toFixed(6)}</p>
 
@@ -450,13 +455,13 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                 {/* TTS Option */}
                 <div className="tts-option" style={{ 
                     margin: '10px 0', 
-                    padding: '15px', 
-                    border: '2px solid #e5e7eb', 
+                    width: '100%', 
+                    border: '1px solid #e5e7eb', 
                     borderRadius: '8px',
                     backgroundColor: ttsEnabled ? '#f0f9ff' : '#f9fafb',
                     borderColor: ttsEnabled ? '#3b82f6' : '#e5e7eb'
                 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '5px' }}>
                         <input
                             type="checkbox"
                             id="tts-enabled"
@@ -678,7 +683,8 @@ function WaypointEditor({ waypointData, itemType, onClose, onSave }) {
                     Cancel
                 </button>
             </div>
-        </div>
+            </div>
+        </>
     );
 }
 

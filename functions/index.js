@@ -13,6 +13,10 @@ const logger = require("firebase-functions/logger");
 
 const { onCall } = require("firebase-functions/v2/https");
 
+// Firebase Admin SDK for custom claims
+const admin = require('firebase-admin');
+admin.initializeApp();
+
 // 🔥 CRITICAL FIX: The correct way to import secrets in Firebase Functions v2
 const { defineSecret } = require('firebase-functions/params'); 
 
@@ -195,6 +199,137 @@ exports.generateTTSWithTimestamps = onCall({
     } catch (error) {
         logger.error("TTS with timestamps failed", { error: error.message });
         throw new Error(`TTS generation failed: ${error.message}`);
+    }
+});
+
+/**
+ * Cloud Function to set admin custom claim on a user
+ * Only existing admins can promote other users to admin
+ * For the first admin, you'll need to call this from Firebase console or use a one-time setup
+ */
+exports.setAdminClaim = onCall({
+    enforceAppCheck: false,
+    cors: true
+}, async (request) => {
+    const { targetUserId } = request.data;
+    const callerUid = request.auth?.uid;
+    
+    if (!targetUserId) {
+        throw new Error('Target user ID is required');
+    }
+    
+    logger.info("setAdminClaim called", { callerUid, targetUserId });
+    
+    try {
+        // Check if caller is authenticated
+        if (!callerUid) {
+            throw new Error('You must be logged in to perform this action');
+        }
+        
+        // Check if caller is already an admin (skip for first admin setup)
+        const callerRecord = await admin.auth().getUser(callerUid);
+        const callerIsAdmin = callerRecord.customClaims?.admin === true;
+        
+        // Get count of existing admins to allow first admin setup
+        // For security, you might want to remove this after first admin is set
+        const isFirstAdminSetup = !callerIsAdmin && callerUid === targetUserId;
+        
+        if (!callerIsAdmin && !isFirstAdminSetup) {
+            throw new Error('Only admins can grant admin privileges');
+        }
+        
+        // Set admin claim on target user
+        await admin.auth().setCustomUserClaims(targetUserId, { admin: true });
+        
+        logger.info("Admin claim set successfully", { targetUserId });
+        
+        return {
+            success: true,
+            message: `Admin privileges granted to user ${targetUserId}. User must sign out and sign back in for changes to take effect.`
+        };
+        
+    } catch (error) {
+        logger.error("Failed to set admin claim", { error: error.message });
+        throw new Error(`Failed to set admin claim: ${error.message}`);
+    }
+});
+
+/**
+ * Cloud Function to remove admin custom claim from a user
+ * Only admins can remove admin privileges
+ */
+exports.removeAdminClaim = onCall({
+    enforceAppCheck: false,
+    cors: true
+}, async (request) => {
+    const { targetUserId } = request.data;
+    const callerUid = request.auth?.uid;
+    
+    if (!targetUserId) {
+        throw new Error('Target user ID is required');
+    }
+    
+    logger.info("removeAdminClaim called", { callerUid, targetUserId });
+    
+    try {
+        if (!callerUid) {
+            throw new Error('You must be logged in to perform this action');
+        }
+        
+        // Check if caller is admin
+        const callerRecord = await admin.auth().getUser(callerUid);
+        if (callerRecord.customClaims?.admin !== true) {
+            throw new Error('Only admins can remove admin privileges');
+        }
+        
+        // Prevent self-demotion (optional safety)
+        if (callerUid === targetUserId) {
+            throw new Error('You cannot remove your own admin privileges');
+        }
+        
+        // Remove admin claim
+        await admin.auth().setCustomUserClaims(targetUserId, { admin: false });
+        
+        logger.info("Admin claim removed successfully", { targetUserId });
+        
+        return {
+            success: true,
+            message: `Admin privileges removed from user ${targetUserId}`
+        };
+        
+    } catch (error) {
+        logger.error("Failed to remove admin claim", { error: error.message });
+        throw new Error(`Failed to remove admin claim: ${error.message}`);
+    }
+});
+
+/**
+ * Cloud Function to check if a user has admin privileges
+ */
+exports.checkAdminStatus = onCall({
+    enforceAppCheck: false,
+    cors: true
+}, async (request) => {
+    const callerUid = request.auth?.uid;
+    
+    if (!callerUid) {
+        return { isAdmin: false, message: 'Not authenticated' };
+    }
+    
+    try {
+        const userRecord = await admin.auth().getUser(callerUid);
+        const isAdmin = userRecord.customClaims?.admin === true;
+        
+        logger.info("Admin status checked", { callerUid, isAdmin });
+        
+        return {
+            isAdmin: isAdmin,
+            userId: callerUid
+        };
+        
+    } catch (error) {
+        logger.error("Failed to check admin status", { error: error.message });
+        return { isAdmin: false, error: error.message };
     }
 });
 

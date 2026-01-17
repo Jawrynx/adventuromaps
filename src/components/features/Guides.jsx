@@ -56,6 +56,11 @@ function Guides({user}) {
 
   return (
     <div id='guides'>
+      {/* Geometric Grid Background */}
+      <div className="geometric-grid">
+        <div className="grid-pattern"></div>
+      </div>
+      
       <GuidesBar 
         onCategorySelect={handleCategorySelect} 
         user={user} 

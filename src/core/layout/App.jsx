@@ -59,12 +59,12 @@ const App = () => {
         if (typeof window !== 'undefined' && window.electron && typeof window.electron.setTitleBarOverlay === 'function') {
             try {
                 if ((!apiKey && !apiError) || apiError) {
-                    // Loading or error: set titlebar background to app background (#0f1419)
+                    // Loading or error: set titlebar background to app background
                     // Keep control symbols white so buttons remain visible
-                    window.electron.setTitleBarOverlay({ color: '#0f1419', symbolColor: '#ffffff', height: 32 });
+                    window.electron.setTitleBarOverlay({ color: 'rgba(20, 20, 35, 1)', symbolColor: '#ffffff', height: 32 });
                 } else if (apiKey) {
                     // Normal app state: restore themed colors
-                    window.electron.setTitleBarOverlay({ color: '#16213e', symbolColor: '#ffffff', height: 32 });
+                    window.electron.setTitleBarOverlay({ color: 'rgba(20, 20, 35, 1)', symbolColor: '#ffffff', height: 32 });
                 }
             } catch (e) {
                 // ignore failures (API not supported on platform)
@@ -79,7 +79,7 @@ const App = () => {
             <>
                 {/* Fixed draggable titlebar spacer so window can be moved while loading */}
                 {typeof window !== 'undefined' && window.electron && (
-                    <div style={{position: 'fixed', top: 0, left: 0, right: 0, height: 32, backgroundColor: '#0f1419', WebkitAppRegion: 'drag', zIndex: 9999}}>
+                    <div style={{position: 'fixed', top: 0, left: 0, right: 0, height: 32, backgroundColor: 'rgba(20, 20, 35, 1)', WebkitAppRegion: 'drag', zIndex: 9999}}>
                         {/* Reserve right-side as no-drag so native controls remain clickable */}
                         <div style={{position: 'absolute', top: 0, right: 0, bottom: 0, width: 140, WebkitAppRegion: 'no-drag'}} />
                     </div>
@@ -100,7 +100,7 @@ const App = () => {
             <>
                 {/* Fixed draggable titlebar spacer so window can be moved while showing error */}
                 {typeof window !== 'undefined' && window.electron && (
-                    <div style={{position: 'fixed', top: 0, left: 0, right: 0, height: 32, backgroundColor: '#0f1419', WebkitAppRegion: 'drag', zIndex: 9999}}>
+                    <div style={{position: 'fixed', top: 0, left: 0, right: 0, height: 32, backgroundColor: '#1E1E28', WebkitAppRegion: 'drag', zIndex: 9999}}>
                         <div style={{position: 'absolute', top: 0, right: 0, bottom: 0, width: 140, WebkitAppRegion: 'no-drag'}} />
                     </div>
                 )}

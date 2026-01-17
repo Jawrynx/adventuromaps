@@ -18,11 +18,14 @@ import LoadingSpinner from '../ui/LoadingSpinner';
 import AdvancedLoadingScreen from '../ui/AdvancedLoadingScreen';
 import WaypointEditor from './WaypointEditor';
 import CreateItemForm from './CreateItemForm';
+import useAlert from '../../hooks/useAlert';
 
 // Firebase services
 import { collection, addDoc, query, where, getDocs, orderBy, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { uploadFile } from '../../services/uploadService';
+import GeometricGrid from '../ui/GeometricGrid';
+
 
 // Styles
 import './css/Admin.css';
@@ -50,6 +53,8 @@ import './css/Admin.css';
  * @returns {JSX.Element} The admin tools interface
  */
 function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish, hasCreatedItemInfo, onHasCreatedItemInfoChange, onCenterMapOverRoutes }) {
+    const { showAlert, AlertComponent } = useAlert();
+    
     // ========== WAYPOINT EDITING STATE ==========
     const [editingWaypoint, setEditingWaypoint] = useState(null); // Currently editing waypoint data
     
@@ -396,7 +401,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             );
 
             setEditingItem(null);
-            alert("Item updated successfully!");
+            showAlert('Item updated successfully!', 'Success', 'success');
 
             if (shouldLoad) {
                 const updatedItem = {
@@ -413,13 +418,13 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
             }
         } catch (error) {
             console.error("Error updating item:", error);
-            alert("Error updating item. Please try again.");
+            showAlert('Error updating item. Please try again.', 'Error', 'error');
         }
     };
 
     const handleSaveButtonClick = () => {
         if (!itemData || !itemId) {
-            alert("Please create or load an item first.");
+            showAlert('Please create or load an item first.', 'Notice', 'warning');
             return;
         }
         const updatedItemData = {
@@ -431,7 +436,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
     const handlePublishButtonClick = () => {
         if (!itemData || !itemId) {
-            alert("Please create or load an item first.");
+            showAlert('Please create or load an item first.', 'Notice', 'warning');
             return;
         }
         onPublish(itemData, itemId);
@@ -451,6 +456,8 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
 
     return (
         <div id='admin'>
+            {AlertComponent}
+            <GeometricGrid />
             <h2>Admin Tools</h2>
             {isCreatingItem ? (
                 <>

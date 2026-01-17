@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 const AdvancedLoadingScreen = ({ 
     text = "Loading...", 
     fullScreen = false, 
-    backgroundColor = 'linear-gradient(180deg, #0f1419 0%, #16213e 100%)',
+    backgroundColor = 'transparent',
     style = {} 
 }) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -128,8 +128,8 @@ const containerStyles = {
         width: '120%',
         height: '120%',
         backgroundImage: `
-            linear-gradient(90deg, rgba(255, 251, 0, 0.1) 1px, transparent 1px),
-            linear-gradient(rgba(0, 122, 255, 0.1) 1px, transparent 1px)
+            linear-gradient(90deg, rgba(255, 251, 0, 0.2) 1px, transparent 1px),
+            linear-gradient(rgba(0, 122, 255, 0.2) 1px, transparent 1px)
         `,
         backgroundSize: '40px 40px',
         animation: 'gridMove 10s linear infinite'
@@ -140,7 +140,7 @@ const containerStyles = {
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 2,
-        position: 'relative'
+        position: 'relative',
     },
     loadingRingsContainer: {
         width: '180px',

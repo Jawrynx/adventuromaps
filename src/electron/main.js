@@ -138,13 +138,13 @@ const createWindow = async () => {
       webSecurity: true, // Enable web security
     },
     autoHideMenuBar: true, // Hide the top menu bar
-    backgroundColor: '#0f1419', // Dark background
+    backgroundColor: '#1E1E28', // Dark background
     show: false, // Don't show until ready
     titleBarStyle: 'hidden', // Required for titleBarOverlay to work
     // Platform-specific titlebar styling
     ...(process.platform === 'win32' && {
       titleBarOverlay: {
-        color: '#16213e',
+        color: '#1E1E28',
         symbolColor: '#ffffff',
         height: 32
       }

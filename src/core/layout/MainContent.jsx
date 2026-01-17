@@ -38,6 +38,7 @@ import Profile from '../../components/features/Profile';
 
 // Admin Components
 import Admin from '../../components/admin/Admin';
+import AdminSetup from '../../components/admin/AdminSetup';
 
 // Settings
 import { getSetting } from '../../services/settingsService';
@@ -525,7 +526,7 @@ const MainContent = () => {
                     left: 0,
                     right: 0,
                     height: '33px',
-                    backgroundColor: '#16213e',
+                    background: 'linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 35, 1) 100%)',
                     WebkitAppRegion: 'drag',
                     userSelect: 'none',
                     zIndex: 9999
@@ -557,6 +558,7 @@ const MainContent = () => {
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/admin" element={<Admin mapId="8a2ac04064bf3833742b72c4" />} />
+                    <Route path="/admin-setup" element={<AdminSetup />} />
                 </Routes>
                 
                 {/* Modal overlay for Explore feature */}

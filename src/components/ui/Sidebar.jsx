@@ -159,7 +159,7 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, userDocume
                 </div>
                 <div className='sidebar-logo'>
                     <img src="/assets/adventuro-logo-min.png" alt="AdventuroMaps" width="32px" />
-                    {isOpen && <span>AdventuroMaps 1.1.0</span>}
+                    {isOpen && <span>AdventuroMaps 1.1.6</span>}
                 </div>
             </div>
         </div>

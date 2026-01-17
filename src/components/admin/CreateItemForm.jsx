@@ -9,6 +9,7 @@
  */
 
 import React, { useState } from 'react';
+import useAlert from '../../hooks/useAlert';
 import './css/CreateItemForm.css';
 
 // Default form state for new items
@@ -38,6 +39,8 @@ const initialFormState = {
  * @returns {JSX.Element} The item creation/editing form
  */
 function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing }) {
+    const { showAlert, AlertComponent } = useAlert();
+    
     // Initialize form data - either from provided initial data (editing mode) or default state
     const [formData, setFormData] = useState(initialData ? {
         ...initialData,
@@ -166,7 +169,7 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
             }
         } catch (error) {
             console.error(isEditing ? "Failed to update item:" : "Failed to save item:", error);
-            alert("An error occurred. Please try again.");
+            showAlert('An error occurred. Please try again.', 'Error', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -185,8 +188,10 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
     };
 
     return (
-        <form onSubmit={handleSubmit} className="create-item-form">
-            <h2>{isEditing ? 'Edit Item' : 'Create a New Item'}</h2>
+        <>
+            {AlertComponent}
+            <form onSubmit={handleSubmit} className="create-item-form">
+                <h2>{isEditing ? 'Edit Item' : 'Create a New Item'}</h2>
             <div className="form-group">
                 <label>
                     Item Type:
@@ -321,7 +326,8 @@ function CreateItemForm({ onComplete, onCancel, saveItem, initialData, isEditing
                     Cancel
                 </button>
             </div>
-        </form>
+            </form>
+        </>
     );
 }
 

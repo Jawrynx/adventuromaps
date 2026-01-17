@@ -19,6 +19,9 @@ import { useSettings } from "../../services/SettingsContext.jsx";
 
 // UI Components
 import SearchFilter from "../ui/SearchFilter.jsx";
+import GeometricGrid from '../ui/GeometricGrid.jsx';
+import AdvancedLoadingScreen from "../ui/AdvancedLoadingScreen.jsx";
+import useAlert from '../../hooks/useAlert';
 
 /**
  * Explore Component
@@ -36,6 +39,8 @@ import SearchFilter from "../ui/SearchFilter.jsx";
  * @returns {JSX.Element} Exploration browser interface
  */
 function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
+    const { showAlert, AlertComponent } = useAlert();
+    
     // ========== COMPONENT STATE ==========
     const [showMore, setShowMore] = useState({});       // Tracks which exploration cards are expanded
     const [explorations, setExplorations] = useState([]); // Array of published exploration data
@@ -77,9 +82,24 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
                 });
                 setIncludeNarration(initialNarrationState);
 
+                // Preload all images before showing content
+                if (fetchedExplorations.length > 0) {
+                    const imagePromises = fetchedExplorations.map(exploration => {
+                        return new Promise((resolve) => {
+                            const img = new Image();
+                            img.onload = () => resolve();
+                            img.onerror = () => resolve(); // Resolve even on error to not block UI
+                            img.src = exploration.image_url;
+                        });
+                    });
+
+                    await Promise.all(imagePromises);
+                }
+
+                setLoading(false);
+
             } catch (error) {
                 console.error("Error fetching explorations:", error);
-            } finally {
                 setLoading(false);
             }
         };
@@ -99,8 +119,8 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
             const updatedNarrationState = {};
             explorations.forEach(exploration => {
                 // Only update if not already set by user preference
-                updatedNarrationState[exploration.id] = includeNarration[exploration.id] !== undefined 
-                    ? includeNarration[exploration.id] 
+                updatedNarrationState[exploration.id] = includeNarration[exploration.id] !== undefined
+                    ? includeNarration[exploration.id]
                     : defaultNarration;
             });
             setIncludeNarration(updatedNarrationState);
@@ -186,7 +206,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
 
                 // Extract route path coordinates, ensuring array format
                 const routePath = Array.isArray(routeData.coordinates) ? routeData.coordinates : [];
-                
+
                 // Build complete route structure for demo
                 structuredRoutes.push({
                     id: routeId,
@@ -210,12 +230,12 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
             } else {
                 // Inform user that demo cannot be started
                 console.warn("No waypoints or path found for this exploration.");
-                alert("No waypoints or path found to start a demo.");
+                showAlert('No waypoints or path found to start a demo.', 'Notice', 'warning');
             }
         } catch (error) {
             // Handle any errors during data fetching
             console.error("Error fetching demo data:", error);
-            alert("Error loading demo data. Please check the console for details.");
+            showAlert('Error loading demo data. Please check the console for details.', 'Error', 'error');
         }
     };
 
@@ -238,7 +258,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
             // Extract and flatten coordinate arrays
             const fetchedRoutes = routesSnapshot.docs.map(doc => doc.data().coordinates);
             const flattenedCoordinates = fetchedRoutes.flat();
-            
+
             // Display route on map
             onSelectRoute(flattenedCoordinates);
         } catch (error) {
@@ -249,7 +269,7 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
     if (loading) {
         return (
             <div id='explore'>
-                <p>Loading explorations...</p>
+                <AdvancedLoadingScreen text="Loading explorations..." />
             </div>
         );
     }
@@ -264,91 +284,100 @@ function Explore({ onSelectRoute, onStartDemo, user, isAuthLoading }) {
 
     return (
         <div id='explore'>
+            {AlertComponent}
+            {/* Geometric Grid Background */}
+            <GeometricGrid />
             <h1>Exploration <FontAwesomeIcon icon={faCompass} /></h1>
-            
+
             <div className="content-wrapper">
                 {/* Search and Filter Component */}
-                <SearchFilter 
+                <SearchFilter
                     items={explorations}
                     onFilteredItems={setFilteredExplorations}
                     placeholder="Search explorations..."
                 />
-                
+
                 <ul>
                     {filteredExplorations.map((item, idx) => {
-                    const isExpanded = expandedId === item.id;
-                    return (
-                        <li
-                            key={item.id}
-                            className={`explore-item${isExpanded ? ' item-expanded' : ''}`}
-                            onClick={() => handleRouteClick(item)}
-                        >
-                            <img src={item.image_url} alt={item.name} width='100%' height='100px' className='explore-image' />
-                            <h2>{item.name}</h2>
-                            <p>{item.description}</p>
-                            <div className={`explore-more-container${isExpanded ? ' expanded' : ''}`}>
-                                <div className="explore-more">
-                                    <div className="route-info">
-                                        <h3>Route Summary</h3>
-                                        <p className='long-description'>{item.subDescription}</p>
-                                        {item.keyLocations && (
-                                            <div className="route-locations">
-                                                <h3>Key Locations</h3>
+                        const isExpanded = expandedId === item.id;
+                        return (
+                            <li
+                                key={item.id}
+                                className={`explore-item${isExpanded ? ' item-expanded' : ''}`}
+                                onClick={() => handleRouteClick(item)}
+                            >
+                                <img
+                                    src={item.image_url}
+                                    alt={item.name}
+                                    width='100%'
+                                    height='100px'
+                                    className='explore-image'
+                                />
+                                <h2>{item.name}</h2>
+                                <p>{item.description}</p>
+                                <div className={`explore-more-container${isExpanded ? ' expanded' : ''}`}>
+                                    <div className="explore-more">
+                                        <div className="route-info">
+                                            <h3>Route Summary</h3>
+                                            <p className='long-description'>{item.subDescription}</p>
+                                            {item.keyLocations && (
+                                                <div className="route-locations">
+                                                    <h3>Key Locations</h3>
+                                                    <ul>
+                                                        {item.keyLocations.map((location, index) => (
+                                                            <li key={index}>{location}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            {item.estimatedTime && (
+                                                <div className="route-estimated-time">
+                                                    <h3>Estimated Time</h3>
+                                                    <p>{item.estimatedTime}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {item.categories && (
+                                            <div className="route-topics">
+                                                <h3>Topics Covered</h3>
                                                 <ul>
-                                                    {item.keyLocations.map((location, index) => (
-                                                        <li key={index}>{location}</li>
+                                                    {item.categories.map((category, index) => (
+                                                        <li key={index}>{category}</li>
                                                     ))}
                                                 </ul>
                                             </div>
                                         )}
-                                        {item.estimatedTime && (
-                                            <div className="route-estimated-time">
-                                                <h3>Estimated Time</h3>
-                                                <p>{item.estimatedTime}</p>
-                                            </div>
-                                        )}
                                     </div>
-                                    {item.categories && (
-                                        <div className="route-topics">
-                                            <h3>Topics Covered</h3>
-                                            <ul>
-                                                {item.categories.map((category, index) => (
-                                                    <li key={index}>{category}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
                                 </div>
-                            </div>
-                            <div className="explore-buttons">
-                                <button className='more-button' onClick={(e) => { e.stopPropagation(); toggleShowMore(item.id); }}>
-                                    <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />
-                                </button>
-                                <button className='demo-button' onClick={(e) => { e.stopPropagation(); handleDemoClick(item); }}>
-                                    <FontAwesomeIcon icon={faPlay} />
-                                </button>
-                                <button className='options-button' onClick={(e) => { e.stopPropagation(); toggleOptions(item.id); }}>
-                                    <FontAwesomeIcon icon={faEllipsisV} />
-                                </button>
-                            </div>
+                                <div className="explore-buttons">
+                                    <button className='more-button' onClick={(e) => { e.stopPropagation(); toggleShowMore(item.id); }}>
+                                        <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />
+                                    </button>
+                                    <button className='demo-button' onClick={(e) => { e.stopPropagation(); handleDemoClick(item); }}>
+                                        <FontAwesomeIcon icon={faPlay} />
+                                    </button>
+                                    <button className='options-button' onClick={(e) => { e.stopPropagation(); toggleOptions(item.id); }}>
+                                        <FontAwesomeIcon icon={faEllipsisV} />
+                                    </button>
+                                </div>
 
-                            {/* Options Menu */}
-                            <div className={`options-menu ${showOptions[item.id] ? 'options-menu-open' : 'options-menu-closed'}`} onClick={(e) => e.stopPropagation()}>
-                                <div className="option-item">
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={includeNarration[item.id] || false}
-                                            onChange={(e) => handleNarrationToggle(item.id, e.target.checked)}
-                                        />
-                                        Include Narration
-                                    </label>
+                                {/* Options Menu */}
+                                <div className={`options-menu ${showOptions[item.id] ? 'options-menu-open' : 'options-menu-closed'}`} onClick={(e) => e.stopPropagation()}>
+                                    <div className="option-item">
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={includeNarration[item.id] || false}
+                                                onChange={(e) => handleNarrationToggle(item.id, e.target.checked)}
+                                            />
+                                            Include Narration
+                                        </label>
+                                    </div>
                                 </div>
-                            </div>
-                        </li>
-                    );
-                })}
-            </ul>
+                            </li>
+                        );
+                    })}
+                </ul>
             </div>
         </div>
     );

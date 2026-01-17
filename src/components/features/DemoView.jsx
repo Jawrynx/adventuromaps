@@ -41,7 +41,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     const audioRef = useRef(null);                              // Reference to audio element for auto-play control
     const [keyframes, setKeyframes] = useState([]);             // Parsed keyframes for text highlighting
     const [currentKeyframeIndex, setCurrentKeyframeIndex] = useState(-1); // Currently active keyframe
-    const [textSegments, setTextSegments] = useState([]);       // Text split into segments for highlighting
+    const [fullDescription, setFullDescription] = useState(''); // Full description text for fallback
     const [isNarrationEnabled, setIsNarrationEnabled] = useState(includeNarration); // Local narration toggle state
     const [isTransitioning, setIsTransitioning] = useState(false); // Loading state during waypoint transitions
     const [targetWaypointIndex, setTargetWaypointIndex] = useState(currentWaypointIndex); // Target waypoint during transition
@@ -104,17 +104,19 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     /**
      * Fetches and parses keyframes for text highlighting
      * 
-     * Downloads the keyframes file and processes it to create text segments
-     * that can be highlighted in sync with audio narration.
+     * Downloads the keyframes file and processes it. Keyframes contain cumulative
+     * text that builds up over time, synced with audio narration.
      * Only loads when not transitioning to avoid content loading during map panning.
      */
     useEffect(() => {
         const loadKeyframes = async () => {
             const currentWaypoint = waypoints[currentWaypointIndex];
+            const description = currentWaypoint?.description || "";
+            setFullDescription(description);
+            
             if (isTransitioning || !currentWaypoint?.keyframes_url || !isNarrationEnabled) {
                 if (!isTransitioning) {
                     setKeyframes([]);
-                    setTextSegments([{text: currentWaypoint?.description || "", isKeyframe: false}]);
                     setCurrentKeyframeIndex(-1);
                 }
                 return;
@@ -125,7 +127,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                 const response = await fetch(currentWaypoint.keyframes_url);
                 const keyframesText = await response.text();
                 
-                // Parse keyframes (format: timestamp:text)
+                // Parse keyframes (format: timestamp:cumulative_text)
                 const parsedKeyframes = keyframesText
                     .split('\n')
                     .filter(line => line.trim())
@@ -138,71 +140,18 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                         
                         return {
                             time: parseFloat(timestamp),
-                            text: text
+                            text: text  // This is cumulative text up to this point
                         };
                     })
-                    .filter(keyframe => keyframe !== null);
+                    .filter(keyframe => keyframe !== null)
+                    .sort((a, b) => a.time - b.time);
 
                 setKeyframes(parsedKeyframes);
-
-                // Split description into segments based on keyframe text
-                const description = currentWaypoint.description || "";
-                
-                // Create segments by finding each keyframe text in the description
-                let segments = [];
-                let processedText = "";
-                let lastIndex = 0;
-
-                // Sort keyframes by position in text (not by time)
-                const keyframesWithPositions = parsedKeyframes
-                    .map((keyframe, index) => {
-                        const position = description.indexOf(keyframe.text);
-                        return { ...keyframe, position, keyframeIndex: index };
-                    })
-                    .filter(kf => kf.position !== -1)
-                    .sort((a, b) => a.position - b.position);
-
-
-                keyframesWithPositions.forEach((keyframe) => {
-                    // Add text before this keyframe (including spaces and punctuation)
-                    if (keyframe.position > lastIndex) {
-                        const beforeText = description.substring(lastIndex, keyframe.position);
-                        if (beforeText) { // Include spaces and whitespace
-                            segments.push({
-                                text: beforeText,
-                                isKeyframe: false
-                            });
-                        }
-                    }
-
-                    // Add the keyframe text
-                    segments.push({
-                        text: keyframe.text,
-                        isKeyframe: true,
-                        keyframeIndex: keyframe.keyframeIndex
-                    });
-
-                    lastIndex = keyframe.position + keyframe.text.length;
-                });
-
-                // Add any remaining text after the last keyframe
-                if (lastIndex < description.length) {
-                    const remainingText = description.substring(lastIndex);
-                    if (remainingText) { // Include all remaining text including spaces
-                        segments.push({
-                            text: remainingText,
-                            isKeyframe: false
-                        });
-                    }
-                }
-
-                setTextSegments(segments.length > 0 ? segments : [{text: description, isKeyframe: false}]);
                 setCurrentKeyframeIndex(-1);
 
             } catch (error) {
                 console.error('Error loading keyframes:', error);
                 setKeyframes([]);
-                setTextSegments([{text: currentWaypoint?.description || "", isKeyframe: false}]);
                 setCurrentKeyframeIndex(-1);
             }
         };
@@ -211,10 +160,10 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     }, [currentWaypointIndex, isNarrationEnabled, waypoints, isTransitioning]);
 
     /**
-     * Updates text highlighting based on audio playback time
+     * Updates current keyframe index based on audio playback time
      * 
-     * Monitors audio current time and highlights the appropriate text segment
-     * based on keyframe timestamps for synchronized reading experience.
+     * Monitors audio current time and updates the keyframe index
+     * for highlighting the current word being spoken.
      */
     useEffect(() => {
         const handleTimeUpdate = () => {
@@ -231,21 +180,63 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                 }
             }
 
-            setCurrentKeyframeIndex(activeIndex);
+            if (activeIndex !== currentKeyframeIndex) {
+                setCurrentKeyframeIndex(activeIndex);
+            }
+        };
+        
+        // Handle audio ended - show all text without highlight
+        const handleEnded = () => {
+            // Set to last keyframe to show all text
+            if (keyframes.length > 0) {
+                setCurrentKeyframeIndex(keyframes.length); // Beyond last = show all, no highlight
+            }
         };
 
         if (audioRef.current) {
             audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
             audioRef.current.addEventListener('loadedmetadata', handleTimeUpdate);
+            audioRef.current.addEventListener('ended', handleEnded);
         }
 
         return () => {
             if (audioRef.current) {
                 audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
                 audioRef.current.removeEventListener('loadedmetadata', handleTimeUpdate);
+                audioRef.current.removeEventListener('ended', handleEnded);
             }
         };
-    }, [keyframes]);
+    }, [keyframes, currentKeyframeIndex]);
+    
+    /**
+     * Renders the description text with the current word highlighted
+     * 
+     * Splits the cumulative text into: already spoken (normal) + current word (highlighted)
+     */
+    const renderHighlightedText = () => {
+        if (keyframes.length === 0 || currentKeyframeIndex < 0) {
+            // No keyframes or audio hasn't started - show placeholder
+            return <span className="text-placeholder">▶ Play to begin...</span>;
+        }
+        
+        // If past the last keyframe (audio ended), show full text without highlight
+        if (currentKeyframeIndex >= keyframes.length) {
+            return <span>{keyframes[keyframes.length - 1].text}</span>;
+        }
+        
+        const currentText = keyframes[currentKeyframeIndex].text;
+        const previousText = currentKeyframeIndex > 0 ? keyframes[currentKeyframeIndex - 1].text : '';
+        
+        // The highlighted part is what's new in the current keyframe
+        const highlightedPart = currentText.substring(previousText.length);
+        
+        return (
+            <>
+                <span>{previousText}</span>
+                <span className="text-highlight">{highlightedPart}</span>
+            </>
+        );
+    };
 
     /**
      * Navigates to the next waypoint or exits demo
@@ -579,25 +570,14 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                         )}
                         
                         <div className="waypoint-info">
-                            <p>
-                                {textSegments.map((segment, index) => {
-                                    // Handle both string and object formats
-                                    if (typeof segment === 'string') {
-                                        return <span key={index}>{segment}</span>;
-                                    }
-                                    
-                                    // Render text segment with conditional highlighting
-                                    const isHighlighted = segment.isKeyframe && segment.keyframeIndex === currentKeyframeIndex;
-                                    
-                                    return (
-                                        <span
-                                            key={index}
-                                            className={isHighlighted ? 'text-highlight' : ''}
-                                        >
-                                            {segment.text}
-                                        </span>
-                                    );
-                                })}
+                            <p className="narration-text">
+                                {/* Show highlighted text when narration is enabled and has keyframes */}
+                                {isNarrationEnabled && keyframes.length > 0 ? (
+                                    renderHighlightedText()
+                                ) : (
+                                    /* Show full description when narration is disabled or no keyframes */
+                                    <span>{fullDescription || currentWaypoint.description}</span>
+                                )}
                             </p>
                         </div>
                     </>

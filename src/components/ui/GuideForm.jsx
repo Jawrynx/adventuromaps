@@ -4,6 +4,8 @@ import { collection, addDoc, doc, updateDoc, serverTimestamp } from 'firebase/fi
 import { auth, db } from '../../services/firebase';
 import { uploadFile } from '../../services/uploadService';
 import { getUserDocument } from '../../services/userService';
+import Notification from './Notification';
+import useAlert from '../../hooks/useAlert';
 import './css/GuideForm.css';
 
 /**
@@ -30,6 +32,8 @@ import './css/GuideForm.css';
  * @returns {JSX.Element} Guide creation/editing form
  */
 function GuideForm({ existingGuide, onClose, onSuccess }) {
+    const { showAlert, AlertComponent } = useAlert();
+    
     const [formData, setFormData] = useState({
         type: existingGuide?.type || 'Guide',
         category: existingGuide?.category || 'Getting Started',
@@ -42,6 +46,11 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
     const [selectedFile, setSelectedFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(existingGuide?.image_url || null);
     const [isUploading, setIsUploading] = useState(false);
+    const [notification, setNotification] = useState({
+        isVisible: false,
+        message: '',
+        type: 'success'
+    });
 
     // Automatically set author from current user's Firestore document
     useEffect(() => {
@@ -174,26 +183,46 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
                     ...dataToSave,
                     updated_at: serverTimestamp()
                 });
+                
+                // Show success alert
+                await showAlert(
+                    'Your guide has been updated successfully!',
+                    'Guide Updated',
+                    'success'
+                );
             } else {
                 // Create new guide
                 await addDoc(collection(db, 'posts'), {
                     ...dataToSave,
                     created_at: serverTimestamp()
                 });
+                
+                // Show success alert
+                await showAlert(
+                    'Your guide has been published successfully!',
+                    'Guide Published',
+                    'success'
+                );
             }
             
             onSuccess();
             onClose();
         } catch (error) {
             console.error('Error saving guide:', error);
-            alert('Error saving guide. Please try again.');
+            await showAlert(
+                'There was an error saving your guide. Please try again.',
+                'Error',
+                'error'
+            );
         } finally {
             setIsUploading(false);
         }
     };
 
     return (
-        <form className="guide-form animate-in" onSubmit={handleSubmit}>
+        <>
+            {AlertComponent}
+            <form className="guide-form animate-in" onSubmit={handleSubmit}>
             <h2>{existingGuide ? 'Edit Guide' : 'Create New Guide'}</h2>
             
             <div className="form-group">
@@ -292,7 +321,8 @@ function GuideForm({ existingGuide, onClose, onSuccess }) {
                     {isUploading ? 'Uploading...' : (existingGuide ? 'Update Guide' : 'Publish Guide')}
                 </button>
             </div>
-        </form>
+            </form>
+        </>
     );
 }
 

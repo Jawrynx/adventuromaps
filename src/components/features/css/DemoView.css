@@ -32,6 +32,7 @@
             height: 350px;
             overflow-y: scroll;
             flex-grow: 1;
+            width: 100%;
 
             p {
                 font-size: 1.5rem;
@@ -268,31 +269,41 @@
         }
     }
 
-    /* Text Highlighting for Synchronized Narration */
-    .text-highlight {
-        background-color: rgba(255, 255, 0, 0.3);
-        background: linear-gradient(90deg, rgba(255, 255, 0, 0.4), rgba(255, 215, 0, 0.3));
-        color: #fff;
-        padding: 2px 4px;
-        border-radius: 3px;
-        font-weight: 500;
-        transition: all 0.2s ease-in-out;
-        box-shadow: 0 0 8px rgba(255, 255, 0, 0.2);
-        animation: highlightPulse 0.3s ease-in-out;
+    /* Progressive Text Display for Narration */
+    .narration-text {
+        min-height: 100px;
     }
 
-    /* Smooth highlight transition animation */
-    @keyframes highlightPulse {
+    .text-placeholder {
+        color: rgba(255, 255, 255, 0.4);
+        font-style: italic;
+        font-size: 1.2rem;
+    }
+
+    /* Text Highlighting - Yellow glow for current word being spoken */
+    .text-highlight {
+        background-color: rgba(255, 255, 0, 0.4);
+        background: linear-gradient(90deg, rgba(255, 255, 0, 0.5), rgba(255, 215, 0, 0.4));
+        color: #fff;
+        padding: 2px 6px;
+        margin: 0 2px;
+        border-radius: 4px;
+        font-weight: 600;
+        text-shadow: 0 0 10px rgba(255, 255, 0, 0.8);
+        box-shadow: 0 0 12px rgba(255, 255, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
+        animation: highlightGlow 0.3s ease-out;
+    }
+
+    /* Glowing animation when new word appears */
+    @keyframes highlightGlow {
         0% {
-            background-color: rgba(255, 255, 0, 0.1);
-            transform: scale(1);
-        }
-        50% {
-            background-color: rgba(255, 255, 0, 0.5);
-            transform: scale(1.02);
+            background-color: rgba(255, 255, 0, 0.8);
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.9), 0 0 40px rgba(255, 215, 0, 0.6);
+            transform: scale(1.05);
         }
         100% {
-            background-color: rgba(255, 255, 0, 0.3);
+            background-color: rgba(255, 255, 0, 0.4);
+            box-shadow: 0 0 12px rgba(255, 255, 0, 0.5), 0 0 20px rgba(255, 215, 0, 0.3);
             transform: scale(1);
         }
     }

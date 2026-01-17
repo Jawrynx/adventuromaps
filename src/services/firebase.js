@@ -32,5 +32,10 @@ export const getMapDataSecurely = httpsCallable(functions, 'getMapDataSecurely')
 export const generateTTSFunction = httpsCallable(functions, 'generateTTS');
 export const generateTTSWithTimestampsFunction = httpsCallable(functions, 'generateTTSWithTimestamps');
 
+// Admin functions
+export const setAdminClaimFunction = httpsCallable(functions, 'setAdminClaim');
+export const removeAdminClaimFunction = httpsCallable(functions, 'removeAdminClaim');
+export const checkAdminStatusFunction = httpsCallable(functions, 'checkAdminStatus');
+
 export const db = getFirestore(app);
 export { auth, storage, ref, uploadBytes, getDownloadURL, functions };

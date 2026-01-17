@@ -21,6 +21,9 @@ import { useSettings } from "../../services/SettingsContext.jsx";
 
 // UI Components
 import SearchFilter from "../ui/SearchFilter.jsx";
+import GeometricGrid from '../ui/GeometricGrid.jsx';
+import AdvancedLoadingScreen from "../ui/AdvancedLoadingScreen.jsx";
+import useAlert from '../../hooks/useAlert';
 
 /**
  * Adventure Component
@@ -36,6 +39,8 @@ import SearchFilter from "../ui/SearchFilter.jsx";
  * @returns {JSX.Element} Adventure browser interface
  */
 function Adventure({ onSelectRoute, onStartDemo }) {
+  const { showAlert, AlertComponent } = useAlert();
+  
   // ========== COMPONENT STATE ==========
   const [showMore, setShowMore] = useState({});     // Tracks which adventure cards are expanded
   const [adventures, setAdventures] = useState([]); // Array of published adventure data
@@ -77,9 +82,24 @@ function Adventure({ onSelectRoute, onStartDemo }) {
         });
         setIncludeNarration(initialNarrationState);
 
+        // Preload all images before showing content
+        if (fetchedAdventures.length > 0) {
+          const imagePromises = fetchedAdventures.map(adventure => {
+            return new Promise((resolve) => {
+              const img = new Image();
+              img.onload = () => resolve();
+              img.onerror = () => resolve(); // Resolve even on error to not block UI
+              img.src = adventure.image_url;
+            });
+          });
+
+          await Promise.all(imagePromises);
+        }
+
+        setLoading(false);
+
       } catch (error) {
         console.error("Error fetching adventures:", error);
-      } finally {
         setLoading(false);
       }
     };
@@ -213,12 +233,12 @@ function Adventure({ onSelectRoute, onStartDemo }) {
       } else {
         // Inform user that demo cannot be started
         console.warn("No waypoints or path found for this adventure.");
-        alert("No waypoints or path found to start a demo.");
+        showAlert('No waypoints or path found to start a demo.', 'Notice', 'warning');
       }
     } catch (error) {
       // Handle any errors during data fetching
       console.error("Error fetching demo data:", error);
-      alert("Error loading demo data. Please check the console for details.");
+      showAlert('Error loading demo data. Please check the console for details.', 'Error', 'error');
     }
   };
 
@@ -253,7 +273,7 @@ function Adventure({ onSelectRoute, onStartDemo }) {
   if (loading) {
     return (
       <div id='adventure'>
-        <p>Loading adventures...</p>
+        <AdvancedLoadingScreen text="Loading adventures..." />
       </div>
     );
   }
@@ -270,6 +290,10 @@ function Adventure({ onSelectRoute, onStartDemo }) {
   // ========== MAIN RENDER ==========
   return (
     <div id='adventure'>
+      {AlertComponent}
+      {/* Geometric Grid Background */}
+      <GeometricGrid />
+      
       <h1>Adventure <FontAwesomeIcon icon={faHatCowboySide} /></h1>
       
       <div className="content-wrapper">
@@ -284,7 +308,13 @@ function Adventure({ onSelectRoute, onStartDemo }) {
           {filteredAdventures.map(item => (
           <li key={item.id} className={`adventure-item ${showMore[item.id] ? 'item-expanded' : ''}`} onClick={() => handleRouteClick(item)}>
             {/* Adventure card image */}
-            <img src={item.image_url} alt={item.name} width='100%' height='100px' className='adventure-image' />
+            <img 
+              src={item.image_url} 
+              alt={item.name} 
+              width='100%' 
+              height='100px' 
+              className='adventure-image'
+            />
             
             {/* Basic adventure information */}
             <h2>{item.name}</h2>

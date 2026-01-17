@@ -4,19 +4,7 @@
     height: 100%;
     overflow: hidden;
     width: 100%;
-    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 50%, #151d2f 100%);
-}
-
-.posts-container::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 50% 50%, rgba(100, 200, 255, 0.08) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 35, 1) 100%);
 }
 
 .posts-list {
@@ -80,7 +68,7 @@
     overflow-x: hidden;
     padding: 0;
     box-sizing: border-box;
-    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 50%, #151d2f 100%);
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 35, 1) 100%);
     z-index: 2;
 }
 
@@ -136,7 +124,7 @@
 
 .post-item {
     background: linear-gradient(135deg, rgba(100, 200, 255, 0.08) 0%, rgba(100, 255, 150, 0.05) 100%);
-    border: 2px solid rgba(100, 200, 255, 0.15);
+    border: 1px solid rgba(100, 200, 255, 0.15);
     border-radius: 16px;
     padding: 0;
     cursor: pointer;
@@ -156,7 +144,7 @@
     overflow: hidden;
     background: linear-gradient(135deg, rgba(100, 200, 255, 0.1) 0%, rgba(100, 255, 150, 0.05) 100%);
     position: relative;
-    border-bottom: 2px solid rgba(100, 200, 255, 0.1);
+    border-bottom:1px solid rgba(100, 200, 255, 0.1);
 }
 
 .post-item-image img {
@@ -302,7 +290,7 @@
     padding: 20px;
     text-align: center;
     color: white;
-    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 50%, #151d2f 100%);
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 35, 1) 100%);
     position: relative;
     z-index: 1;
 }
@@ -372,7 +360,7 @@
     padding: 40px;
     text-align: center;
     color: white;
-    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 50%, #151d2f 100%);
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 35, 1) 100%);
     position: relative;
     z-index: 1;
 }

@@ -247,11 +247,11 @@ function Settings() {
                                 <h4>Application Information</h4>
                                 <div className="info-item">
                                     <span>Version:</span>
-                                    <span>1.1.0</span>
+                                    <span>1.1.6</span>
                                 </div>
                                 <div className="info-item">
                                     <span>Build Date:</span>
-                                    <span>31 December 2025</span>
+                                    <span>17/01/2026</span>
                                 </div>
                                 <div className="info-item">
                                     <span>Platform:</span>

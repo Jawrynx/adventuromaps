@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import useAlert from '../../hooks/useAlert';
 import './css/GuideSelector.css';
 
 /**
@@ -24,6 +25,7 @@ import './css/GuideSelector.css';
  * @returns {JSX.Element} Guide selection interface
  */
 function GuideSelector({ onGuideSelect, onClose }) {
+    const { showAlert, AlertComponent } = useAlert();
     const [guides, setGuides] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -48,7 +50,7 @@ function GuideSelector({ onGuideSelect, onClose }) {
                 setGuides(fetchedGuides);
             } catch (error) {
                 console.error('Error fetching guides:', error);
-                alert('Error loading guides. Please try again.');
+                showAlert('Error loading guides. Please try again.', 'Error', 'error');
             } finally {
                 setLoading(false);
             }
@@ -58,20 +60,30 @@ function GuideSelector({ onGuideSelect, onClose }) {
     }, []);
 
     if (loading) {
-        return <div className="guide-selector-loading">Loading guides...</div>;
+        return (
+            <>
+                {AlertComponent}
+                <div className="guide-selector-loading">Loading guides...</div>
+            </>
+        );
     }
 
     if (guides.length === 0) {
         return (
-            <div className="guide-selector-empty">
-                <p>No guides found.</p>
-                <button className="adm-button" onClick={onClose}>Close</button>
-            </div>
+            <>
+                {AlertComponent}
+                <div className="guide-selector-empty">
+                    <p>No guides found.</p>
+                    <button className="adm-button" onClick={onClose}>Close</button>
+                </div>
+            </>
         );
     }
 
     return (
-        <div className="guide-selector">
+        <>
+            {AlertComponent}
+            <div className="guide-selector">
             <h2>Select Guide to Modify</h2>
             <div className="guides-list">
                 {guides.map(guide => (
@@ -92,7 +104,8 @@ function GuideSelector({ onGuideSelect, onClose }) {
             <div className="guide-selector-actions">
                 <button className="adm-button red" onClick={onClose}>Cancel</button>
             </div>
-        </div>
+            </div>
+        </>
     );
 }
 
