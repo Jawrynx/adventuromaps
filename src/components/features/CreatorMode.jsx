@@ -157,6 +157,14 @@ function CreatorMode({ mapId, user, userDocument }) {
     const drawingStateRef = useRef({ isDrawing, tempPath });
 
     /**
+     * Check if the current center is within the UK area
+     * UK approximate bounds: lat 49-61, lng -9 to 3
+     */
+    const isCenterInUK = (center) => {
+        return center.lat >= 49 && center.lat <= 61 && center.lng >= -9 && center.lng <= 3;
+    };
+
+    /**
      * Show welcome notification for creators on first load
      */
     useEffect(() => {
@@ -1426,7 +1434,7 @@ function CreatorMode({ mapId, user, userDocument }) {
                             }}
                         >
                             <option value="google" style={{ background: '#0f1419', color: '#64c8ff' }}>Google Maps</option>
-                            <option value="osmap" style={{ background: '#0f1419', color: '#64c8ff' }}>OS Maps (UK Only)</option>
+                            <option value="osmap" disabled={currentZoom <= 7 || !isCenterInUK(currentCenter)} style={{ background: '#0f1419', color: '#64c8ff' }}>OS Maps (UK Only)</option>
                         </select>
                     </div>
                     <div style={{
@@ -1435,7 +1443,12 @@ function CreatorMode({ mapId, user, userDocument }) {
                         lineHeight: '1.4',
                         fontStyle: 'italic'
                     }}>
-                        Switch between maps anytime - coordinates transfer automatically
+                        {currentZoom <= 7 
+                            ? 'Zoom in further to enable OS Maps switching' 
+                            : !isCenterInUK(currentCenter)
+                            ? 'Center the map over the UK to enable OS Maps switching'
+                            : 'Switch between maps anytime - coordinates transfer automatically'
+                        }
                     </div>
                 </div>
             )}
