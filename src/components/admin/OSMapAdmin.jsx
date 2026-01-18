@@ -97,10 +97,7 @@ function MapCenterController({ mapRef }) {
     const map = useMap();
     
     useEffect(() => {
-        // Center on Britain when component mounts
-        map.setView([52.5, -1.5], 7);
-        
-        // Expose map instance to parent via ref
+        // Expose map instance to parent via ref only (do not force center/zoom)
         if (mapRef) {
             mapRef.current = map;
         }
@@ -117,8 +114,8 @@ function OSMapAdmin({ mapRef, isDrawing, tempPath, mousePosition, routes, onAddP
     const OS_API_KEY = '2sTNADGPe2f2TPaVSrqNWzyGGGCcDWFS';
     
     // Default center on UK - centered on England
-    const defaultCenter = [52.5, -1.5];
-    const defaultZoom = 7;
+    const defaultCenter = [52.5, -2.0];
+    const defaultZoom = 1;
 
     // Calculate live path for drawing preview
     const livePath = isDrawing && mousePosition && tempPath.length > 0
@@ -137,6 +134,7 @@ function OSMapAdmin({ mapRef, isDrawing, tempPath, mousePosition, routes, onAddP
                 crs={crs27700}
                 minZoom={0}
                 maxZoom={13}
+                maxBoundsViscosity={1.0}
                 key="osmap-container"
             >
                 {/* OS Maps Leisure Layer - EPSG:27700 */}
@@ -145,6 +143,7 @@ function OSMapAdmin({ mapRef, isDrawing, tempPath, mousePosition, routes, onAddP
                     attribution='&copy; <a href="http://www.ordnancesurvey.co.uk/">Ordnance Survey</a>'
                     minZoom={0}
                     maxZoom={13}
+                    maxNativeZoom={9}
                 />
                 
                 {/* Force center on UK and expose map ref */}

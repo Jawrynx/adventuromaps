@@ -70,7 +70,7 @@ import SuggestionsPortal from './SuggestionsPortal';
 import OSMapAdmin from './OSMapAdmin';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUndo, faMap, faHiking, faNewspaper, faUsers, faComments, faArrowLeft, faPlus, faEdit, faTrash, faEye, faSearch} from '@fortawesome/free-solid-svg-icons';
+import { faUndo, faMap, faHiking, faNewspaper, faUsers, faComments, faArrowLeft, faPlus, faEdit, faTrash, faEye, faSearch, faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
 
 // Map Components
 import MapRoutes from '../map/MapRoutes';
@@ -85,6 +85,7 @@ import './css/Admin.css';
 
 // Settings
 import { useSettings } from '../../services/SettingsContext.jsx';
+import { map } from 'leaflet';
 
 /**
  * AdminMenu Component
@@ -414,6 +415,7 @@ function Admin({ mapId }) {
 
     // ========== MAP PROVIDER STATE ==========
     const [mapProvider, setMapProvider] = useState('google'); // 'google' or 'osmap'
+    const [isMapSelectorMinimized, setIsMapSelectorMinimized] = useState(false); // Whether map selector is minimized
 
     // ========== ROUTE & DRAWING STATE ==========
     const [routes, setRoutes] = useState([]);               // Array of completed routes with waypoints
@@ -1539,7 +1541,7 @@ function Admin({ mapId }) {
                 style={{
                     position: 'absolute',
                     top: '12px',
-                    left: `${mapProvider === 'osmap' ? '10px' : '320px'}`,
+                    left: `${mapProvider === 'osmap' ? '10px' : '200px'}`,
                     zIndex: 1001,
                     padding: '10px 16px',
                     borderRadius: '8px',
@@ -1571,80 +1573,142 @@ function Admin({ mapId }) {
             </button>
 
             {/* Map Provider Selector */}
-            <div style={{
-                position: 'absolute',
-                top: `${mapProvider === 'osmap' ? '60px' : '10px'}`,
-                left: '10px',
-                zIndex: 1000,
-                background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
-                border: '2px solid rgba(255, 165, 0, 0.6)',
-                borderRadius: '12px',
-                boxShadow: '0 4px 16px rgba(255, 165, 0, 0.3)',
-                padding: '16px 20px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                minWidth: '280px'
-            }}>
-                <div style={{
-                    background: 'linear-gradient(90deg, #ff6b35 0%, #f7931e 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    letterSpacing: '1px',
-                    textTransform: 'uppercase',
-                    marginBottom: '4px'
-                }}>
-                    ⚠ Important - Cannot Change Later
-                </div>
-                <div style={{
-                    display: 'flex',
-                    gap: '10px',
-                    alignItems: 'center'
-                }}>
-                    <label style={{ 
-                        fontSize: '14px', 
-                        fontWeight: '600', 
+            {isMapSelectorMinimized ? (
+                /* Minimized Button */
+                <button
+                    onClick={() => setIsMapSelectorMinimized(false)}
+                    style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        left: '10px',
+                        zIndex: 1000,
+                        background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
+                        border: '2px solid rgba(100, 200, 255, 0.6)',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 16px rgba(100, 200, 255, 0.3)',
+                        padding: '10px 16px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
                         color: '#64c8ff',
-                        letterSpacing: '0.5px',
-                        whiteSpace: 'nowrap'
-                    }}>Select Map:</label>
-                    <select
-                        value={mapProvider}
-                        onChange={(e) => setMapProvider(e.target.value)}
-                        disabled={hasCreatedItemInfo}
-                        style={{
-                            flex: 1,
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(100, 200, 255, 0.4)',
-                            fontSize: '14px',
-                            fontWeight: '600',
-                            cursor: hasCreatedItemInfo ? 'not-allowed' : 'pointer',
-                            background: hasCreatedItemInfo 
-                                ? 'linear-gradient(135deg, rgba(100, 100, 100, 0.15) 0%, rgba(80, 80, 80, 0.1) 100%)'
-                                : 'linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(100, 255, 150, 0.1) 100%)',
-                            color: hasCreatedItemInfo ? '#888' : '#64c8ff',
-                            outline: 'none',
-                            transition: 'all 0.3s ease',
-                            opacity: hasCreatedItemInfo ? 0.6 : 1
-                        }}
-                    >
-                        <option value="google" style={{ background: '#0f1419', color: '#64c8ff' }}>Google Maps</option>
-                        <option value="osmap" style={{ background: '#0f1419', color: '#64c8ff' }}>OS Maps (UK Only)</option>
-                    </select>
-                </div>
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, rgba(22, 33, 62, 0.95) 0%, rgba(30, 45, 80, 0.95) 100%)';
+                        e.target.style.borderColor = 'rgba(100, 200, 255, 0.8)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(100, 200, 255, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)';
+                        e.target.style.borderColor = 'rgba(100, 200, 255, 0.6)';
+                        e.target.style.boxShadow = '0 4px 16px rgba(100, 200, 255, 0.3)';
+                    }}
+                >
+                    <FontAwesomeIcon icon={faMap} />
+                    SELECT MAP
+                </button>
+            ) : (
+                /* Expanded Selector */
                 <div style={{
-                    fontSize: '11px',
-                    color: '#ff9966',
-                    lineHeight: '1.4',
-                    fontStyle: 'italic'
+                    position: 'absolute',
+                    bottom: '10px',
+                    left: '10px',
+                    zIndex: 1000,
+                    background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
+                    border: '2px solid rgba(100, 200, 255, 0.6)',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 16px rgba(100, 200, 255, 0.3)',
+                    padding: '16px 20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    minWidth: '280px'
                 }}>
-                    Choose your map before creating your project
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <div style={{
+                            color: '#64c8ff',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase'
+                        }}>
+                            🗺️ Map Provider Selector
+                        </div>
+                        <button
+                            onClick={() => setIsMapSelectorMinimized(true)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#64c8ff',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '4px',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'rgba(100, 200, 255, 0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'none';
+                            }}
+                            title="Minimize"
+                        >
+                            <FontAwesomeIcon icon={faChevronDown} />
+                        </button>
+                    </div>
+                    <div style={{
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'center'
+                    }}>
+                        <label style={{ 
+                            fontSize: '14px', 
+                            fontWeight: '600', 
+                            color: '#64c8ff',
+                            letterSpacing: '0.5px',
+                            whiteSpace: 'nowrap'
+                        }}>Select Map:</label>
+                        <select
+                            value={mapProvider}
+                            onChange={(e) => setMapProvider(e.target.value)}
+                            style={{
+                                flex: 1,
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid rgba(100, 200, 255, 0.4)',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                background: 'linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(100, 255, 150, 0.1) 100%)',
+                                color: '#64c8ff',
+                                outline: 'none',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            <option value="google" style={{ background: '#0f1419', color: '#64c8ff' }}>Google Maps</option>
+                            <option value="osmap" style={{ background: '#0f1419', color: '#64c8ff' }}>OS Maps (UK Only)</option>
+                        </select>
+                    </div>
+                    <div style={{
+                        fontSize: '11px',
+                        color: '#64ff96',
+                        lineHeight: '1.4',
+                        fontStyle: 'italic'
+                    }}>
+                        Switch between maps anytime - coordinates transfer automatically
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Interactive map with route drawing capabilities */}
             {mapProvider === 'google' ? (

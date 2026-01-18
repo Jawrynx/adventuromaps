@@ -71,6 +71,7 @@ import LoadingSpinner from '../ui/LoadingSpinner';
 import GeometricGrid from '../ui/GeometricGrid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUndo, faPaintBrush, faMap, faRoute, faUsers, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faHiking, faNewspaper, faComments, faArrowLeft, faPlus, faEdit, faTrash, faEye, faSearch, faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
 
 // Map Components
 import MapRoutes from '../map/MapRoutes';
@@ -102,7 +103,7 @@ import { useSettings } from '../../services/SettingsContext.jsx';
 function CreatorMode({ mapId, user, userDocument }) {
     // Check if user is a creator
     const isCreator = userDocument?.isCreator === true;
-    
+
     // ========== APPLICATION FORM STATE ==========
     const [showApplicationForm, setShowApplicationForm] = useState(false);
     const [formData, setFormData] = useState({
@@ -115,7 +116,7 @@ function CreatorMode({ mapId, user, userDocument }) {
     const [submitSuccess, setSubmitSuccess] = useState(false);
     const [formErrors, setFormErrors] = useState({});
     const [hasShownWelcome, setHasShownWelcome] = useState(false);
-    
+
     // Google Maps instance hook
     const map = useMap();
 
@@ -123,6 +124,7 @@ function CreatorMode({ mapId, user, userDocument }) {
     const { settings } = useSettings();
 
     // ========== MAP PROVIDER STATE ==========
+    const [isMapSelectorMinimized, setIsMapSelectorMinimized] = useState(false); // Whether map selector is minimized
     const [mapProvider, setMapProvider] = useState('google'); // 'google' or 'osmap'
 
     // ========== ROUTE & DRAWING STATE ==========
@@ -213,7 +215,7 @@ function CreatorMode({ mapId, user, userDocument }) {
         // Handle double-click to complete route drawing or zoom
         const dblClickListener = map.addListener('dblclick', (e) => {
             const { isDrawing, tempPath } = drawingStateRef.current;
-            
+
             if (isDrawing) {
                 // When drawing: complete the route and prevent any zoom
                 if (tempPath.length > 1) {
@@ -373,16 +375,16 @@ function CreatorMode({ mapId, user, userDocument }) {
 
             // Delete routes that are no longer in the current routes array
             const routesToDelete = existingRouteIds.filter(id => !currentRouteIds.includes(id));
-            
+
             for (const routeIdToDelete of routesToDelete) {
                 // First delete all waypoints in the route
                 const waypointsCollectionRef = collection(db, itemData.type, itemId, 'routes', routeIdToDelete, 'waypoints');
                 const waypointsSnapshot = await getDocs(waypointsCollectionRef);
-                
+
                 for (const waypointDoc of waypointsSnapshot.docs) {
                     await deleteDoc(doc(db, itemData.type, itemId, 'routes', routeIdToDelete, 'waypoints', waypointDoc.id));
                 }
-                
+
                 // Then delete the route itself
                 await deleteDoc(doc(db, itemData.type, itemId, 'routes', routeIdToDelete));
             }
@@ -568,24 +570,24 @@ function CreatorMode({ mapId, user, userDocument }) {
      */
     const parseCoordinates = (input) => {
         if (!input) return null;
-        
+
         // Remove extra whitespace and try to parse coordinates
         const trimmed = input.trim();
-        
+
         // Match patterns like: "44.111, -1.2222" or "44.111,-1.2222" or "44.111 -1.2222"
         const coordPattern = /^(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)$/;
         const match = trimmed.match(coordPattern);
-        
+
         if (match) {
             const lat = parseFloat(match[1]);
             const lng = parseFloat(match[2]);
-            
+
             // Validate coordinate ranges
             if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
                 return { lat, lng };
             }
         }
-        
+
         return null;
     };
 
@@ -620,7 +622,7 @@ function CreatorMode({ mapId, user, userDocument }) {
             };
 
             const { suggestions } = await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-            
+
             if (suggestions && suggestions.length > 0) {
                 // Convert new API format to match old format for compatibility
                 const formattedSuggestions = suggestions.map(suggestion => ({
@@ -685,7 +687,7 @@ function CreatorMode({ mapId, user, userDocument }) {
             } else if (mapProvider === 'osmap' && leafletMapRef.current) {
                 leafletMapRef.current.setView([coords.lat, coords.lng], 11);
             }
-            
+
             setShowSuggestions(false);
             setNotification({
                 isVisible: true,
@@ -696,7 +698,7 @@ function CreatorMode({ mapId, user, userDocument }) {
         }
 
         const hasResults = await fetchSuggestions(searchValue, true);
-        
+
         // If we have results and exactly one, auto-select it
         if (hasResults && suggestions.length === 1) {
             handleSuggestionSelect(suggestions[0].place_id, suggestions[0].description);
@@ -773,7 +775,7 @@ function CreatorMode({ mapId, user, userDocument }) {
 
         // Use PlacesService to get place details and location
         if (!window.google?.maps?.places?.PlacesService) return;
-        
+
         // For Google Maps, we can use the map instance directly
         // For OS Maps, we need to create a hidden div for the service
         let serviceMap = map;
@@ -781,7 +783,7 @@ function CreatorMode({ mapId, user, userDocument }) {
             const dummyDiv = document.createElement('div');
             serviceMap = new window.google.maps.Map(dummyDiv);
         }
-        
+
         const service = new window.google.maps.places.PlacesService(serviceMap);
 
         service.getDetails({
@@ -924,7 +926,7 @@ function CreatorMode({ mapId, user, userDocument }) {
     };
 
     // ========== APPLICATION FORM HANDLERS ==========
-    
+
     /**
      * Handle form input changes
      */
@@ -934,7 +936,7 @@ function CreatorMode({ mapId, user, userDocument }) {
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
-        
+
         // Clear error for this field when user starts typing
         if (formErrors[name]) {
             setFormErrors(prev => ({ ...prev, [name]: '' }));
@@ -946,11 +948,11 @@ function CreatorMode({ mapId, user, userDocument }) {
      */
     const validateForm = () => {
         const errors = {};
-        
+
         if (!formData.fullName.trim()) {
             errors.fullName = 'Full name is required';
         }
-        
+
         if (!formData.dateOfBirth) {
             errors.dateOfBirth = 'Date of birth is required';
         } else {
@@ -967,17 +969,17 @@ function CreatorMode({ mapId, user, userDocument }) {
                 errors.dateOfBirth = 'You must be at least 18 years old';
             }
         }
-        
+
         if (!formData.experience.trim()) {
             errors.experience = 'Experience description is required';
         } else if (formData.experience.trim().length < 50) {
             errors.experience = 'Please provide more detail about your experience (minimum 50 characters)';
         }
-        
+
         if (!formData.acceptedTerms) {
             errors.acceptedTerms = 'You must accept the Terms & Conditions';
         }
-        
+
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -987,13 +989,13 @@ function CreatorMode({ mapId, user, userDocument }) {
      */
     const handleApplicationSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
-        
+
         setIsSubmitting(true);
-        
+
         try {
             // Save application to Firestore
             await addDoc(collection(db, 'creatorApplications'), {
@@ -1006,7 +1008,7 @@ function CreatorMode({ mapId, user, userDocument }) {
                 status: 'pending',
                 submittedAt: new Date(),
             });
-            
+
             setSubmitSuccess(true);
             setNotification({
                 isVisible: true,
@@ -1088,12 +1090,12 @@ function CreatorMode({ mapId, user, userDocument }) {
                         <h1>Become a Creator</h1>
                         <p>Apply to create and share your own adventures with the community</p>
                     </div>
-                    
+
                     <div className="creator-container">
                         <form className="creator-application-form" onSubmit={handleApplicationSubmit}>
                             <div className="form-section">
                                 <h3>Personal Information</h3>
-                                
+
                                 <div className="form-group">
                                     <label htmlFor="fullName">Full Name *</label>
                                     <input
@@ -1107,7 +1109,7 @@ function CreatorMode({ mapId, user, userDocument }) {
                                     />
                                     {formErrors.fullName && <span className="error-text">{formErrors.fullName}</span>}
                                 </div>
-                                
+
                                 <div className="form-group">
                                     <label htmlFor="dateOfBirth">Date of Birth *</label>
                                     <input
@@ -1121,15 +1123,15 @@ function CreatorMode({ mapId, user, userDocument }) {
                                     {formErrors.dateOfBirth && <span className="error-text">{formErrors.dateOfBirth}</span>}
                                 </div>
                             </div>
-                            
+
                             <div className="form-section">
                                 <h3>Experience</h3>
                                 <p className="section-description">
-                                    Tell us about your outdoor exploration experience. This includes hiking, 
-                                    trekking, mountaineering, expeditions, adventure sports, nature photography, 
+                                    Tell us about your outdoor exploration experience. This includes hiking,
+                                    trekking, mountaineering, expeditions, adventure sports, nature photography,
                                     trail running, or any other outdoor activities you've participated in.
                                 </p>
-                                
+
                                 <div className="form-group">
                                     <label htmlFor="experience">Your Exploration Experience *</label>
                                     <textarea
@@ -1145,10 +1147,10 @@ function CreatorMode({ mapId, user, userDocument }) {
                                     <span className="char-count">{formData.experience.length} characters (minimum 50)</span>
                                 </div>
                             </div>
-                            
+
                             <div className="form-section">
                                 <h3>Terms & Conditions</h3>
-                                
+
                                 <div className="form-group checkbox-group">
                                     <label className={`checkbox-label ${formErrors.acceptedTerms ? 'error' : ''}`}>
                                         <input
@@ -1159,24 +1161,24 @@ function CreatorMode({ mapId, user, userDocument }) {
                                         />
                                         <span className="checkmark"></span>
                                         <span>
-                                            I accept the <a href="#" onClick={(e) => e.preventDefault()}>Terms & Conditions</a> and 
+                                            I accept the <a href="#" onClick={(e) => e.preventDefault()}>Terms & Conditions</a> and
                                             agree to create content that adheres to the community guidelines.
                                         </span>
                                     </label>
                                     {formErrors.acceptedTerms && <span className="error-text">{formErrors.acceptedTerms}</span>}
                                 </div>
                             </div>
-                            
+
                             <div className="form-actions">
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className="back-button"
                                     onClick={() => setShowApplicationForm(false)}
                                 >
                                     ← Back
                                 </button>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="submit-button"
                                     disabled={isSubmitting}
                                 >
@@ -1212,7 +1214,7 @@ function CreatorMode({ mapId, user, userDocument }) {
                     <h1>Creator Mode</h1>
                     <p>Create and share your own adventures with the world</p>
                 </div>
-                
+
                 <div className="creator-container">
                     <div className="creator-intro">
                         <div className="intro-icon">
@@ -1220,10 +1222,10 @@ function CreatorMode({ mapId, user, userDocument }) {
                         </div>
                         <h2>Become a Creator</h2>
                         <p className="intro-description">
-                            Join our community of creators and share your exploration experiences with adventurers around the world. 
+                            Join our community of creators and share your exploration experiences with adventurers around the world.
                             Create interactive routes, add waypoints with rich media, and inspire others to explore.
                         </p>
-                        
+
                         <div className="feature-list">
                             <div className="feature-item">
                                 <div className="feature-icon">
@@ -1262,8 +1264,8 @@ function CreatorMode({ mapId, user, userDocument }) {
                                 </div>
                             </div>
                         </div>
-                        
-                        <button 
+
+                        <button
                             className="become-creator-button"
                             onClick={() => setShowApplicationForm(true)}
                         >
@@ -1280,80 +1282,142 @@ function CreatorMode({ mapId, user, userDocument }) {
     return (
         <div style={{ height: '100%', width: '100%' }} id='admin-tools'>
             {/* Map Provider Selector */}
-            <div style={{
-                position: 'absolute',
-                top: `${mapProvider === 'osmap' ? 10 : 10}px`,
-                left: `${mapProvider === 'osmap' ? 10 : 10}px`,
-                zIndex: 1000,
-                background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
-                border: '2px solid rgba(255, 165, 0, 0.6)',
-                borderRadius: '12px',
-                boxShadow: '0 4px 16px rgba(255, 165, 0, 0.3)',
-                padding: '16px 20px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                minWidth: '280px'
-            }}>
-                <div style={{
-                    background: 'linear-gradient(90deg, #ff6b35 0%, #f7931e 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    letterSpacing: '1px',
-                    textTransform: 'uppercase',
-                    marginBottom: '4px'
-                }}>
-                    ⚠ Important - Cannot Change Later
-                </div>
-                <div style={{
-                    display: 'flex',
-                    gap: '10px',
-                    alignItems: 'center'
-                }}>
-                    <label style={{ 
-                        fontSize: '14px', 
-                        fontWeight: '600', 
+            {isMapSelectorMinimized ? (
+                /* Minimized Button */
+                <button
+                    onClick={() => setIsMapSelectorMinimized(false)}
+                    style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        left: '10px',
+                        zIndex: 1000,
+                        background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
+                        border: '2px solid rgba(100, 200, 255, 0.6)',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 16px rgba(100, 200, 255, 0.3)',
+                        padding: '10px 16px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
                         color: '#64c8ff',
-                        letterSpacing: '0.5px',
-                        whiteSpace: 'nowrap'
-                    }}>Select Map:</label>
-                    <select
-                        value={mapProvider}
-                        onChange={(e) => setMapProvider(e.target.value)}
-                        disabled={hasCreatedItemInfo}
-                        style={{
-                            flex: 1,
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(100, 200, 255, 0.4)',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, rgba(22, 33, 62, 0.95) 0%, rgba(30, 45, 80, 0.95) 100%)';
+                        e.target.style.borderColor = 'rgba(100, 200, 255, 0.8)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(100, 200, 255, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)';
+                        e.target.style.borderColor = 'rgba(100, 200, 255, 0.6)';
+                        e.target.style.boxShadow = '0 4px 16px rgba(100, 200, 255, 0.3)';
+                    }}
+                >
+                    <FontAwesomeIcon icon={faMap} />
+                    SELECT MAP
+                </button>
+            ) : (
+                /* Expanded Selector */
+                <div style={{
+                    position: 'absolute',
+                    bottom: '10px',
+                    left: '10px',
+                    zIndex: 1000,
+                    background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
+                    border: '2px solid rgba(100, 200, 255, 0.6)',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 16px rgba(100, 200, 255, 0.3)',
+                    padding: '16px 20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    minWidth: '280px'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <div style={{
+                            color: '#64c8ff',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            letterSpacing: '1px',
+                            textTransform: 'uppercase'
+                        }}>
+                            🗺️ Map Provider Selector
+                        </div>
+                        <button
+                            onClick={() => setIsMapSelectorMinimized(true)}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#64c8ff',
+                                cursor: 'pointer',
+                                padding: '4px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '4px',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'rgba(100, 200, 255, 0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'none';
+                            }}
+                            title="Minimize"
+                        >
+                            <FontAwesomeIcon icon={faChevronDown} />
+                        </button>
+                    </div>
+                    <div style={{
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'center'
+                    }}>
+                        <label style={{
                             fontSize: '14px',
                             fontWeight: '600',
-                            cursor: hasCreatedItemInfo ? 'not-allowed' : 'pointer',
-                            background: hasCreatedItemInfo 
-                                ? 'linear-gradient(135deg, rgba(100, 100, 100, 0.15) 0%, rgba(80, 80, 80, 0.1) 100%)'
-                                : 'linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(100, 255, 150, 0.1) 100%)',
-                            color: hasCreatedItemInfo ? '#888' : '#64c8ff',
-                            outline: 'none',
-                            transition: 'all 0.3s ease',
-                            opacity: hasCreatedItemInfo ? 0.6 : 1
-                        }}
-                    >
-                        <option value="google" style={{ background: '#0f1419', color: '#64c8ff' }}>Google Maps</option>
-                        <option value="osmap" style={{ background: '#0f1419', color: '#64c8ff' }}>OS Maps (UK Only)</option>
-                    </select>
+                            color: '#64c8ff',
+                            letterSpacing: '0.5px',
+                            whiteSpace: 'nowrap'
+                        }}>Select Map:</label>
+                        <select
+                            value={mapProvider}
+                            onChange={(e) => setMapProvider(e.target.value)}
+                            style={{
+                                flex: 1,
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid rgba(100, 200, 255, 0.4)',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                background: 'linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(100, 255, 150, 0.1) 100%)',
+                                color: '#64c8ff',
+                                outline: 'none',
+                                transition: 'all 0.3s ease'
+                            }}
+                        >
+                            <option value="google" style={{ background: '#0f1419', color: '#64c8ff' }}>Google Maps</option>
+                            <option value="osmap" style={{ background: '#0f1419', color: '#64c8ff' }}>OS Maps (UK Only)</option>
+                        </select>
+                    </div>
+                    <div style={{
+                        fontSize: '11px',
+                        color: '#64ff96',
+                        lineHeight: '1.4',
+                        fontStyle: 'italic'
+                    }}>
+                        Switch between maps anytime - coordinates transfer automatically
+                    </div>
                 </div>
-                <div style={{
-                    fontSize: '11px',
-                    color: '#ff9966',
-                    lineHeight: '1.4',
-                    fontStyle: 'italic'
-                }}>
-                    Choose your map before creating your project
-                </div>
-            </div>
+            )}
 
             {/* Interactive map with route drawing capabilities */}
             {mapProvider === 'google' ? (
@@ -1430,9 +1494,9 @@ function CreatorMode({ mapId, user, userDocument }) {
                 gap: '10px'
             }}>
                 {!isCreatingItem ? (
-                    <button 
-                        onClick={() => handleCreateItem()} 
-                        style={{ 
+                    <button
+                        onClick={() => handleCreateItem()}
+                        style={{
                             marginRight: '5px',
                             padding: '10px 20px',
                             height: '38px',
@@ -1465,7 +1529,7 @@ function CreatorMode({ mapId, user, userDocument }) {
                 ) : hasCreatedItemInfo ? (
                     <>
                         {!isDrawing ? (
-                            <button 
+                            <button
                                 onClick={() => setIsDrawing(true)}
                                 style={{
                                     padding: '10px 20px',
@@ -1496,7 +1560,7 @@ function CreatorMode({ mapId, user, userDocument }) {
                         ) : (
                             <>
                                 {/* Undo button - appears when drawing */}
-                                <button 
+                                <button
                                     onClick={handleUndoLastPoint}
                                     disabled={tempPath.length === 0}
                                     style={{
@@ -1504,7 +1568,7 @@ function CreatorMode({ mapId, user, userDocument }) {
                                         height: '38px',
                                         borderRadius: '8px',
                                         border: '1px solid rgba(100, 200, 255, 0.4)',
-                                        background: tempPath.length === 0 
+                                        background: tempPath.length === 0
                                             ? 'linear-gradient(135deg, rgba(107, 114, 128, 0.4) 0%, rgba(75, 85, 99, 0.5) 100%)'
                                             : 'linear-gradient(135deg, rgba(245, 158, 11, 0.8) 0%, rgba(217, 119, 6, 0.9) 100%)',
                                         color: tempPath.length === 0 ? '#9CA3AF' : '#fff',
@@ -1512,7 +1576,7 @@ function CreatorMode({ mapId, user, userDocument }) {
                                         fontWeight: '600',
                                         cursor: tempPath.length === 0 ? 'not-allowed' : 'pointer',
                                         transition: 'all 0.2s ease',
-                                        boxShadow: tempPath.length === 0 
+                                        boxShadow: tempPath.length === 0
                                             ? '0 2px 8px rgba(107, 114, 128, 0.2)'
                                             : '0 2px 8px rgba(245, 158, 11, 0.3)',
                                         display: 'flex',
@@ -1540,7 +1604,7 @@ function CreatorMode({ mapId, user, userDocument }) {
                                 </button>
 
                                 {/* Stop Drawing button */}
-                                <button 
+                                <button
                                     onClick={handleStopDrawing}
                                     style={{
                                         padding: '10px 20px',
