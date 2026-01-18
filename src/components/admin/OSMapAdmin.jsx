@@ -89,33 +89,30 @@ function RouteDisplay({ routes }) {
     );
 }
 
-/**
- * MapCenterController Component
- * Forces map to center on UK when component mounts and exposes map ref
- */
-function MapCenterController({ mapRef }) {
-    const map = useMap();
-    
-    useEffect(() => {
-        // Expose map instance to parent via ref only (do not force center/zoom)
-        if (mapRef) {
-            mapRef.current = map;
-        }
-    }, [map, mapRef]);
-    
-    return null;
+function MapEvents({ onCameraChange }) {
+  const map = useMapEvents({
+    // moveend triggers after dragging or zooming finishes
+    moveend: () => {
+      const center = map.getCenter();
+      const zoom = map.getZoom();
+      if (onCameraChange) {
+        onCameraChange({ lat: center.lat, lng: center.lng }, zoom);
+      }
+    },
+  });
+  return null;
 }
 
 /**
  * OSMapAdmin Component
  * Main OS Maps implementation for admin interface
  */
-function OSMapAdmin({ mapRef, isDrawing, tempPath, mousePosition, routes, onAddPoint, onComplete, onMouseMove }) {
+function OSMapAdmin({ mapRef, center, zoom, onCameraChange, isDrawing, tempPath, mousePosition, routes, onAddPoint, onComplete, onMouseMove }) {
     const OS_API_KEY = '2sTNADGPe2f2TPaVSrqNWzyGGGCcDWFS';
     
     // Default center on UK - centered on England
-    const defaultCenter = [52.5, -2.0];
-    const defaultZoom = 1;
+    const defaultCenter = center ? [center.lat, center.lng] : [52.5, -1.5];
+    const defaultZoom = zoom || 7;
 
     // Calculate live path for drawing preview
     const livePath = isDrawing && mousePosition && tempPath.length > 0
@@ -134,7 +131,6 @@ function OSMapAdmin({ mapRef, isDrawing, tempPath, mousePosition, routes, onAddP
                 crs={crs27700}
                 minZoom={0}
                 maxZoom={13}
-                maxBoundsViscosity={1.0}
                 key="osmap-container"
             >
                 {/* OS Maps Leisure Layer - EPSG:27700 */}
@@ -142,12 +138,12 @@ function OSMapAdmin({ mapRef, isDrawing, tempPath, mousePosition, routes, onAddP
                     url={`https://api.os.uk/maps/raster/v1/zxy/Leisure_27700/{z}/{x}/{y}.png?key=${OS_API_KEY}`}
                     attribution='&copy; <a href="http://www.ordnancesurvey.co.uk/">Ordnance Survey</a>'
                     minZoom={0}
-                    maxZoom={13}
                     maxNativeZoom={9}
+                    maxZoom={13}
                 />
                 
                 {/* Force center on UK and expose map ref */}
-                <MapCenterController mapRef={mapRef} />
+                <MapEvents onCameraChange={onCameraChange} />
 
             {/* Drawing Handler */}
             <DrawingHandler

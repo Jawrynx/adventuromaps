@@ -71,7 +71,7 @@ import LoadingSpinner from '../ui/LoadingSpinner';
 import GeometricGrid from '../ui/GeometricGrid';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUndo, faPaintBrush, faMap, faRoute, faUsers, faStar } from '@fortawesome/free-solid-svg-icons';
-import { faHiking, faNewspaper, faComments, faArrowLeft, faPlus, faEdit, faTrash, faEye, faSearch, faChevronDown, faChevronUp} from '@fortawesome/free-solid-svg-icons';
+import { faHiking, faNewspaper, faComments, faArrowLeft, faPlus, faEdit, faTrash, faEye, faSearch, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
 // Map Components
 import MapRoutes from '../map/MapRoutes';
@@ -126,6 +126,8 @@ function CreatorMode({ mapId, user, userDocument }) {
     // ========== MAP PROVIDER STATE ==========
     const [isMapSelectorMinimized, setIsMapSelectorMinimized] = useState(false); // Whether map selector is minimized
     const [mapProvider, setMapProvider] = useState('google'); // 'google' or 'osmap'
+    const [currentCenter, setCurrentCenter] = useState({ lat: 52.5, lng: -1.5 }); // Current map center for synchronization
+    const [currentZoom, setCurrentZoom] = useState(7); // Current map zoom for synchronization
 
     // ========== ROUTE & DRAWING STATE ==========
     const [routes, setRoutes] = useState([]);               // Array of completed routes with waypoints
@@ -268,6 +270,25 @@ function CreatorMode({ mapId, user, userDocument }) {
     const handleClearRoutes = () => {
         setRoutes([]);
     };
+
+
+    const handleCameraChange = (centerOrEv, zoom) => {
+        if (centerOrEv.detail) {
+            // Google Maps event
+            setCurrentCenter(centerOrEv.detail.center);
+            setCurrentZoom(centerOrEv.detail.zoom);
+            console.log(centerOrEv.detail.zoom);
+        } else {
+            // OS Maps direct call
+            setCurrentCenter(centerOrEv);
+            if (zoom !== undefined) {
+                setCurrentZoom(zoom + 7); // Add 6 when coming from OS Maps to match Google Maps zoom levels
+            };
+        }
+    };
+
+
+
 
     /**
      * Removes a specific route by ID
@@ -1423,11 +1444,12 @@ function CreatorMode({ mapId, user, userDocument }) {
             {mapProvider === 'google' ? (
                 <Map
                     mapId={effectiveMapId}
-                    defaultZoom={3}
-                    defaultCenter={{ lat: 30, lng: 0 }} // Centered on UK
+                    zoom={currentZoom}
+                    center={currentCenter} // Centered on UK
                     clickableIcons={false} // Disable default map icons to prevent interference
                     mapTypeId={mapType} // Map type from settings
                     colorScheme={colorScheme}
+                    onCameraChanged={handleCameraChange}
                     options={{
                         scaleControl: showScaleBar,
                         rotateControl: showCompass
@@ -1452,6 +1474,9 @@ function CreatorMode({ mapId, user, userDocument }) {
             ) : (
                 <OSMapAdmin
                     mapRef={leafletMapRef}
+                    center={currentCenter}
+                    zoom={currentZoom - 7} // Reduce zoom by 6 for OS Maps to prevent over-zooming
+                    onCameraChange={handleCameraChange}
                     isDrawing={isDrawing}
                     tempPath={tempPath}
                     mousePosition={mousePosition}
