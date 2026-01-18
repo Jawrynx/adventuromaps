@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import './css/Sidebar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools, faBars, faTimes, faUser, faSignOutAlt, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faMap, faCompass, faHatCowboy, faBook, faGear, faQuestionCircle, faTools, faBars, faTimes, faUser, faSignOutAlt, faUsers, faPaintBrush } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * Sidebar Component
@@ -118,6 +118,16 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, userDocume
                     >
                         <FontAwesomeIcon icon={faTools} />
                         {isOpen && <p>Admin Tools</p>}
+                    </div>
+                )}
+                {/* Creator Mode - only show for authenticated users */}
+                {user && (
+                    <div
+                        className={`sidebar-link ${location.pathname === '/creator' ? 'active' : ''}`}
+                        onClick={() => handleSidebarClick('creator', '/creator')}
+                    >
+                        <FontAwesomeIcon icon={faPaintBrush} />
+                        {isOpen && <p>Creator Mode</p>}
                     </div>
                 )}
             </div>

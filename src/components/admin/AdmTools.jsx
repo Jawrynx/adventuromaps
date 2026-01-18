@@ -458,7 +458,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         <div id='admin'>
             {AlertComponent}
             <GeometricGrid />
-            <h2>Admin Tools</h2>
+            <h2>Creator Tools</h2>
             {isCreatingItem ? (
                 <>
                     {loadingItems ? (

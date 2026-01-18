@@ -37,6 +37,7 @@ import Auth from '../../components/features/Auth';
 import Profile from '../../components/features/Profile';
 import Community from '../../components/features/Community';
 import CommunityPost from '../../components/features/CommunityPost';
+import CreatorMode from '../../components/features/CreatorMode';
 
 // Admin Components
 import Admin from '../../components/admin/Admin';
@@ -563,6 +564,26 @@ const MainContent = () => {
                     <Route path="/help" element={<Help />} />
                     <Route path="/admin" element={<Admin mapId="8a2ac04064bf3833742b72c4" />} />
                     <Route path="/admin-setup" element={<AdminSetup />} />
+                    <Route path="/creator" element={
+                        user ? (
+                            <CreatorMode 
+                                mapId="8a2ac04064bf3833742b72c4"
+                                user={user} 
+                                userDocument={userDocument}
+                            />
+                        ) : (
+                            <div style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                height: '100%',
+                                color: '#64c8ff',
+                                fontSize: '1.2rem'
+                            }}>
+                                Please log in to access Creator Mode.
+                            </div>
+                        )
+                    } />
                 </Routes>
                 
                 {/* Modal overlay for Explore feature */}
