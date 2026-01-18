@@ -110,16 +110,6 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, userDocume
                     <FontAwesomeIcon icon={faUsers} />
                     {isOpen && <p>Community</p>}
                 </div>
-                {/* Admin Tools - only show for admin users */}
-                {userDocument?.userType === 'admin' && (
-                    <div
-                        className={`sidebar-link ${location.pathname === '/admin' ? 'active' : ''}`}
-                        onClick={() => handleSidebarClick('admin', '/admin')}
-                    >
-                        <FontAwesomeIcon icon={faTools} />
-                        {isOpen && <p>Admin Tools</p>}
-                    </div>
-                )}
                 {/* Creator Mode - only show for authenticated users */}
                 {user && (
                     <div
@@ -128,6 +118,16 @@ function Sidebar({ activeItem, onSidebarClick, onSidebarToggle, user, userDocume
                     >
                         <FontAwesomeIcon icon={faPaintBrush} />
                         {isOpen && <p>Creator Mode</p>}
+                    </div>
+                )}
+                {/* Admin Tools - only show for admin users */}
+                {userDocument?.userType === 'admin' && (
+                    <div
+                        className={`sidebar-link ${location.pathname === '/admin' ? 'active' : ''}`}
+                        onClick={() => handleSidebarClick('admin', '/admin')}
+                    >
+                        <FontAwesomeIcon icon={faTools} />
+                        {isOpen && <p>Admin Tools</p>}
                     </div>
                 )}
             </div>

@@ -52,16 +52,16 @@ import './css/Admin.css';
  * @param {Function} onHasCreatedItemInfoChange - Handler to update item info state
  * @returns {JSX.Element} The admin tools interface
  */
-function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish, hasCreatedItemInfo, onHasCreatedItemInfoChange, onCenterMapOverRoutes }) {
+function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCreatingItem, onSetCreatingItem, onClearRoutes, onSaveDraft, onPublish, hasCreatedItemInfo, onHasCreatedItemInfoChange, onCenterMapOverRoutes, initialEditingItem, mapProvider }) {
     const { showAlert, AlertComponent } = useAlert();
     
     // ========== WAYPOINT EDITING STATE ==========
     const [editingWaypoint, setEditingWaypoint] = useState(null); // Currently editing waypoint data
     
     // ========== ITEM MANAGEMENT STATE ==========
-    const [itemData, setItemData] = useState(null);               // Current item data (exploration/adventure)
-    const [itemId, setItemId] = useState(null);                   // Firestore document ID of current item
-    const [editingItem, setEditingItem] = useState(null);         // Item being edited (vs newly created)
+    const [itemData, setItemData] = useState(initialEditingItem || null);               // Current item data (exploration/adventure)
+    const [itemId, setItemId] = useState(initialEditingItem?.id || null);                   // Firestore document ID of current item
+    const [editingItem, setEditingItem] = useState(initialEditingItem || null);         // Item being edited (vs newly created)
     
     // ========== LOADING & UI STATE ==========
     const [loadingItems, setLoadingItems] = useState(false);      // Whether fetching items from Firestore
@@ -458,7 +458,7 @@ function AdmTools({ routes, setRoutes, onRemoveRoute, onUpdateWaypointName, isCr
         <div id='admin'>
             {AlertComponent}
             <GeometricGrid />
-            <h2>Creator Tools</h2>
+            <h2>Creator Mode</h2>
             {isCreatingItem ? (
                 <>
                     {loadingItems ? (

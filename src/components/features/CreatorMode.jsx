@@ -1283,7 +1283,7 @@ function CreatorMode({ mapId, user, userDocument }) {
             <div style={{
                 position: 'absolute',
                 top: `${mapProvider === 'osmap' ? 10 : 10}px`,
-                left: `${mapProvider === 'osmap' ? 10 : 200}px`,
+                left: `${mapProvider === 'osmap' ? 10 : 10}px`,
                 zIndex: 1000,
                 background: 'linear-gradient(135deg, rgba(15, 20, 25, 0.95) 0%, rgba(22, 33, 62, 0.9) 100%)',
                 border: '2px solid rgba(255, 165, 0, 0.6)',
