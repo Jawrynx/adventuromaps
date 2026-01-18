@@ -1,23 +1,9 @@
 #help {
-    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 50%, #151d2f 100%);
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 35, 1) 100%);
     height: 100%;
     overflow-y: auto;
     color: white;
     position: relative;
-}
-
-#help::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 50%, rgba(100, 200, 255, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(150, 100, 255, 0.08) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
 }
 
 /* Scrollbar */
@@ -65,16 +51,16 @@
 
 .help-section {
     margin-bottom: 45px;
-    background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(27, 24, 24, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%);
     padding: 40px;
     border-radius: 16px;
-    border: 2px solid rgba(100, 200, 255, 0.15);
+    border: 1px solid rgba(100, 200, 255, 0.15);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(100, 200, 255, 0.1);
     backdrop-filter: blur(10px);
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+
     &:hover {
-        background: linear-gradient(135deg, rgba(80, 130, 200, 0.35) 0%, rgba(100, 80, 180, 0.25) 100%);
+        background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
         border-color: rgba(100, 200, 255, 0.25);
         box-shadow: 0 12px 40px rgba(100, 200, 255, 0.15), inset 0 1px 0 rgba(100, 200, 255, 0.15);
     }
@@ -84,7 +70,7 @@
     color: #64c8ff;
     margin-bottom: 30px;
     font-size: 2.2rem;
-    border-bottom: 3px solid rgba(100, 200, 255, 0.3);
+    border-bottom: 1px solid rgba(100, 200, 255, 0.3);
     padding-bottom: 15px;
     text-shadow: 0 0 16px rgba(100, 200, 255, 0.2);
     font-weight: 700;
@@ -99,15 +85,15 @@
 }
 
 .quick-start-item {
-    background: linear-gradient(135deg, rgba(60, 100, 180, 0.3) 0%, rgba(80, 60, 150, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
     padding: 28px;
     border-radius: 14px;
-    border: 2px solid rgba(100, 200, 255, 0.2);
+    border: 1px solid rgba(100, 200, 255, 0.15);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     position: relative;
     overflow: hidden;
-    
+
     &::before {
         content: '';
         position: absolute;
@@ -119,13 +105,13 @@
         opacity: 0;
         transition: opacity 0.4s ease;
     }
-    
+
     &:hover {
-        background: linear-gradient(135deg, rgba(80, 130, 200, 0.4) 0%, rgba(100, 80, 180, 0.3) 100%);
-        border-color: rgba(100, 200, 255, 0.4);
+        background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
+        border-color: rgba(100, 200, 255, 0.25);
         transform: translateY(-6px);
         box-shadow: 0 12px 28px rgba(100, 200, 255, 0.2);
-        
+
         &::before {
             opacity: 1;
         }
@@ -156,18 +142,18 @@
 .guide-link {
     display: block;
     padding: 18px 24px;
-    background: linear-gradient(135deg, rgba(60, 100, 180, 0.3) 0%, rgba(80, 60, 150, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(70, 63, 63, 0.4) 0%, rgba(87, 85, 85, 0.2) 100%);
     color: #64c8ff;
     text-decoration: none;
     border-radius: 12px;
-    border: 2px solid rgba(100, 200, 255, 0.2);
+    border: 1px solid rgba(100, 200, 255, 0.15);
     font-weight: 600;
     font-size: 1.05rem;
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow: hidden;
-    
+
     &::before {
         content: '';
         position: absolute;
@@ -178,13 +164,13 @@
         background: linear-gradient(90deg, transparent, rgba(100, 200, 255, 0.2), transparent);
         transition: left 0.6s ease;
     }
-    
+
     &:hover {
-        background: linear-gradient(135deg, rgba(80, 130, 200, 0.4) 0%, rgba(100, 80, 180, 0.3) 100%);
-        border-color: rgba(100, 200, 255, 0.5);
+        background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
+        border-color: rgba(100, 200, 255, 0.25);
         transform: translateY(-4px);
         box-shadow: 0 8px 24px rgba(100, 200, 255, 0.2), 0 0 16px rgba(100, 200, 255, 0.15);
-        
+
         &::before {
             left: 100%;
         }
@@ -193,10 +179,10 @@
 
 /* FAQ Section */
 .faq-container {
-    background: linear-gradient(135deg, rgba(60, 100, 180, 0.3) 0%, rgba(80, 60, 150, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
     padding: 28px;
     border-radius: 14px;
-    border: 2px solid rgba(100, 200, 255, 0.2);
+    border: 1px solid rgba(100, 200, 255, 0.15);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
@@ -219,16 +205,16 @@
 }
 
 .troubleshoot-item {
-    background: linear-gradient(135deg, rgba(60, 100, 180, 0.3) 0%, rgba(80, 60, 150, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
     padding: 28px;
     border-radius: 14px;
-    border: 2px solid rgba(100, 200, 255, 0.2);
+    border: 1px solid rgba(100, 200, 255, 0.15);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+
     &:hover {
-        background: linear-gradient(135deg, rgba(80, 130, 200, 0.4) 0%, rgba(100, 80, 180, 0.3) 100%);
-        border-color: rgba(100, 200, 255, 0.4);
+        background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
+        border-color: rgba(100, 200, 255, 0.25);
         transform: translateY(-6px);
         box-shadow: 0 12px 28px rgba(100, 200, 255, 0.2);
     }
@@ -253,12 +239,12 @@
     border-bottom: 1px solid rgba(100, 200, 255, 0.1);
     transition: all 0.3s ease;
     padding-left: 12px;
-    
+
     &:hover {
         color: #64c8ff;
         padding-left: 18px;
     }
-    
+
     &:last-child {
         border-bottom: none;
     }
@@ -273,16 +259,16 @@
 
 /* Contact Form */
 .contact-section p {
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 1);
     margin-bottom: 28px;
     font-size: 1.1rem;
 }
 
 .contact-form {
-    background: linear-gradient(135deg, rgba(60, 100, 180, 0.3) 0%, rgba(80, 60, 150, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
     padding: 32px;
     border-radius: 14px;
-    border: 2px solid rgba(100, 200, 255, 0.2);
+    border: 1px solid rgba(100, 200, 255, 0.15);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
@@ -311,14 +297,14 @@
 .form-group textarea {
     width: 100%;
     padding: 14px 16px;
-    border: 2px solid rgba(100, 200, 255, 0.2);
+    border: 1px solid rgba(100, 200, 255, 0.15);
     border-radius: 10px;
-    background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%) !important;
     color: #64c8ff;
     font-size: 1rem;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    
+
     &::placeholder {
         color: rgba(100, 200, 255, 0.4);
     }
@@ -329,7 +315,7 @@
 .form-group textarea:focus {
     outline: none;
     border-color: rgba(100, 200, 255, 0.6);
-    background: linear-gradient(135deg, rgba(80, 130, 200, 0.35) 0%, rgba(100, 80, 180, 0.25) 100%);
+    background: linear-gradient(135deg, rgba(44, 39, 39, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%) !important;
     box-shadow: 0 0 20px rgba(100, 200, 255, 0.3);
 }
 
@@ -359,6 +345,7 @@
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -374,9 +361,9 @@
 }
 
 .submit-button {
-    background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(80, 150, 255, 0.15) 100%);
+    background: linear-gradient(135deg, rgba(92, 79, 79, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
     color: #64c8ff;
-    border: 2px solid rgba(100, 200, 255, 0.3);
+    border: 1px solid rgba(100, 200, 255, 0.3);
     padding: 16px 32px;
     border-radius: 10px;
     font-size: 1.05rem;
@@ -387,7 +374,7 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow: hidden;
-    
+
     &::after {
         content: '';
         position: absolute;
@@ -398,20 +385,20 @@
         background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
         transition: left 0.6s ease;
     }
-    
+
     &:hover:not(:disabled) {
-        background: linear-gradient(135deg, rgba(100, 200, 255, 0.35) 0%, rgba(80, 150, 255, 0.25) 100%);
+        background: linear-gradient(135deg, rgba(92, 79, 79, 0.4) 0%, rgba(37, 37, 37, 0.4) 100%);
         border-color: rgba(100, 200, 255, 0.6);
         transform: translateY(-3px);
         box-shadow: 0 8px 24px rgba(100, 200, 255, 0.2), 0 0 20px rgba(100, 200, 255, 0.15);
-        
+
         &::after {
             left: 100%;
         }
     }
-    
+
     &:disabled {
-        background: linear-gradient(135deg, rgba(100, 100, 120, 0.2) 0%, rgba(80, 80, 100, 0.15) 100%);
+        background: linear-gradient(135deg, rgba(92, 79, 79, 0.2) 0%, rgba(80, 80, 100, 0.15) 100%);
         color: rgba(255, 255, 255, 0.4);
         border-color: rgba(100, 200, 255, 0.1);
         cursor: not-allowed;
@@ -427,13 +414,13 @@
 }
 
 .resource-item {
-    background: linear-gradient(135deg, rgba(60, 100, 180, 0.3) 0%, rgba(80, 60, 150, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(27, 24, 24, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%);
     padding: 28px;
     border-radius: 14px;
-    border: 2px solid rgba(100, 200, 255, 0.2);
+    border: 1px solid rgba(100, 200, 255, 0.15);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+
     &:hover {
         background: linear-gradient(135deg, rgba(80, 130, 200, 0.4) 0%, rgba(100, 80, 180, 0.3) 100%);
         border-color: rgba(100, 200, 255, 0.4);
@@ -461,12 +448,12 @@
     transition: all 0.3s ease;
     color: rgba(255, 255, 255, 0.8);
     padding-left: 12px;
-    
+
     &:hover {
         color: #64c8ff;
         padding-left: 18px;
     }
-    
+
     &:last-child {
         border-bottom: none;
     }
@@ -478,7 +465,7 @@
     transition: all 0.3s ease;
     font-weight: 600;
     text-shadow: 0 0 6px rgba(100, 200, 255, 0.1);
-    
+
     &:hover {
         color: #74d8ff;
         text-shadow: 0 0 12px rgba(100, 200, 255, 0.3);
@@ -490,26 +477,26 @@
     .help-container {
         padding: 20px 15px;
     }
-    
+
     .help-container h1 {
         font-size: 2.5rem;
         margin-bottom: 35px;
     }
-    
+
     .help-section {
         padding: 25px;
         margin-bottom: 30px;
     }
-    
+
     .help-section h2 {
         font-size: 1.8rem;
     }
-    
+
     .form-row {
         grid-template-columns: 1fr;
         gap: 0;
     }
-    
+
     .quick-start-grid,
     .troubleshoot-grid,
     .resources-grid {

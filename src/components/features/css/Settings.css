@@ -8,30 +8,16 @@
     position: relative;
 }
 
-#settings::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 50%, rgba(100, 200, 255, 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(150, 100, 255, 0.08) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-}
-
 /* Settings Header */
 .settings-header {
     text-align: center;
     padding: 40px 20px 30px 20px;
-    background: linear-gradient(135deg, rgba(50, 80, 150, 0.3) 0%, rgba(80, 50, 150, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(27, 24, 24, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%);
     border-bottom: 1px solid rgba(100, 200, 255, 0.3);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(100, 200, 255, 0.2);
     position: relative;
     z-index: 1;
-    
+
     h1 {
         margin: 0 0 10px 0;
         font-size: 3rem;
@@ -40,7 +26,7 @@
         letter-spacing: 2px;
         text-shadow: 0 0 20px rgba(100, 200, 255, 0.4), 0 0 40px rgba(100, 200, 255, 0.2);
     }
-    
+
     p {
         margin: 0;
         color: rgba(255, 255, 255, 0.7);
@@ -70,7 +56,7 @@
     padding: 30px 0;
     border-bottom: 1px solid rgba(100, 200, 255, 0.15);
     overflow-x: auto;
-    
+
     .tab-button {
         background: linear-gradient(135deg, rgba(60, 100, 180, 0.4) 0%, rgba(80, 60, 150, 0.3) 100%);
         border: 1px solid rgba(100, 200, 255, 0.2);
@@ -88,7 +74,7 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         position: relative;
         overflow: hidden;
-        
+
         &::before {
             content: '';
             position: absolute;
@@ -99,19 +85,19 @@
             background: linear-gradient(90deg, transparent, rgba(100, 200, 255, 0.2), transparent);
             transition: left 0.6s ease;
         }
-        
+
         &:hover {
             background: linear-gradient(135deg, rgba(80, 130, 200, 0.5) 0%, rgba(100, 80, 180, 0.4) 100%);
             border-color: rgba(100, 200, 255, 0.5);
             color: #64c8ff;
             transform: translateY(-3px);
             box-shadow: 0 8px 24px rgba(100, 200, 255, 0.2), 0 0 20px rgba(100, 200, 255, 0.1);
-            
+
             &::before {
                 left: 100%;
             }
         }
-        
+
         &.active {
             background: linear-gradient(135deg, rgba(100, 150, 255, 0.6) 0%, rgba(120, 80, 200, 0.5) 100%);
             color: #64c8ff;
@@ -119,7 +105,7 @@
             box-shadow: 0 8px 24px rgba(100, 200, 255, 0.3), 0 0 20px rgba(100, 200, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             transform: translateY(-3px) scale(1.05);
         }
-        
+
         svg {
             font-size: 1.2rem;
         }
@@ -130,11 +116,11 @@
 .settings-panel {
     flex: 1;
     padding: 40px 0;
-    
+
     .settings-content {
         max-width: 800px;
         margin: 0 auto;
-        
+
         h3 {
             margin: 0 0 30px 0;
             font-size: 2rem;
@@ -145,14 +131,14 @@
             font-weight: 700;
             letter-spacing: 1px;
         }
-        
+
         h4 {
             margin: 30px 0 20px 0;
             font-size: 1.4rem;
             color: rgba(100, 200, 255, 0.9);
             text-shadow: 0 0 8px rgba(100, 200, 255, 0.15);
         }
-        
+
         h5 {
             margin: 20px 0 15px 0;
             font-size: 1.1rem;
@@ -164,7 +150,7 @@
 /* Setting Groups */
 .setting-group {
     margin-bottom: 35px;
-    
+
     .setting-item {
         display: flex;
         justify-content: space-between;
@@ -179,7 +165,7 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         position: relative;
         overflow: hidden;
-        
+
         &::before {
             content: '';
             position: absolute;
@@ -191,31 +177,31 @@
             opacity: 0;
             transition: opacity 0.4s ease;
         }
-        
+
         &:hover {
             background: linear-gradient(135deg, rgba(80, 130, 200, 0.35) 0%, rgba(100, 80, 180, 0.25) 100%);
             border-color: rgba(100, 200, 255, 0.35);
             transform: translateY(-4px);
             box-shadow: 0 8px 24px rgba(100, 200, 255, 0.15), 0 0 16px rgba(100, 200, 255, 0.1);
-            
+
             &::before {
                 opacity: 1;
             }
         }
-        
+
         span {
             font-size: 1.05rem;
             color: rgba(255, 255, 255, 0.9);
             flex: 1;
             font-weight: 500;
         }
-        
+
         p {
             margin: 0;
             color: rgba(255, 255, 255, 0.85);
             font-weight: 500;
         }
-        
+
         input[type="checkbox"] {
             width: 22px;
             height: 22px;
@@ -224,25 +210,25 @@
             border: 1px solid rgba(100, 200, 255, 0.4);
             border-radius: 6px;
             transition: all 0.3s ease;
-            
+
             &:hover {
                 border-color: rgba(100, 200, 255, 0.8);
                 box-shadow: 0 0 12px rgba(100, 200, 255, 0.4);
             }
-            
+
             &:checked {
                 background: linear-gradient(135deg, #64c8ff 0%, #4da8d8 100%);
                 border-color: #64c8ff;
                 box-shadow: 0 0 12px rgba(100, 200, 255, 0.5);
             }
         }
-        
+
         input[type="range"] {
             width: 150px;
             cursor: pointer;
             accent-color: #64c8ff;
         }
-        
+
         select {
             background: linear-gradient(135deg, rgba(60, 100, 180, 0.3) 0%, rgba(80, 60, 150, 0.2) 100%);
             border: 1px solid rgba(100, 200, 255, 0.3);
@@ -254,13 +240,13 @@
             font-weight: 600;
             transition: all 0.3s ease;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            
+
             &:focus {
                 outline: none;
                 border-color: rgba(100, 200, 255, 0.7);
                 box-shadow: 0 0 16px rgba(100, 200, 255, 0.3);
             }
-            
+
             option {
                 background-color: #0f1419;
                 color: #64c8ff;
@@ -272,33 +258,33 @@
 /* About Section Specific Styles */
 .about-section {
     .app-info {
-        background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
+        background: linear-gradient(135deg, rgba(27, 24, 24, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%);
         border: 1px solid rgba(100, 200, 255, 0.15);
         padding: 25px;
         border-radius: 14px;
         margin-bottom: 25px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(100, 200, 255, 0.1);
-        
+
         .info-item {
             display: flex;
             justify-content: space-between;
             padding: 14px 0;
             border-bottom: 1px solid rgba(100, 200, 255, 0.1);
             transition: all 0.2s ease;
-            
+
             &:hover {
                 padding-left: 8px;
             }
-            
+
             &:last-child {
                 border-bottom: none;
             }
-            
+
             span:first-child {
                 font-weight: 600;
-                color: rgba(255, 255, 255, 0.7);
+                color: rgba(255, 255, 255, 1);
             }
-            
+
             span:last-child {
                 color: #64c8ff;
                 font-weight: 700;
@@ -306,44 +292,44 @@
             }
         }
     }
-    
+
     .credits-section {
-        background: linear-gradient(135deg, rgba(60, 100, 180, 0.25) 0%, rgba(80, 60, 150, 0.15) 100%);
+        background: linear-gradient(135deg, rgba(27, 24, 24, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%);
         border: 1px solid rgba(100, 200, 255, 0.15);
         padding: 25px;
         border-radius: 14px;
         margin-bottom: 25px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(100, 200, 255, 0.1);
-        
+
         p {
             margin-bottom: 15px;
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 1);
             line-height: 1.8;
         }
-        
+
         .tech-stack ul {
             list-style: none;
             padding: 0;
-            
+
             li {
                 padding: 12px 0;
-                color: rgba(255, 255, 255, 0.75);
+                color: rgba(255, 255, 255, 1);
                 border-bottom: 1px solid rgba(100, 200, 255, 0.1);
                 transition: all 0.3s ease;
-                
+
                 &:hover {
                     color: #64c8ff;
                     padding-left: 8px;
                     text-shadow: 0 0 8px rgba(100, 200, 255, 0.2);
                 }
-                
+
                 &:last-child {
                     border-bottom: none;
                 }
             }
         }
     }
-    
+
     .links-section {
         .link-button {
             background: linear-gradient(135deg, rgba(100, 200, 255, 0.15) 0%, rgba(80, 150, 255, 0.1) 100%);
@@ -359,7 +345,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
-            
+
             &::before {
                 content: '';
                 position: absolute;
@@ -372,13 +358,13 @@
                 transform: translate(-50%, -50%);
                 transition: width 0.6s, height 0.6s;
             }
-            
+
             &:hover {
                 background: linear-gradient(135deg, rgba(100, 200, 255, 0.3) 0%, rgba(80, 150, 255, 0.2) 100%);
                 border-color: rgba(100, 200, 255, 0.6);
                 transform: translateY(-3px);
                 box-shadow: 0 6px 18px rgba(100, 200, 255, 0.2), 0 0 16px rgba(100, 200, 255, 0.15);
-                
+
                 &::before {
                     width: 300px;
                     height: 300px;
@@ -398,7 +384,7 @@
     border-top: 1px solid rgba(100, 200, 255, 0.15);
     margin-top: auto;
     flex-wrap: wrap;
-    
+
     .unsaved-changes-indicator {
         display: flex;
         align-items: center;
@@ -407,7 +393,7 @@
         border: 1px solid rgba(255, 100, 100, 0.3);
         border-radius: 10px;
         animation: pulse 2s ease-in-out infinite;
-        
+
         span {
             font-size: 0.95rem;
             font-weight: 600;
@@ -415,17 +401,21 @@
             text-shadow: 0 0 8px rgba(255, 100, 100, 0.2);
         }
     }
-    
+
     @keyframes pulse {
-        0%, 100% {
+
+        0%,
+        100% {
             box-shadow: 0 0 8px rgba(255, 100, 100, 0.2);
         }
+
         50% {
             box-shadow: 0 0 16px rgba(255, 100, 100, 0.4);
         }
     }
-    
-    .btn-primary, .btn-secondary {
+
+    .btn-primary,
+    .btn-secondary {
         padding: 14px 32px;
         border: 1px solid transparent;
         border-radius: 10px;
@@ -438,12 +428,12 @@
         position: relative;
         overflow: hidden;
     }
-    
+
     .btn-primary {
         background: linear-gradient(135deg, rgba(100, 200, 255, 0.2) 0%, rgba(80, 150, 255, 0.15) 100%);
         color: #64c8ff;
         border-color: rgba(100, 200, 255, 0.3);
-        
+
         &::after {
             content: '';
             position: absolute;
@@ -454,44 +444,44 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
             transition: left 0.6s ease;
         }
-        
+
         &:hover:not(:disabled) {
             background: linear-gradient(135deg, rgba(100, 200, 255, 0.35) 0%, rgba(80, 150, 255, 0.25) 100%);
             border-color: rgba(100, 200, 255, 0.6);
             transform: translateY(-3px);
             box-shadow: 0 8px 24px rgba(100, 200, 255, 0.2), 0 0 20px rgba(100, 200, 255, 0.15);
-            
+
             &::after {
                 left: 100%;
             }
         }
-        
+
         &.btn-primary-active {
             background: linear-gradient(135deg, rgba(100, 255, 150, 0.25) 0%, rgba(80, 200, 150, 0.2) 100%);
             color: #64ff96;
             border-color: rgba(100, 255, 150, 0.4);
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 16px rgba(100, 255, 150, 0.25);
-            
+
             &:hover {
                 background: linear-gradient(135deg, rgba(100, 255, 150, 0.4) 0%, rgba(80, 200, 150, 0.3) 100%);
                 border-color: rgba(100, 255, 150, 0.6);
                 box-shadow: 0 8px 24px rgba(100, 255, 150, 0.2), 0 0 20px rgba(100, 255, 150, 0.25);
             }
         }
-        
+
         &.btn-primary-disabled {
             background: linear-gradient(135deg, rgba(100, 100, 120, 0.2) 0%, rgba(80, 80, 100, 0.15) 100%);
             color: rgba(255, 255, 255, 0.4);
             border-color: rgba(100, 200, 255, 0.1);
             cursor: not-allowed;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            
+
             &:hover {
                 background: linear-gradient(135deg, rgba(100, 100, 120, 0.2) 0%, rgba(80, 80, 100, 0.15) 100%);
                 transform: none;
             }
         }
-        
+
         &:disabled {
             background: linear-gradient(135deg, rgba(100, 100, 120, 0.2) 0%, rgba(80, 80, 100, 0.15) 100%);
             color: rgba(255, 255, 255, 0.4);
@@ -500,12 +490,12 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
     }
-    
+
     .btn-secondary {
         background: linear-gradient(135deg, rgba(80, 60, 150, 0.25) 0%, rgba(60, 80, 150, 0.15) 100%);
         color: rgba(255, 255, 255, 0.8);
         border-color: rgba(100, 200, 255, 0.2);
-        
+
         &:hover {
             background: linear-gradient(135deg, rgba(100, 80, 180, 0.35) 0%, rgba(80, 100, 180, 0.25) 100%);
             border-color: rgba(100, 200, 255, 0.4);
@@ -521,36 +511,37 @@
     .settings-container {
         padding: 0 15px;
     }
-    
+
     .settings-tabs {
         .tab-button {
             padding: 12px 16px;
             font-size: 0.85rem;
-            
+
             span {
                 display: none;
             }
-            
+
             svg {
                 font-size: 1.3rem;
             }
         }
     }
-    
+
     .setting-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
-        
+
         span {
             margin-bottom: 5px;
         }
     }
-    
+
     .settings-actions {
         flex-direction: column;
-        
-        .btn-primary, .btn-secondary {
+
+        .btn-primary,
+        .btn-secondary {
             width: 100%;
         }
     }
@@ -566,7 +557,7 @@
     align-items: center;
     gap: 18px;
     width: 100%;
-    
+
     input[type="range"] {
         flex: 1;
         height: 8px;
@@ -576,7 +567,7 @@
         -webkit-appearance: none;
         appearance: none;
         cursor: pointer;
-        
+
         &::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -588,14 +579,14 @@
             transition: all 0.3s ease;
             box-shadow: 0 0 12px rgba(100, 200, 255, 0.5), 0 0 24px rgba(100, 200, 255, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            
+
             &:hover {
                 background: linear-gradient(135deg, #74d8ff 0%, #5db8e8 100%);
                 box-shadow: 0 0 16px rgba(100, 200, 255, 0.7), 0 0 32px rgba(100, 200, 255, 0.4);
                 transform: scale(1.15);
             }
         }
-        
+
         &::-moz-range-thumb {
             width: 20px;
             height: 20px;
@@ -605,7 +596,7 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.3s ease;
             box-shadow: 0 0 12px rgba(100, 200, 255, 0.5), 0 0 24px rgba(100, 200, 255, 0.3);
-            
+
             &:hover {
                 background: linear-gradient(135deg, #74d8ff 0%, #5db8e8 100%);
                 box-shadow: 0 0 16px rgba(100, 200, 255, 0.7), 0 0 32px rgba(100, 200, 255, 0.4);
@@ -613,7 +604,7 @@
             }
         }
     }
-    
+
     .volume-display {
         max-width: 50px;
         text-align: right;
