@@ -34,6 +34,7 @@ import {
 import { db } from '../../services/firebase';
 import { uploadFile } from '../../services/uploadService';
 import './css/Community.css';
+import AdvancedLoadingScreen from '../ui/AdvancedLoadingScreen';
 
 /**
  * Community Component
@@ -374,10 +375,7 @@ function Community({ user, userDocument }) {
             {/* Main Content */}
             <main className="community-content">
                 {isLoading ? (
-                    <div className="loading-state">
-                        <div className="loading-spinner"></div>
-                        <p>Loading community posts...</p>
-                    </div>
+                    <AdvancedLoadingScreen message="Loading community posts..." />
                 ) : filteredPosts.length === 0 ? (
                     <div className="empty-state">
                         <FontAwesomeIcon icon={faUsers} className="empty-state-icon" />

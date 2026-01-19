@@ -7,7 +7,7 @@
  * keyboard controls, and responsive layout for optimal user experience.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import LoadingSpinner from '../ui/LoadingSpinner';
@@ -39,7 +39,11 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
     const [touchStart, setTouchStart] = useState(null);         // Touch start position for gesture detection
     const [touchEnd, setTouchEnd] = useState(null);             // Touch end position for swipe calculation
     const audioRef = useRef(null);                              // Reference to audio element for auto-play control
+    const narrationTextRef = useRef(null);                      // Reference to narration text container for auto-scrolling
     const [keyframes, setKeyframes] = useState([]);             // Parsed keyframes for text highlighting
+    const [rawKeyframes, setRawKeyframes] = useState([]);       // Unscaled keyframes from file
+    const [maxKeyframeTime, setMaxKeyframeTime] = useState(0);  // Max keyframe timestamp for scaling
+    const [duration, setDuration] = useState(0);                // Audio duration for scaling
     const [currentKeyframeIndex, setCurrentKeyframeIndex] = useState(-1); // Currently active keyframe
     const [fullDescription, setFullDescription] = useState(''); // Full description text for fallback
     const [isNarrationEnabled, setIsNarrationEnabled] = useState(includeNarration); // Local narration toggle state
@@ -117,6 +121,9 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
             if (isTransitioning || !currentWaypoint?.keyframes_url || !isNarrationEnabled) {
                 if (!isTransitioning) {
                     setKeyframes([]);
+                    setRawKeyframes([]);
+                    setMaxKeyframeTime(0);
+                    setDuration(0);
                     setCurrentKeyframeIndex(-1);
                 }
                 return;
@@ -146,11 +153,24 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                     .filter(keyframe => keyframe !== null)
                     .sort((a, b) => a.time - b.time);
 
-                setKeyframes(parsedKeyframes);
-                setCurrentKeyframeIndex(-1);
+                // Store raw keyframes for scaling
+                setRawKeyframes(parsedKeyframes);
+                
+                // Set max keyframe time for scaling (last keyframe time)
+                const maxTime = parsedKeyframes.length > 0 ? parsedKeyframes[parsedKeyframes.length - 1].time : 0;
+                setMaxKeyframeTime(maxTime);
+
+                // If no scaling needed (no maxKeyframeTime), use keyframes as-is
+                if (!maxTime) {
+                    setKeyframes(parsedKeyframes);
+                    setCurrentKeyframeIndex(-1);
+                }
 
             } catch (error) {
                 console.error('Error loading keyframes:', error);
+                setRawKeyframes([]);
+                setMaxKeyframeTime(0);
+                setDuration(0);
                 setKeyframes([]);
                 setCurrentKeyframeIndex(-1);
             }
@@ -158,6 +178,55 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
 
         loadKeyframes();
     }, [currentWaypointIndex, isNarrationEnabled, waypoints, isTransitioning]);
+
+    /**
+     * Scale keyframes when audio duration is known
+     * 
+     * This ensures keyframes are properly scaled to match the actual audio duration,
+     * compensating for any discrepancy between keyframe timestamps and MP3 encoding.
+     */
+    useEffect(() => {
+        if (!maxKeyframeTime || !duration || rawKeyframes.length === 0) return;
+        
+        // Optimal settings from TTS testing:
+        // - Trailing silence: 1.7 seconds (MP3 encoding adds silence at end)
+        // - Min scale factor: 70% (don't compress timing more than 30%)
+        const TRAILING_SILENCE = 0.8;
+        const MIN_SCALE_PERCENT = 1;
+        
+        // Calculate effective duration accounting for trailing silence
+        const effectiveDuration = Math.max(
+            duration - TRAILING_SILENCE,
+            duration * MIN_SCALE_PERCENT
+        );
+        
+        // Calculate scale factor to fit keyframes within effective audio duration
+        const scaleFactor = effectiveDuration / maxKeyframeTime;
+        console.log('Scaling keyframes:', { 
+            maxKeyframeTime, 
+            audioDuration: duration, 
+            trailingSilence: TRAILING_SILENCE,
+            effectiveDuration, 
+            scaleFactor 
+        });
+        
+        const scaledKeyframes = rawKeyframes.map(kf => ({
+            time: kf.time * scaleFactor,
+            text: kf.text
+        }));
+        
+        setKeyframes(scaledKeyframes);
+        setCurrentKeyframeIndex(-1);
+    }, [maxKeyframeTime, duration, rawKeyframes]);
+
+    /**
+     * Handles when audio metadata is loaded
+     */
+    const handleLoadedMetadata = useCallback(() => {
+        if (audioRef.current) {
+            setDuration(audioRef.current.duration);
+        }
+    }, []);
 
     /**
      * Updates current keyframe index based on audio playback time
@@ -195,18 +264,37 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
 
         if (audioRef.current) {
             audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
-            audioRef.current.addEventListener('loadedmetadata', handleTimeUpdate);
+            audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
             audioRef.current.addEventListener('ended', handleEnded);
         }
 
         return () => {
             if (audioRef.current) {
                 audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
-                audioRef.current.removeEventListener('loadedmetadata', handleTimeUpdate);
+                audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
                 audioRef.current.removeEventListener('ended', handleEnded);
             }
         };
-    }, [keyframes, currentKeyframeIndex]);
+    }, [keyframes, currentKeyframeIndex, handleLoadedMetadata]);
+
+    /**
+     * Auto-scroll narration text to keep highlighted text in view
+     */
+    useEffect(() => {
+        if (narrationTextRef.current && isNarrationEnabled && keyframes.length > 0) {
+            // Find the highlighted text element
+            const highlightedElement = narrationTextRef.current.querySelector('.text-highlight');
+            
+            if (highlightedElement) {
+                // Scroll the highlighted text into view with smooth behavior
+                highlightedElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center', // Center the highlighted text vertically
+                    inline: 'nearest'
+                });
+            }
+        }
+    }, [currentKeyframeIndex, isNarrationEnabled, keyframes.length]);
     
     /**
      * Renders the description text with the current word highlighted
@@ -561,6 +649,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                                     controls 
                                     autoPlay
                                     style={{ width: '100%', marginTop: '10px', display: 'none' }}
+                                    onLoadedMetadata={handleLoadedMetadata}
                                 >
                                     <source src={currentWaypoint.narration_url} type="audio/mpeg" />
                                     <source src={currentWaypoint.narration_url} type="audio/wav" />
@@ -570,7 +659,7 @@ function DemoView({ waypoints, onClose, onWaypointChange, currentWaypointIndex, 
                         )}
                         
                         <div className="waypoint-info">
-                            <p className="narration-text">
+                            <p className="narration-text" ref={narrationTextRef}>
                                 {/* Show highlighted text when narration is enabled and has keyframes */}
                                 {isNarrationEnabled && keyframes.length > 0 ? (
                                     renderHighlightedText()

@@ -40,6 +40,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import './css/CommunityPost.css';
+import AdvancedLoadingScreen from '../ui/AdvancedLoadingScreen';
 
 /**
  * CommunityPost Component
@@ -296,15 +297,7 @@ function CommunityPost({ user, userDocument }) {
     
     if (isLoading) {
         return (
-            <div id="community-post">
-                <div className="geometric-grid">
-                    <div className="grid-pattern"></div>
-                </div>
-                <div className="loading-state">
-                    <div className="loading-spinner"></div>
-                    <p>Loading post...</p>
-                </div>
-            </div>
+            <AdvancedLoadingScreen message="Loading post..." />
         );
     }
 
